@@ -56,28 +56,21 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
       console.error("Error: tenantId is required to fetch a blog post by slug.");
       return null;
     }
+    
     try {
-        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
-        const q = postsCollectionRef.where('slug', '==', slug).limit(1);
-        const querySnapshot = await q.get();
+        // Firestore queries with 'where' clauses on different fields require a composite index.
+        // To avoid manual index creation, we fetch all posts and filter in memory.
+        // This is acceptable for a reasonable number of posts but might need optimization for very large blogs.
+        const allPosts = await getAllBlogPosts(tenantId);
+        const post = allPosts.find(p => p.slug === slug);
 
-        if (querySnapshot.empty) {
+        if (!post) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
             return null;
         }
-
-        const postDoc = querySnapshot.docs[0];
-        const data = postDoc.data();
-        const docData: { [key: string]: any } = { id: postDoc.id, ...data };
-
-        // Ensure all timestamp fields are converted to ISO strings
-        for (const key in docData) {
-            if (docData[key] && typeof docData[key].toDate === 'function') {
-            docData[key] = docData[key].toDate().toISOString();
-            }
-        }
-
-        return docData as Post;
+        
+        // The post object from getAllBlogPosts already has serialized timestamps.
+        return post;
 
     } catch (error) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
