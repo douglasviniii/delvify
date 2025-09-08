@@ -2,7 +2,7 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, Layers, Newspaper, ShieldCheck, ArrowRight } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,12 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useActionState } from "react";
 import Image from 'next/image';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { savePage, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { SectionComponents } from "@/components/page-sections";
@@ -86,7 +86,7 @@ export default function EditSitePage() {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const initialState: SavePageState = { message: '', success: false };
-  const [state, formAction] = useFormState(savePage, initialState);
+  const [state, formAction] = useActionState(savePage, initialState);
 
   useEffect(() => {
     setIsClient(true);
