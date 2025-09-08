@@ -1,10 +1,23 @@
-'use client';
 
 import { Logo } from '@/components/logo';
-import { Instagram, Facebook, Twitter, MessageCircle } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, Youtube, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
 
-export function MainFooter() {
+const socialIcons: { [key: string]: React.ReactNode } = {
+  instagram: <Instagram className="h-5 w-5" />,
+  facebook: <Facebook className="h-5 w-5" />,
+  linkedin: <Linkedin className="h-5 w-5" />,
+  youtube: <Youtube className="h-5 w-5" />,
+  whatsapp: <MessageCircle className="h-5 w-5" />,
+};
+
+// Este é o ID principal do inquilino para o site público.
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
+export async function MainFooter() {
+  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
+
   const quickLinks = [
     { label: 'Cursos', href: '/courses' },
     { label: 'Blog', href: '/blog' },
@@ -22,6 +35,14 @@ export function MainFooter() {
     { label: 'Política de Atendimento e Suporte', href: '#' },
     { label: 'Política de Direitos Autorais', href: '#' },
   ];
+  
+  const socialLinksToShow = Object.entries(settings.socialLinks)
+    .filter(([, details]) => details.enabled && details.url)
+    .map(([key, details]) => ({
+      name: key,
+      url: details.url,
+      icon: socialIcons[key],
+    }));
 
   return (
     <footer className="border-t bg-background">
@@ -32,12 +53,15 @@ export function MainFooter() {
             <p className="text-sm text-muted-foreground">
               Soluções Inovadoras para um Mundo Digital.
             </p>
-            <div className="flex space-x-4">
-              <Link href="#" className="text-muted-foreground hover:text-primary"><Instagram className="h-5 w-5" /></Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary"><Twitter className="h-5 w-5" /></Link>
-              <Link href="#" className="text-muted-foreground hover-text-primary"><Facebook className="h-5 w-5" /></Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary"><MessageCircle className="h-5 w-5" /></Link>
-            </div>
+            {socialLinksToShow.length > 0 && (
+                <div className="flex space-x-4">
+                    {socialLinksToShow.map(social => (
+                        <Link key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                            {social.icon}
+                        </Link>
+                    ))}
+                </div>
+            )}
           </div>
           <div>
             <h3 className="font-semibold mb-4">Links Rápidos</h3>
@@ -66,12 +90,11 @@ export function MainFooter() {
           <div>
             <h3 className="font-semibold mb-4">Contato</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>Email: contato@delvind.com</p>
-              <p>Suporte: suporte@delvind.com</p>
-              <p>Telefone: 45 8800-0647</p>
+              <p>Email: {settings.footerInfo.email}</p>
+              <p>Telefone: {settings.footerInfo.phone}</p>
               <p className="mt-4">CNPJ</p>
-              <p>57.278.676/0001-69</p>
-              <Link href="#" className="underline hover:text-primary">
+              <p>{settings.footerInfo.cnpj}</p>
+              <Link href={settings.footerInfo.cnpjLink} className="underline hover:text-primary" target="_blank" rel="noopener noreferrer">
                 Consultar na Receita Federal
               </Link>
             </div>

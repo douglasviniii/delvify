@@ -4,6 +4,7 @@
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import type { GlobalSettings } from '@/lib/settings';
 
 // Define o schema para validação dos dados
 const SocialLinksSchema = z.object({
@@ -12,7 +13,7 @@ const SocialLinksSchema = z.object({
 });
 
 const GlobalSettingsSchema = z.object({
-  logoUrl: z.string().url().nullable(),
+  logoUrl: z.string().nullable(),
   primaryColor: z.string(),
   footerInfo: z.object({
     email: z.string().email(),
@@ -29,8 +30,6 @@ const GlobalSettingsSchema = z.object({
   }),
   socialsLocation: z.string(),
 });
-
-export type GlobalSettings = z.infer<typeof GlobalSettingsSchema>;
 
 const settingsRef = (tenantId: string) => 
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('global');
@@ -65,7 +64,7 @@ export async function saveGlobalSettings(tenantId: string, data: GlobalSettings)
             public: true, 
         });
         
-        finalData.logoUrl = file.publicUrl();
+        finalData.logoUrl = file.publicUrl().replace('https://storage.googleapis.com/', 'https://firebasestorage.googleapis.com/v0/b/');
     } catch(uploadError) {
         console.error('Erro ao fazer upload da logo:', uploadError);
         return { success: false, message: 'Ocorreu um erro ao fazer upload da nova logo.' };

@@ -7,14 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Camera, Upload, Link as LinkIcon, Info, Share2, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from "lucide-react";
+import { Loader2, Palette, Upload, Info, Share2, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { saveGlobalSettings, getGlobalSettings, type GlobalSettings } from './actions';
+import { saveGlobalSettings, getGlobalSettings } from './actions';
+import type { GlobalSettings } from '@/lib/settings';
 
 const socialPlatforms = [
     { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" /> },
@@ -25,7 +26,7 @@ const socialPlatforms = [
 ];
 
 const initialSettings: GlobalSettings = {
-    logoUrl: "https://picsum.photos/100/100?random=logo",
+    logoUrl: "https://picsum.photos/128/32?random=logo",
     primaryColor: "#9466FF",
     footerInfo: {
         email: 'contato@delvind.com',
@@ -57,8 +58,20 @@ export default function GlobalSettingsPage() {
             setIsLoading(true);
             getGlobalSettings(user.uid)
                 .then(savedSettings => {
+                    // Deep merge saved settings with initial settings to prevent missing keys
                     if (savedSettings) {
-                        setSettings(savedSettings);
+                        setSettings(prev => ({
+                            ...prev,
+                            ...savedSettings,
+                            footerInfo: {
+                                ...prev.footerInfo,
+                                ...(savedSettings.footerInfo || {})
+                            },
+                            socialLinks: {
+                                ...prev.socialLinks,
+                                ...(savedSettings.socialLinks || {})
+                            }
+                        }));
                     }
                 })
                 .catch(err => {
@@ -227,27 +240,19 @@ export default function GlobalSettingsPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="footer-email">Email de Contato</Label>
-                                <div className="relative">
-                                    <Input id="footer-email" value={settings.footerInfo.email} onChange={(e) => handleNestedChange('footerInfo', 'email', e.target.value)} className="pl-4"/>
-                                </div>
+                                <Input id="footer-email" value={settings.footerInfo.email} onChange={(e) => handleNestedChange('footerInfo', 'email', e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="footer-phone">Telefone</Label>
-                                <div className="relative">
-                                    <Input id="footer-phone" value={settings.footerInfo.phone} onChange={(e) => handleNestedChange('footerInfo', 'phone', e.target.value)} className="pl-4"/>
-                                </div>
+                                <Input id="footer-phone" value={settings.footerInfo.phone} onChange={(e) => handleNestedChange('footerInfo', 'phone', e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="footer-cnpj">CNPJ</Label>
-                                <div className="relative">
-                                    <Input id="footer-cnpj" value={settings.footerInfo.cnpj} onChange={(e) => handleNestedChange('footerInfo', 'cnpj', e.target.value)} className="pl-4"/>
-                                </div>
+                                <Input id="footer-cnpj" value={settings.footerInfo.cnpj} onChange={(e) => handleNestedChange('footerInfo', 'cnpj', e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="footer-cnpj-link">Link de Consulta do CNPJ</Label>
-                                <div className="relative">
-                                    <Input id="footer-cnpj-link" value={settings.footerInfo.cnpjLink} onChange={(e) => handleNestedChange('footerInfo', 'cnpjLink', e.target.value)} className="pl-4"/>
-                                </div>
+                                <Input id="footer-cnpj-link" value={settings.footerInfo.cnpjLink} onChange={(e) => handleNestedChange('footerInfo', 'cnpjLink', e.target.value)} />
                             </div>
                         </CardContent>
                     </Card>
