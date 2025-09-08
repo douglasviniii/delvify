@@ -3,17 +3,21 @@ import { MainFooter } from '@/components/main-footer';
 import { SectionComponents } from '@/components/page-sections';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { initialHomePageSections } from '@/lib/page-data';
 
 // This function now reads from our JSON file "database".
 async function getPageSections() {
   try {
     const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
     const fileContent = await fs.readFile(filePath, 'utf-8');
+    if (!fileContent) {
+        return initialHomePageSections;
+    }
     const sections = JSON.parse(fileContent);
     return sections;
   } catch (error) {
-    console.error("Failed to read page sections, returning empty array:", error);
-    return []; // Return empty array on error to prevent crashes
+    console.error("Failed to read page sections, returning initial data:", error);
+    return initialHomePageSections; 
   }
 }
 
@@ -25,7 +29,7 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col">
       <MainHeader />
       <main className="flex-1">
-        {sections.map(section => {
+        {Array.isArray(sections) && sections.map(section => {
             const Component = SectionComponents[section.component];
             if (!Component) {
                 console.warn(`Component for section type "${section.component}" not found.`);
