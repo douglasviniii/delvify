@@ -11,12 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect } from "react";
 import Image from 'next/image';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useFormStatus } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 import { savePage, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { SectionComponents } from "@/components/page-sections";
@@ -29,7 +29,8 @@ const getPageData = (pageId: string) => {
   if (pageId === 'home') {
     return {
       title: 'Página Inicial',
-      sections: initialHomePageSections, // This is used for initial state before DB is fetched
+      // This is used for initial state before DB is fetched
+      sections: initialHomePageSections, 
     };
   }
   // Return a default structure for other pages
@@ -84,7 +85,7 @@ export default function EditSitePage() {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const initialState: SavePageState = { message: '', success: false };
-  const [state, formAction] = useActionState(savePage, initialState);
+  const [state, formAction] = useFormState(savePage, initialState);
 
   useEffect(() => {
     setIsClient(true);

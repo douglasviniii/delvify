@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { initialHomePageSections } from '@/lib/page-data';
 
 export async function GET() {
   try {
@@ -10,10 +11,8 @@ export async function GET() {
     const sections = JSON.parse(fileContent);
     return NextResponse.json({ sections });
   } catch (error) {
-    console.error('API Error: Failed to read page sections:', error);
-    return NextResponse.json(
-      { message: 'Error reading page sections' },
-      { status: 500 }
-    );
+    // If the file doesn't exist or there's an error, return the initial data
+    console.warn('API Warning: Could not read home-page-db.json, serving initial data. Error:', error);
+    return NextResponse.json({ sections: initialHomePageSections });
   }
 }
