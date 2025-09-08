@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileEdit, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminSiteStudioPage() {
   const pages = [
-    { title: "Página Inicial", description: "A página principal de boas-vindas do seu site." },
-    { title: "Cursos", description: "A página que lista todos os cursos disponíveis." },
-    { title: "Blog", description: "A página com as postagens do seu blog." },
-    { title: "Quem Somos", description: "A página que conta a história da sua empresa." },
-    { title: "Contato", description: "A página com informações de contato e formulário." },
+    { id: "home", title: "Página Inicial", description: "A página principal de boas-vindas do seu site." },
+    { id: "courses", title: "Cursos", description: "A página que lista todos os cursos disponíveis." },
+    { id: "blog", title: "Blog", description: "A página com as postagens do seu blog." },
+    { id: "about", title: "Quem Somos", description: "A página que conta a história da sua empresa." },
+    { id: "contact", title: "Contato", description: "A página com informações de contato e formulário." },
   ]
 
   return (
@@ -26,15 +27,17 @@ export default function AdminSiteStudioPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {pages.map((page) => (
-          <Card key={page.title}>
+          <Card key={page.id}>
             <CardHeader>
               <CardTitle className="font-headline">{page.title}</CardTitle>
               <CardDescription>{page.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
-                <FileEdit className="mr-2 h-4 w-4" />
-                Editar Página
+              <Button asChild variant="outline" className="w-full">
+                <Link href={`/admin/site-studio/${page.id}`}>
+                  <FileEdit className="mr-2 h-4 w-4" />
+                  Editar Página
+                </Link>
               </Button>
             </CardContent>
           </Card>
