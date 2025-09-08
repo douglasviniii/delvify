@@ -1,6 +1,4 @@
 
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
@@ -20,29 +18,8 @@ const socialIcons: { [key: string]: React.ReactNode } = {
 // Este é o ID principal do inquilino para o site público.
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-// Componente de link com hover state
-const HoverLink = ({ href, children, color, hoverColor }: { href: string; children: React.ReactNode; color: string; hoverColor: string }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  return (
-    <Link 
-      href={href}
-      style={{ color: isHovered ? hoverColor : color }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="text-sm font-medium transition-colors"
-    >
-      {children}
-    </Link>
-  )
-}
 
-// O cabeçalho precisa ser um client component para usar o hook useState no HoverLink.
-// No entanto, não podemos usar `await` em client components.
-// Solução: buscar os dados no componente pai (layout ou página) e passar como props,
-// ou usar um client component que faz o fetch em um useEffect.
-// Para manter a simplicidade e a renderização do servidor, vamos usar uma abordagem mista:
 // O componente principal será async, e um subcomponente será 'use client'.
-
 export async function MainHeader() {
   const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 
@@ -51,6 +28,8 @@ export async function MainHeader() {
 
 // Client Component para lidar com interatividade
 function ClientHeader({ settings }: { settings: GlobalSettings }) {
+  'use client';
+  
   const navItems = [
     { id: 'courses', label: 'Cursos', href: '/courses' },
     { id: 'blog', label: 'Blog', href: '/blog' },
@@ -67,6 +46,23 @@ function ClientHeader({ settings }: { settings: GlobalSettings }) {
       url: details.url,
       icon: socialIcons[key],
     }));
+
+      // Componente de link com hover state
+    const HoverLink = ({ href, children, color, hoverColor }: { href: string; children: React.ReactNode; color: string; hoverColor: string }) => {
+        const [isHovered, setIsHovered] = React.useState(false);
+        return (
+            <Link 
+            href={href}
+            style={{ color: isHovered ? hoverColor : color }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="text-sm font-medium transition-colors"
+            >
+            {children}
+            </Link>
+        )
+    }
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

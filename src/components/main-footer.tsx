@@ -1,6 +1,3 @@
-
-'use client';
-
 import * as React from 'react';
 import { Logo } from '@/components/logo';
 import { Instagram, Facebook, Linkedin, Youtube, MessageCircle } from 'lucide-react';
@@ -19,23 +16,25 @@ const socialIcons: { [key: string]: React.ReactNode } = {
 // Este é o ID principal do inquilino para o site público.
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-// Componente de link com hover state
-const HoverLink = ({ href, children, color, hoverColor }: { href: string; children: React.ReactNode; color: string; hoverColor: string }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  return (
-    <Link 
-      href={href}
-      style={{ color: isHovered ? hoverColor : color }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="text-base transition-colors"
-    >
-      {children}
-    </Link>
-  )
-}
+function MainFooter({ settings }: { settings: GlobalSettings }) {
+  'use client';
 
-export function MainFooter({ settings }: { settings: GlobalSettings }) {
+  // Componente de link com hover state - precisa ser um client component
+  function HoverLink({ href, children, color, hoverColor }: { href: string; children: React.ReactNode; color: string; hoverColor: string }) {
+    const [isHovered, setIsHovered] = React.useState(false);
+    return (
+      <Link 
+        href={href}
+        style={{ color: isHovered ? hoverColor : color }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="text-base transition-colors"
+      >
+        {children}
+      </Link>
+    )
+  }
+
   const allLinks = [
     { id: 'courses', label: 'Cursos', href: '/courses' },
     { id: 'blog', label: 'Blog', href: '/blog' },

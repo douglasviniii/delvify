@@ -102,12 +102,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   };
 
-  const isSiteStudioPage = pathname.startsWith('/admin/site-studio/');
-  const layoutClasses = isSiteStudioPage ? "h-screen flex flex-col" : "flex-1 p-4 sm:p-6";
+  const isSiteStudioEditorPage = pathname.startsWith('/admin/site-studio/') && pathname.split('/').length > 3;
+  const layoutClasses = isSiteStudioEditorPage ? "h-screen flex flex-col" : "flex-1 p-4 sm:p-6";
 
-  if (isSiteStudioPage) {
+  // Retorna um layout especial apenas para a página de edição de página (ex: /admin/site-studio/home)
+  if (isSiteStudioEditorPage) {
     return <main className={layoutClasses}>{children}</main>;
   }
+
 
   return (
     <SidebarProvider>
@@ -195,7 +197,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <main className={layoutClasses}>{children}</main>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
