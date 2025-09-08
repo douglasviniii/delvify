@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileEdit, PlusCircle } from "lucide-react";
+import { FileEdit, PlusCircle, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminSiteStudioPage() {
@@ -26,6 +27,23 @@ export default function AdminSiteStudioPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+         <Card className="border-primary/50 border-2">
+            <CardHeader>
+              <CardTitle className="font-headline flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                <span>Configurações Globais</span>
+              </CardTitle>
+              <CardDescription>Edite a logo, cores, rodapé e outras configurações que se aplicam a todo o site.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link href={`/admin/site-studio/settings`}>
+                  <FileEdit className="mr-2 h-4 w-4" />
+                  Editar Configurações
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         {pages.map((page) => (
           <Card key={page.id}>
             <CardHeader>
