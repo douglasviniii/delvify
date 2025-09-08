@@ -6,12 +6,11 @@ export function MainFooter() {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
-    { label: 'Serviços', href: '#' },
-    { label: 'Quem Somos', href: '#' },
-    { label: 'Portfólio', href: '#' },
+    { label: 'Cursos', href: '#' },
     { label: 'Blog', href: '#' },
-    { label: 'Contato', href: '#' },
-    { label: 'Trabalhe Conosco', href: '#' },
+    { label: 'FAQ', href: '#' },
+    { label: 'Quem Somos', href: '#' },
+    { label: 'Login', href: '/login' },
   ];
 
   const policies = [
