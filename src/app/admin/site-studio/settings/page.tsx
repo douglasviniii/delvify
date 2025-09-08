@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Upload, Info, Share2, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Palette, Upload, Info, Share2, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
@@ -15,6 +15,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { saveGlobalSettings, getGlobalSettings } from './actions';
 import type { GlobalSettings } from '@/lib/settings';
+import Link from 'next/link';
 
 const socialPlatforms = [
     { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" /> },
@@ -167,9 +168,17 @@ export default function GlobalSettingsPage() {
 
     return (
         <div className="space-y-6 p-4 sm:p-6">
-            <div>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Configurações Globais do Site</h1>
-                <p className="text-muted-foreground">Gerencie a identidade visual e informações que aparecem em todo o site.</p>
+            <div className="flex items-center gap-4">
+                <Button asChild variant="outline" size="icon">
+                  <Link href="/admin/site-studio">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Voltar</span>
+                  </Link>
+                </Button>
+                <div>
+                    <h1 className="font-headline text-3xl font-bold tracking-tight">Configurações Globais do Site</h1>
+                    <p className="text-muted-foreground">Gerencie a identidade visual e informações que aparecem em todo o site.</p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 gap-8">
