@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -105,7 +104,7 @@ export const FeaturesSection = ({ settings }: { settings: any }) => {
                 {settings.description}
             </p>
             </div>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {settings.features.map((feature: any) => (
                 <Card key={feature.title} className="text-center" style={{ backgroundColor: settings.cardColor }}>
                 <CardHeader>
