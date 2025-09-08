@@ -13,6 +13,7 @@ import { getGlobalSettingsForTenant } from '@/lib/settings';
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  // Always fetch posts from the main tenant for the public blog
   const post = await getPostBySlug(MAIN_TENANT_ID, params.slug);
   const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 

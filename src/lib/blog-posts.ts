@@ -57,8 +57,9 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
       return null;
     }
     try {
-        const postsQuery = adminDb.collection(`tenants/${tenantId}/blog`).where('slug', '==', slug).limit(1);
-        const querySnapshot = await postsQuery.get();
+        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
+        const q = postsCollectionRef.where('slug', '==', slug).limit(1);
+        const querySnapshot = await q.get();
 
         if (querySnapshot.empty) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
