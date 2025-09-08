@@ -1,3 +1,4 @@
+
 'use client';
 import {
   BookCopy,
@@ -72,6 +73,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   };
 
+  const isSiteStudioPage = pathname.startsWith('/admin/site-studio/');
+  const layoutClasses = isSiteStudioPage ? "h-screen flex flex-col" : "flex-1 p-4 sm:p-6";
+
+  if (isSiteStudioPage) {
+    return <main className={layoutClasses}>{children}</main>;
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -144,7 +152,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className={layoutClasses}>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
