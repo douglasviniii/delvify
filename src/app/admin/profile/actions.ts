@@ -35,7 +35,7 @@ interface TenantProfile {
 }
 
 // Function to save tenant profile data
-export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
+export async function saveTenantProfile(userId: string, data: TenantProfile) {
   try {
     let profileImageUrl = data.profileImage;
 
@@ -46,7 +46,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       const imageBuffer = Buffer.from(base64Data, 'base64');
       
       const bucket = adminStorage.bucket();
-      const fileName = `profile_images/${tenantId}.${mimeType.split('/')[1]}`;
+      const fileName = `user_profile_images/${userId}.${mimeType.split('/')[1]}`;
       const file = bucket.file(fileName);
 
       await file.save(imageBuffer, {
@@ -64,7 +64,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       updatedAt: new Date(),
     };
 
-    const docRef = adminDb.collection('tenants').doc(tenantId);
+    const docRef = adminDb.collection('users').doc(userId);
     await docRef.set(profileData, { merge: true });
 
     return { success: true, message: 'Perfil salvo com sucesso!', profileImage: profileImageUrl };
@@ -75,9 +75,9 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
 }
 
 // Function to get tenant profile data
-export async function getTenantProfile(tenantId: string): Promise<TenantProfile | null> {
+export async function getTenantProfile(userId: string): Promise<TenantProfile | null> {
   try {
-    const docRef = adminDb.collection('tenants').doc(tenantId);
+    const docRef = adminDb.collection('users').doc(userId);
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
