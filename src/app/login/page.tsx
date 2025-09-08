@@ -37,7 +37,9 @@ export default function LoginPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col">
-          <Button className="w-full">Entrar</Button>
+          <Button className="w-full" asChild>
+            <Link href="/admin/dashboard">Entrar</Link>
+          </Button>
           <div className="mt-4 text-center text-sm">
             Não tem uma conta?{' '}
             <Link href="#" className="underline">
