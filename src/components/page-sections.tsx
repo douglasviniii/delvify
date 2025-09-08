@@ -58,7 +58,7 @@ export const HeroSection = ({ settings }: { settings: any }) => (
         aria-hidden="true"
         className="absolute inset-0 top-0 -z-10 h-1/2 w-full bg-gradient-to-b from-primary/10 to-transparent"
       />
-      <div className="container px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
             {settings.title}
@@ -95,7 +95,7 @@ export const FeaturesSection = ({ settings }: { settings: any }) => {
 
     return (
         <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-        <div className="container px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
                 {settings.title}
@@ -126,7 +126,7 @@ export const FeaturesSection = ({ settings }: { settings: any }) => {
   
 export const AiCustomizationSection = ({ settings }: { settings: any }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-        <div className="container px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6">
         <div className={cn("grid items-center gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
             <div className={cn({ "lg:col-start-2": settings.layout === 'right' })}>
                 <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
@@ -165,7 +165,7 @@ export const AiCustomizationSection = ({ settings }: { settings: any }) => (
 
 export const DefaultSection = ({ settings }: { settings: any }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-        <div className="container px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6">
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>{settings.title}</h2>
             <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>{settings.description}</p>
         </div>
@@ -174,7 +174,7 @@ export const DefaultSection = ({ settings }: { settings: any }) => (
 
 export const CoursesSection = () => (
     <section className="py-12 md:py-24 bg-background">
-        <div className="container px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto mb-12 max-w-2xl text-center">
                 <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">Explore Nossos Cursos</h2>
                 <p className="mt-4 text-muted-foreground">Encontre o curso perfeito para impulsionar sua carreira.</p>
@@ -209,7 +209,7 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
 
     return (
         <section className="py-12 md:py-24 bg-secondary/50">
-            <div className="container px-4 md:px-6">
+            <div className="container mx-auto px-4 md:px-6">
                 <div className="mx-auto mb-12 max-w-2xl text-center">
                     <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">Últimas do Blog</h2>
                     <p className="mt-4 text-muted-foreground">Fique por dentro das novidades, dicas e artigos.</p>
@@ -271,3 +271,5 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
         </section>
     )
 }
+
+    
