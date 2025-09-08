@@ -178,6 +178,36 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
         </div>
     </section>
   ),
+  ImageTextSection: ({ settings }) => (
+    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
+      <div className="container px-4 md:px-6">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
+              {settings.title}
+            </h2>
+            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
+              {settings.description}
+            </p>
+          </div>
+          <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
+            {settings.imageUrl ? (
+              <Image
+                src={settings.imageUrl}
+                alt={settings.title}
+                layout="fill"
+                objectFit="cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted">
+                <p className="text-muted-foreground">Cole um URL de imagem</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  ),
   DefaultSection: ({ settings }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
         <div className="container px-4 md:px-6">
@@ -224,6 +254,24 @@ export default function EditSitePage() {
         })
     })
   }
+  
+  const handleAddSection = () => {
+    const newSection = {
+      id: `new-section-${Date.now()}`,
+      name: "Seção de Imagem e Texto",
+      component: "ImageTextSection",
+      settings: {
+        title: "Novo Título da Seção",
+        description: "Esta é uma nova seção que você pode editar.",
+        imageUrl: "https://picsum.photos/800/600",
+        backgroundColor: "#FFFFFF",
+        titleColor: "#000000",
+        descriptionColor: "#6c757d",
+      },
+    };
+    setSections(prevSections => [...prevSections, newSection]);
+  };
+
 
   const StyleInput = ({ sectionId, settingKey, label }: { sectionId: string, settingKey: string, label: string }) => {
     const section = sections.find(s => s.id === sectionId);
@@ -289,7 +337,7 @@ export default function EditSitePage() {
                           </TabsList>
                           <TabsContent value="content" className="space-y-4 pt-4">
                               {Object.entries(section.settings).map(([key, value]) => {
-                                  const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'imageUrl'];
+                                  const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor'];
                                   if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
                                   const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                   return (
@@ -322,7 +370,7 @@ export default function EditSitePage() {
                 </Accordion>
               </div>
               <div className="p-4 border-t">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleAddSection}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Adicionar Seção
                   </Button>
@@ -333,3 +381,5 @@ export default function EditSitePage() {
     </div>
   );
 }
+
+    
