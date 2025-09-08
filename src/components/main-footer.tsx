@@ -6,8 +6,8 @@ import Link from 'next/link';
 
 export function MainFooter() {
   const quickLinks = [
-    { label: 'Cursos', href: '#' },
-    { label: 'Blog', href: '#' },
+    { label: 'Cursos', href: '/courses' },
+    { label: 'Blog', href: '/blog' },
     { label: 'FAQ', href: '#' },
     { label: 'Quem Somos', href: '#' },
     { label: 'Login', href: '/login' },

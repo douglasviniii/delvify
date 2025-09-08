@@ -1,10 +1,10 @@
 
 import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
-import { SectionComponents } from '@/components/page-sections';
-import { initialHomePageSections } from '@/lib/page-data';
+import { SectionComponents, CoursesSection, LatestPostsSection } from '@/components/page-sections';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { initialHomePageSections } from '@/lib/page-data';
 
 async function getHomePageSections() {
     try {
@@ -35,6 +35,8 @@ export default async function Home() {
             }
             return <Component key={section.id} settings={section.settings} />;
         })}
+        <CoursesSection />
+        <LatestPostsSection />
       </main>
       <MainFooter />
     </div>

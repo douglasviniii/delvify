@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 
 export function MainHeader() {
   const navItems = [
-    { label: 'Cursos', href: '#' },
-    { label: 'Blog', href: '#' },
+    { label: 'Cursos', href: '/courses' },
+    { label: 'Blog', href: '/blog' },
     { label: 'FAQ', href: '#' },
     { label: 'Quem Somos', href: '#' },
   ];
