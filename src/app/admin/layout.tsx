@@ -154,8 +154,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <AvatarImage src={profileImage ?? undefined} alt={companyName} data-ai-hint="person face" />
                         <AvatarFallback>{companyName ? companyName.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
                       </Avatar>
-                      <div className="text-left">
-                          <p className="text-sm font-medium">{companyName}</p>
+                      <div className="text-left overflow-hidden">
+                          <p className="text-sm font-medium truncate">{companyName}</p>
                           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                       </div>
                     </>
