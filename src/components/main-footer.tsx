@@ -46,11 +46,11 @@ export async function MainFooter() {
 
   return (
     <footer className="border-t bg-background">
-      <div className="container py-12">
+      <div className="container py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Logo />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               Soluções Inovadoras para um Mundo Digital.
             </p>
             {socialLinksToShow.length > 0 && (
@@ -64,11 +64,11 @@ export async function MainFooter() {
             )}
           </div>
           <div>
-            <h3 className="font-semibold mb-4">Links Rápidos</h3>
-            <ul className="space-y-2">
+            <h3 className="font-semibold text-lg mb-4">Links Rápidos</h3>
+            <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary">
+                  <Link href={link.href} className="text-base text-muted-foreground hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -76,11 +76,11 @@ export async function MainFooter() {
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold mb-4">Políticas</h3>
-            <ul className="space-y-2">
+            <h3 className="font-semibold text-lg mb-4">Políticas</h3>
+            <ul className="space-y-3">
               {policies.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary">
+                  <Link href={link.href} className="text-base text-muted-foreground hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -88,11 +88,11 @@ export async function MainFooter() {
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold mb-4">Contato</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <h3 className="font-semibold text-lg mb-4">Contato</h3>
+            <div className="space-y-3 text-base text-muted-foreground">
               <p>Email: {settings.footerInfo.email}</p>
               <p>Telefone: {settings.footerInfo.phone}</p>
-              <p className="mt-4">CNPJ</p>
+              <p className="mt-4 font-medium text-foreground">CNPJ</p>
               <p>{settings.footerInfo.cnpj}</p>
               <Link href={settings.footerInfo.cnpjLink} className="underline hover:text-primary" target="_blank" rel="noopener noreferrer">
                 Consultar na Receita Federal
@@ -100,7 +100,7 @@ export async function MainFooter() {
             </div>
           </div>
         </div>
-        <div className="border-t mt-8 pt-6 text-center text-sm text-muted-foreground">
+        <div className="border-t mt-12 pt-8 text-center text-base text-muted-foreground">
           &copy; {new Date().getFullYear()} DelviFy Tecnologia Da Informação LTDA.
         </div>
       </div>
