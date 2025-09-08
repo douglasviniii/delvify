@@ -78,6 +78,8 @@ export default function AdminProfilePage() {
     const unsubscribe = auth.onAuthStateChanged(currentUser => {
       setUser(currentUser);
       if (currentUser) {
+        // Para uma arquitetura multi-inquilino, o ID do inquilino pode vir do domínio,
+        // de um token customizado, ou para este exemplo, usaremos o UID do usuário admin como ID do inquilino.
         fetchProfile(currentUser.uid);
       } else {
         setIsLoading(false);
@@ -162,6 +164,7 @@ export default function AdminProfilePage() {
     
     setIsSaving(true);
     try {
+        // O UID do usuário admin é usado como o ID do inquilino.
         const result = await saveTenantProfile(user.uid, {
             ...companyData,
             bankData,
