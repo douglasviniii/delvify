@@ -67,8 +67,9 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
 
     return { success: true, message: 'Perfil salvo com sucesso!', profileImage: profileImageUrl };
   } catch (error) {
-    console.error('Error saving tenant profile:', error);
-    return { success: false, message: 'Ocorreu um erro ao salvar o perfil.' };
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error saving tenant profile:', errorMessage);
+    return { success: false, message: `Ocorreu um erro ao salvar o perfil: ${errorMessage}` };
   }
 }
 
