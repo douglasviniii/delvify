@@ -6,8 +6,12 @@ import { MainFooter } from '@/components/main-footer';
 import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
 
+// This is the main tenant ID for the public-facing website.
+// In a real multi-domain app, you would resolve this based on the request's hostname.
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug);
+  const post = await getPostBySlug(MAIN_TENANT_ID, params.slug);
 
   if (!post) {
     notFound();
@@ -58,5 +62,3 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     </div>
   );
 }
-
-    

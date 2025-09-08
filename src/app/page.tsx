@@ -2,26 +2,19 @@
 import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
 import { SectionComponents, CoursesSection, LatestPostsSection } from '@/components/page-sections';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { initialHomePageSections } from '@/lib/page-data';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 
-async function getHomePageSections() {
-    try {
-        const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        const data = JSON.parse(fileContent);
-        return data; 
-    } catch (error) {
-        console.warn("Could not read home-page-db.json, falling back to initial data. Error:", error);
-        return initialHomePageSections;
-    }
-}
+// This is the main tenant ID for the public-facing website.
+// In a real multi-domain app, you would resolve this based on the request's hostname.
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function Home() {
-  const sections = await getHomePageSections();
-  const latestPosts = await getAllBlogPosts();
+  // Fetch sections from static data
+  const sections = initialHomePageSections;
+  
+  // Fetch latest posts only for the main tenant
+  const latestPosts = await getAllBlogPosts(MAIN_TENANT_ID);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

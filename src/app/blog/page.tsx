@@ -8,11 +8,16 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, UserCircle } from 'lucide-react';
 
+// This is the main tenant ID for the public-facing website.
+// In a real multi-domain app, you would resolve this based on the request's hostname.
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
+
 export default async function BlogPage() {
-  const posts = await getAllBlogPosts();
+  const posts = await getAllBlogPosts(MAIN_TENANT_ID);
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 
   return (

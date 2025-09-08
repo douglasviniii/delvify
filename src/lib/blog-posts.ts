@@ -1,4 +1,6 @@
 
+'use server';
+
 import { adminDb } from './firebase-admin';
 
 // This type definition needs to be maintained in sync with the one in admin/blog/page.tsx
@@ -15,12 +17,16 @@ export type Post = {
   updatedAt?: string; // Serialized as ISO string
 };
 
+// Function to get all posts from a specific tenant
+export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
+  if (!tenantId) {
+    console.error("Error: tenantId is required to fetch blog posts.");
+    return [];
+  }
 
-// Function to get all posts from all tenants
-export async function getAllBlogPosts(): Promise<Post[]> {
   try {
     const posts: Post[] = [];
-    const postsQuery = adminDb.collectionGroup('blog');
+    const postsQuery = adminDb.collection(`tenants/${tenantId}/blog`).orderBy('createdAt', 'desc');
     const querySnapshot = await postsQuery.get();
     
     querySnapshot.forEach((doc) => {
@@ -37,24 +43,25 @@ export async function getAllBlogPosts(): Promise<Post[]> {
       posts.push(docData as Post);
     });
 
-    // Sort by creation date descending
-    posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
     return posts;
   } catch (error) {
-    console.error("Error fetching all blog posts:", error);
+    console.error(`Error fetching blog posts for tenant ${tenantId}:`, error);
     return [];
   }
 }
 
-// Function to get a single post by its slug from any tenant
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+// Function to get a single post by its slug from a specific tenant
+export async function getPostBySlug(tenantId: string, slug: string): Promise<Post | null> {
+    if (!tenantId) {
+      console.error("Error: tenantId is required to fetch a blog post by slug.");
+      return null;
+    }
     try {
-        const postsQuery = adminDb.collectionGroup('blog').where('slug', '==', slug).limit(1);
+        const postsQuery = adminDb.collection(`tenants/${tenantId}/blog`).where('slug', '==', slug).limit(1);
         const querySnapshot = await postsQuery.get();
 
         if (querySnapshot.empty) {
-            console.log(`No post found with slug: ${slug}`);
+            console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
             return null;
         }
 
@@ -72,9 +79,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
         return docData as Post;
 
     } catch (error) {
-        console.error(`Error fetching post with slug ${slug}:`, error);
+        console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
         return null;
     }
 }
-
-    
