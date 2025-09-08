@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { useState } from 'react';
 import { MainHeader } from "@/components/main-header";
-import { MainFooter } from "@/components/main-footer";
+import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Search } from 'lucide-react';

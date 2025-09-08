@@ -1,8 +1,9 @@
 
+
 import { getPostBySlug } from '@/lib/blog-posts';
 import { notFound } from 'next/navigation';
 import { MainHeader } from '@/components/main-header';
-import { MainFooter } from '@/components/main-footer';
+import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
 

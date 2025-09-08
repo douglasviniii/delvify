@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { MainHeader } from "@/components/main-header";
-import { MainFooter } from "@/components/main-footer";
+import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

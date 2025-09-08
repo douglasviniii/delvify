@@ -34,6 +34,12 @@ const GlobalSettingsSchema = z.object({
     showInFooter: z.boolean(),
   }),
   pageVisibility: z.record(z.boolean()),
+  colors: z.object({
+    navbarLinkColor: z.string(),
+    navbarLinkHoverColor: z.string(),
+    footerLinkColor: z.string(),
+    footerLinkHoverColor: z.string(),
+  }),
 });
 
 const settingsRef = (tenantId: string) => 

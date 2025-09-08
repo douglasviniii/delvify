@@ -1,10 +1,11 @@
 
+
 import { MainHeader } from '@/components/main-header';
-import { MainFooter } from '@/components/main-footer';
+import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection } from '@/components/page-sections';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { adminDb } from '@/lib/firebase-admin';
-import { initialHomePageSections } from '@/lib/page-data';
+import { initialHomePageData } from '@/lib/page-data';
 
 // This is the main tenant ID for the public-facing website.
 // In a real multi-domain app, you would resolve this based on the request's hostname.
@@ -34,10 +35,10 @@ async function getPageSections(tenantId: string, pageId: string) {
         }
         // If no sections are found or data is invalid, return default
         console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
-        return initialHomePageSections;
+        return initialHomePageData.sections;
     } catch (error) {
         console.error("Error fetching page sections, returning initial data:", error);
-        return initialHomePageSections;
+        return initialHomePageData.sections;
     }
 }
 

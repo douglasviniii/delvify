@@ -1,8 +1,12 @@
 
+'use client';
+
+import * as React from 'react';
 import { Logo } from '@/components/logo';
 import { Instagram, Facebook, Linkedin, Youtube, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
+import type { GlobalSettings } from '@/lib/settings';
 
 const socialIcons: { [key: string]: React.ReactNode } = {
   instagram: <Instagram className="h-5 w-5" />,
@@ -15,9 +19,23 @@ const socialIcons: { [key: string]: React.ReactNode } = {
 // Este é o ID principal do inquilino para o site público.
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-export async function MainFooter() {
-  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
+// Componente de link com hover state
+const HoverLink = ({ href, children, color, hoverColor }: { href: string; children: React.ReactNode; color: string; hoverColor: string }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  return (
+    <Link 
+      href={href}
+      style={{ color: isHovered ? hoverColor : color }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="text-base transition-colors"
+    >
+      {children}
+    </Link>
+  )
+}
 
+export function MainFooter({ settings }: { settings: GlobalSettings }) {
   const allLinks = [
     { id: 'courses', label: 'Cursos', href: '/courses' },
     { id: 'blog', label: 'Blog', href: '/blog' },
@@ -73,9 +91,7 @@ export async function MainFooter() {
             <ul className="space-y-3">
               {visibleLinks.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-base text-muted-foreground hover:text-primary">
-                    {link.label}
-                  </Link>
+                  <HoverLink href={link.href} color={settings.colors.footerLinkColor} hoverColor={settings.colors.footerLinkHoverColor}>{link.label}</HoverLink>
                 </li>
               ))}
             </ul>
@@ -85,9 +101,7 @@ export async function MainFooter() {
             <ul className="space-y-3">
               {visiblePolicies.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-base text-muted-foreground hover:text-primary">
-                    {link.label}
-                  </Link>
+                  <HoverLink href={link.href} color={settings.colors.footerLinkColor} hoverColor={settings.colors.footerLinkHoverColor}>{link.label}</HoverLink>
                 </li>
               ))}
             </ul>
@@ -99,9 +113,9 @@ export async function MainFooter() {
               <p>Telefone: {settings.footerInfo.phone}</p>
               <p className="mt-4 font-medium text-foreground">CNPJ</p>
               <p>{settings.footerInfo.cnpj}</p>
-              <Link href={settings.footerInfo.cnpjLink} className="underline hover:text-primary" target="_blank" rel="noopener noreferrer">
+               <HoverLink href={settings.footerInfo.cnpjLink} color={settings.colors.footerLinkColor} hoverColor={settings.colors.footerLinkHoverColor}>
                 Consultar na Receita Federal
-              </Link>
+              </HoverLink>
             </div>
           </div>
         </div>
@@ -111,4 +125,10 @@ export async function MainFooter() {
       </div>
     </footer>
   );
+}
+
+// Este componente wrapper garante que os dados sejam buscados no servidor e passados para o client component.
+export async function MainFooterWrapper() {
+    const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
+    return <MainFooter settings={settings} />;
 }

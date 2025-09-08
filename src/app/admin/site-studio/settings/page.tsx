@@ -45,7 +45,13 @@ const initialSettings: GlobalSettings = {
         showInHeader: false,
         showInFooter: true,
     },
-    pageVisibility: {}
+    pageVisibility: {},
+    colors: {
+        navbarLinkColor: "#333333",
+        navbarLinkHoverColor: "#9466FF",
+        footerLinkColor: "#333333",
+        footerLinkHoverColor: "#9466FF",
+    }
 };
 
 
@@ -78,6 +84,10 @@ export default function GlobalSettingsPage() {
                             socialsLocation: {
                                 ...prev.socialsLocation,
                                 ...(savedSettings.socialsLocation || {})
+                            },
+                            colors: {
+                                ...prev.colors,
+                                ...(savedSettings.colors || {})
                             }
                         }));
                     }
@@ -185,13 +195,52 @@ export default function GlobalSettingsPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="primary-color">Cor Principal (Botões e Links)</Label>
+                            <Label htmlFor="primary-color">Cor Principal (Botões e Destaques)</Label>
                             <div className="flex items-center gap-2">
                                 <Input id="primary-color" value={settings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="max-w-xs"/>
                                 <Input type="color" value={settings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="h-10 w-10 p-1"/>
                             </div>
-                            <p className="text-xs text-muted-foreground">Esta cor será usada em botões, links e outros elementos de destaque.</p>
                         </div>
+
+                        <Separator />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <h4 className="font-medium">Cores da Navegação (Cabeçalho)</h4>
+                                <div className="space-y-2">
+                                    <Label htmlFor="navbar-link-color">Cor do Link</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input id="navbar-link-color" value={settings.colors.navbarLinkColor} onChange={(e) => handleNestedChange('colors', 'navbarLinkColor', e.target.value)} className="max-w-xs"/>
+                                        <Input type="color" value={settings.colors.navbarLinkColor} onChange={(e) => handleNestedChange('colors', 'navbarLinkColor', e.target.value)} className="h-10 w-10 p-1"/>
+                                    </div>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="navbar-link-hover-color">Cor do Link (Hover)</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input id="navbar-link-hover-color" value={settings.colors.navbarLinkHoverColor} onChange={(e) => handleNestedChange('colors', 'navbarLinkHoverColor', e.target.value)} className="max-w-xs"/>
+                                        <Input type="color" value={settings.colors.navbarLinkHoverColor} onChange={(e) => handleNestedChange('colors', 'navbarLinkHoverColor', e.target.value)} className="h-10 w-10 p-1"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <h4 className="font-medium">Cores do Rodapé</h4>
+                                <div className="space-y-2">
+                                    <Label htmlFor="footer-link-color">Cor do Link</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input id="footer-link-color" value={settings.colors.footerLinkColor} onChange={(e) => handleNestedChange('colors', 'footerLinkColor', e.target.value)} className="max-w-xs"/>
+                                        <Input type="color" value={settings.colors.footerLinkColor} onChange={(e) => handleNestedChange('colors', 'footerLinkColor', e.target.value)} className="h-10 w-10 p-1"/>
+                                    </div>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="footer-link-hover-color">Cor do Link (Hover)</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input id="footer-link-hover-color" value={settings.colors.footerLinkHoverColor} onChange={(e) => handleNestedChange('colors', 'footerLinkHoverColor', e.target.value)} className="max-w-xs"/>
+                                        <Input type="color" value={settings.colors.footerLinkHoverColor} onChange={(e) => handleNestedChange('colors', 'footerLinkHoverColor', e.target.value)} className="h-10 w-10 p-1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </CardContent>
                 </Card>
 

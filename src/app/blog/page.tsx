@@ -1,9 +1,10 @@
 
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { MainHeader } from '@/components/main-header';
-import { MainFooter } from '@/components/main-footer';
+import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, UserCircle } from 'lucide-react';

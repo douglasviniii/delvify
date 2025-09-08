@@ -27,6 +27,12 @@ export interface GlobalSettings {
   };
   pageVisibility: {
     [key: string]: boolean;
+  };
+  colors: {
+    navbarLinkColor: string;
+    navbarLinkHoverColor: string;
+    footerLinkColor: string;
+    footerLinkHoverColor: string;
   }
 }
 
@@ -65,6 +71,12 @@ const defaultSettings: GlobalSettings = {
         'refund-policy': true,
         'support-policy': true,
         'copyright-policy': true,
+    },
+    colors: {
+        navbarLinkColor: "#4B5563", // text-gray-600
+        navbarLinkHoverColor: "#9466FF", // primary
+        footerLinkColor: "#4B5563", // text-gray-600
+        footerLinkHoverColor: "#9466FF", // primary
     }
 };
 
@@ -101,6 +113,10 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
           pageVisibility: {
             ...defaultSettings.pageVisibility,
             ...(savedData?.pageVisibility || {})
+          },
+          colors: {
+            ...defaultSettings.colors,
+            ...(savedData?.colors || {})
           }
       } as GlobalSettings;
     }
