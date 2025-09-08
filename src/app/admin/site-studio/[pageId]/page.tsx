@@ -2,7 +2,7 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -241,19 +241,23 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   )
 };
 
-const PagePreview = ({ sections }: { sections: any[] }) => {
+const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 'desktop' | 'mobile' }) => {
     return (
-        <div className="h-full w-full overflow-auto bg-white">
-            <main className="flex-1">
-                {sections.map(section => {
-                    const Component = SectionComponents[section.component];
-                    return Component ? <Component key={section.id} settings={section.settings} /> : null;
-                })}
-            </main>
+        <div className={cn("bg-white shadow-lg overflow-hidden", {
+            "w-full h-full rounded-lg border": previewMode === 'desktop',
+            "w-[375px] h-[667px] rounded-[20px] border-[8px] border-black": previewMode === 'mobile'
+        })}>
+            <div className="h-full w-full overflow-auto">
+                <main className="flex-1">
+                    {sections.map(section => {
+                        const Component = SectionComponents[section.component];
+                        return Component ? <Component key={section.id} settings={section.settings} /> : null;
+                    })}
+                </main>
+            </div>
         </div>
     )
 }
-
 
 export default function EditSitePage() {
   const params = useParams();
@@ -262,6 +266,7 @@ export default function EditSitePage() {
   const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   useEffect(() => {
     setIsClient(true);
@@ -269,7 +274,6 @@ export default function EditSitePage() {
     setPageData(data);
     setSections(data.sections);
   }, [pageId]);
-
 
   const handleSettingChange = (sectionId: string, key: string, value: string | string[]) => {
     setSections(prevSections => {
@@ -308,6 +312,10 @@ export default function EditSitePage() {
     setSections(prevSections => [...prevSections, newSection]);
   };
 
+  const handleDeleteSection = (sectionId: string) => {
+    setSections(prevSections => prevSections.filter(section => section.id !== sectionId));
+  };
+
 
   const StyleInput = ({ sectionId, settingKey, label }: { sectionId: string, settingKey: string, label: string }) => {
     const section = sections.find(s => s.id === sectionId);
@@ -342,16 +350,29 @@ export default function EditSitePage() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center gap-4 border-b bg-background p-4 sm:p-6">
-        <Button asChild variant="outline" size="icon">
-          <Link href="/admin/site-studio">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div className="flex-1">
-          <h1 className="font-headline text-xl font-bold tracking-tight md:text-2xl">Editando: {pageData.title}</h1>
-          <p className="text-sm text-muted-foreground">Faça alterações no conteúdo e na aparência da sua página.</p>
+      <header className="flex-shrink-0 flex items-center justify-between gap-4 border-b bg-background p-4">
+        <div className="flex items-center gap-4">
+            <Button asChild variant="outline" size="icon">
+            <Link href="/admin/site-studio">
+                <ArrowLeft className="h-4 w-4" />
+            </Link>
+            </Button>
+            <div className="flex-1">
+            <h1 className="font-headline text-xl font-bold tracking-tight md:text-2xl">Editando: {pageData.title}</h1>
+            </div>
         </div>
+
+        <div className="flex items-center gap-2">
+            <Button variant={previewMode === 'desktop' ? 'default' : 'outline'} size="icon" onClick={() => setPreviewMode('desktop')}>
+                <Monitor className="h-4 w-4" />
+                <span className="sr-only">Desktop</span>
+            </Button>
+            <Button variant={previewMode === 'mobile' ? 'default' : 'outline'} size="icon" onClick={() => setPreviewMode('mobile')}>
+                <Smartphone className="h-4 w-4" />
+                <span className="sr-only">Mobile</span>
+            </Button>
+        </div>
+
         <div className="flex items-center gap-2">
             <Button variant="outline">
                 <Eye className="mr-2 h-4 w-4" />
@@ -363,15 +384,20 @@ export default function EditSitePage() {
 
       <div className="flex-1 overflow-hidden">
         <div className="grid h-full grid-cols-1 md:grid-cols-[1fr_380px]">
-            <div className="flex h-full items-center justify-center bg-muted/40 overflow-auto">
-                <PagePreview sections={sections} />
+            <div className="flex h-full items-center justify-center bg-muted/40 overflow-auto p-4 transition-all">
+                <PagePreview sections={sections} previewMode={previewMode} />
             </div>
             <aside className="flex flex-col h-full overflow-y-auto border-l bg-background">
               <div className="flex-1 overflow-y-auto">
                 <Accordion type="multiple" defaultValue={sections.map(s => s.id)} className="w-full">
                   {sections.map((section) => (
                     <AccordionItem value={section.id} key={section.id}>
-                      <AccordionTrigger className="px-6 text-sm font-semibold hover:no-underline">{section.name}</AccordionTrigger>
+                      <AccordionTrigger className="px-6 text-sm font-semibold hover:no-underline">
+                        <span className="flex-1 text-left">{section.name}</span>
+                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {e.stopPropagation(); handleDeleteSection(section.id)}}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </AccordionTrigger>
                       <AccordionContent className="px-6">
                         <Tabs defaultValue="content">
                           <TabsList className="grid w-full grid-cols-3">
