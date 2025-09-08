@@ -102,12 +102,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   };
 
-  const isSiteStudioEditorPage = pathname.startsWith('/admin/site-studio/') && pathname.split('/').length > 3;
-  const layoutClasses = isSiteStudioEditorPage ? "h-screen flex flex-col" : "flex-1 p-4 sm:p-6";
+  const isSiteStudioEditorPage = pathname.startsWith('/admin/site-studio/') && pathname !== '/admin/site-studio/settings' && pathname.split('/').length > 3;
 
   // Retorna um layout especial apenas para a página de edição de página (ex: /admin/site-studio/home)
   if (isSiteStudioEditorPage) {
-    return <main className={layoutClasses}>{children}</main>;
+    return <main className="h-screen flex flex-col">{children}</main>;
   }
 
 
