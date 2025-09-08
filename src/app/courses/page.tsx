@@ -13,6 +13,7 @@ import { Search, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getGlobalSettingsForTenant } from "@/lib/settings";
 import type { GlobalSettings } from "@/lib/settings";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 // This is the main tenant ID for the public-facing website.
@@ -59,6 +60,47 @@ const CourseCard = ({ course }: { course: any }) => (
     </Card>
 );
 
+const LoadingSkeleton = () => (
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center">
+          <Skeleton className="h-8 w-28" />
+          <div className="ml-10 hidden gap-6 md:flex">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="ml-auto">
+            <Skeleton className="h-10 w-20" />
+          </div>
+        </div>
+      </header>
+      <main className="flex-1">
+        <section className="py-12 md:py-20">
+          <div className="container px-4 md:px-6">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <Skeleton className="h-10 w-3/4 mx-auto" />
+              <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
+              <div className="mt-8 relative max-w-2xl mx-auto">
+                <Skeleton className="h-14 w-full rounded-full" />
+              </div>
+            </div>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Card key={i}>
+                  <CardHeader><Skeleton className="h-[150px] w-full" /></CardHeader>
+                  <CardContent className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></CardContent>
+                  <CardFooter><Skeleton className="h-10 w-full" /></CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+)
+
+
 export default function CoursesPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [settings, setSettings] = useState<GlobalSettings | null>(null);
@@ -72,7 +114,7 @@ export default function CoursesPage() {
     );
 
     if (!settings) {
-        return <div>Carregando...</div>; // Ou um componente de esqueleto
+        return <LoadingSkeleton />;
     }
 
     return (

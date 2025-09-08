@@ -8,6 +8,7 @@ import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, UserCircle } from 'lucide-react';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 // This is the main tenant ID for the public-facing website.
 // In a real multi-domain app, you would resolve this based on the request's hostname.
@@ -16,6 +17,7 @@ const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function BlogPage() {
   const posts = await getAllBlogPosts(MAIN_TENANT_ID);
+  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -23,7 +25,7 @@ export default async function BlogPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader />
+      <MainHeader settings={settings} />
       <main className="flex-1">
         <section className="py-12 md:py-20">
           <div className="container px-4 md:px-6">

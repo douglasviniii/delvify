@@ -2,12 +2,17 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Search } from 'lucide-react';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
+import type { GlobalSettings } from '@/lib/settings';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 const faqData = [
   {
@@ -41,17 +46,63 @@ const faqData = [
 ];
 
 
+const LoadingSkeleton = () => (
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center">
+          <Skeleton className="h-8 w-28" />
+          <div className="ml-10 hidden gap-6 md:flex">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="ml-auto">
+            <Skeleton className="h-10 w-20" />
+          </div>
+        </div>
+      </header>
+      <main className="flex-1">
+        <section className="py-12 md:py-20">
+          <div className="container max-w-4xl px-4 md:px-6">
+            <div className="text-center mb-12">
+              <Skeleton className="h-10 w-3/4 mx-auto" />
+              <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
+              <div className="mt-8 relative max-w-2xl mx-auto">
+                <Skeleton className="h-12 w-full rounded-full" />
+              </div>
+            </div>
+             <div className="w-full space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-20 w-full rounded-lg" />
+                ))}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+)
+
+
 export default function FAQPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [settings, setSettings] = useState<GlobalSettings | null>(null);
+
+  useEffect(() => {
+    getGlobalSettingsForTenant(MAIN_TENANT_ID).then(setSettings);
+  }, []);
 
   const filteredFaqs = faqData.filter(faq => 
     faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
     faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  if (!settings) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader />
+      <MainHeader settings={settings} />
       <main className="flex-1">
         <section className="py-12 md:py-20">
           <div className="container max-w-4xl px-4 md:px-6">
