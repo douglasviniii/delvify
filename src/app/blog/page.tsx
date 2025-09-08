@@ -10,14 +10,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, UserCircle } from 'lucide-react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 
-// Este é o ID principal do inquilino para o site público.
+// Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
 // Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 
 export default async function BlogPage() {
-  const posts = await getAllBlogPosts(MAIN_TENANT_ID);
-  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
+  const posts = await getAllBlogPosts(TENANT_ID_WITH_POSTS);
+  const settings = await getGlobalSettingsForTenant(TENANT_ID_WITH_POSTS);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });

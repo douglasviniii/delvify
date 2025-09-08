@@ -8,14 +8,14 @@ import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 
-// Este é o ID principal do inquilino para o site público.
+// Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
 // Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  // Sempre busca os posts do inquilino principal para o blog público
-  const post = await getPostBySlug(MAIN_TENANT_ID, params.slug);
-  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
+  // Busca os posts do inquilino correto
+  const post = await getPostBySlug(TENANT_ID_WITH_POSTS, params.slug);
+  const settings = await getGlobalSettingsForTenant(TENANT_ID_WITH_POSTS);
 
   if (!post) {
     notFound();
