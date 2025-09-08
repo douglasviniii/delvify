@@ -256,7 +256,7 @@ export default function EditSitePage() {
                         </TabsList>
                         <TabsContent value="content" className="space-y-4 pt-4">
                             {Object.entries(section.settings).map(([key, value]) => {
-                                if (key === 'features' || typeof value !== 'string') return null;
+                                if (key === 'features' || typeof value !== 'string' || key === 'backgroundColor') return null;
                                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                 return (
                                 <div className="space-y-2" key={key}>
@@ -270,8 +270,17 @@ export default function EditSitePage() {
                                 )
                             })}
                         </TabsContent>
-                        <TabsContent value="style" className="pt-4">
-                            <p className="text-sm text-center text-muted-foreground">Opções de estilo em breve.</p>
+                        <TabsContent value="style" className="space-y-4 pt-4">
+                            {Object.entries(section.settings).map(([key, value]) => {
+                                if (key !== 'backgroundColor' || typeof value !== 'string') return null;
+                                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                                return (
+                                <div className="space-y-2" key={key}>
+                                    <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
+                                    <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
+                                </div>
+                                )
+                            })}
                         </TabsContent>
                          <TabsContent value="advanced" className="pt-4">
                             <p className="text-sm text-center text-muted-foreground">Opções avançadas em breve.</p>
@@ -287,3 +296,5 @@ export default function EditSitePage() {
     </div>
   );
 }
+
+    
