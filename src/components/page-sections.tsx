@@ -10,8 +10,7 @@ import { cn } from '@/lib/utils';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
-import { getAllBlogPosts } from '@/lib/blog-posts';
-import { Post } from '@/lib/blog-posts';
+import type { Post } from '@/lib/blog-posts';
 import { useEffect, useState } from 'react';
 
 // Mock Data for Courses
@@ -237,19 +236,8 @@ export const CoursesSection = () => (
     </section>
 )
 
-export const LatestPostsSection = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
-
-    useEffect(() => {
-        // Since getAllBlogPosts is async, we can't call it directly in the component body
-        // for a client component. We use useEffect to fetch the data.
-        const fetchPosts = async () => {
-            const allPosts = await getAllBlogPosts();
-            setPosts(allPosts.slice(0, 4)); // Get latest 4 posts
-        };
-        fetchPosts();
-    }, []);
-
+export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
+    
     const formatDate = (timestamp: any) => {
         if (timestamp && timestamp.toDate) {
             return timestamp.toDate().toLocaleDateString('pt-BR');

@@ -5,6 +5,7 @@ import { SectionComponents, CoursesSection, LatestPostsSection } from '@/compone
 import { promises as fs } from 'fs';
 import path from 'path';
 import { initialHomePageSections } from '@/lib/page-data';
+import { getAllBlogPosts } from '@/lib/blog-posts';
 
 async function getHomePageSections() {
     try {
@@ -22,6 +23,7 @@ async function getHomePageSections() {
 
 export default async function Home() {
   const sections = await getHomePageSections();
+  const latestPosts = await getAllBlogPosts();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -36,7 +38,7 @@ export default async function Home() {
             return <Component key={section.id} settings={section.settings} />;
         })}
         <CoursesSection />
-        <LatestPostsSection />
+        <LatestPostsSection posts={latestPosts.slice(0, 4)} />
       </main>
       <MainFooter />
     </div>
