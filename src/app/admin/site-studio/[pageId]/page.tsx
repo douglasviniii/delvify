@@ -14,8 +14,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import Image from 'next/image';
 import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck } from 'lucide-react';
-import { MainHeader } from '@/components/main-header';
-import { MainFooter } from '@/components/main-footer';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -283,9 +281,9 @@ function SaveButton() {
 
 export default function EditSitePage() {
   const params = useParams();
-  const pageId = params.pageId as string;
   const { toast } = useToast();
   
+  const [pageId, setPageId] = useState<string | null>(null);
   const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
@@ -296,10 +294,14 @@ export default function EditSitePage() {
 
   useEffect(() => {
     setIsClient(true);
-    const data = getPageData(pageId);
-    setPageData(data);
-    setSections(data.sections);
-  }, [pageId]);
+    if (typeof params.pageId === 'string') {
+      const id = params.pageId;
+      setPageId(id);
+      const data = getPageData(id);
+      setPageData(data);
+      setSections(data.sections);
+    }
+  }, [params.pageId]);
 
   useEffect(() => {
     if (state.message) {
@@ -380,7 +382,7 @@ export default function EditSitePage() {
     return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection'
   }
 
-  if (!isClient || !pageData) {
+  if (!isClient || !pageData || !pageId) {
     return null; // Or a loading spinner
   }
 
@@ -430,12 +432,21 @@ export default function EditSitePage() {
                 <Accordion type="multiple" defaultValue={sections.map(s => s.id)} className="w-full">
                   {sections.map((section) => (
                     <AccordionItem value={section.id} key={section.id}>
-                      <AccordionTrigger className="px-6 text-sm font-semibold hover:no-underline">
-                        <span className="flex-1 text-left">{section.name}</span>
-                         <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={(e) => {e.stopPropagation(); handleDeleteSection(section.id)}}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </AccordionTrigger>
+                        <div className="flex items-center px-6">
+                            <AccordionTrigger className="flex-1 text-sm font-semibold hover:no-underline">
+                                <span>{section.name}</span>
+                            </AccordionTrigger>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0"
+                                type="button"
+                                onClick={() => handleDeleteSection(section.id)}
+                            >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                                <span className="sr-only">Excluir seção</span>
+                            </Button>
+                        </div>
                       <AccordionContent className="px-6">
                         <Tabs defaultValue="content">
                           <TabsList className="grid w-full grid-cols-3">
@@ -520,3 +531,5 @@ export default function EditSitePage() {
     </form>
   );
 }
+
+    
