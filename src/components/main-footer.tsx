@@ -1,9 +1,17 @@
+'use client';
+
 import { Logo } from '@/components/logo';
 import { Instagram, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export function MainFooter() {
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
 
   const quickLinks = [
     { label: 'Cursos', href: '#' },
