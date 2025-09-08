@@ -44,7 +44,7 @@ const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/blog', label: 'Studio de Blog', icon: Newspaper },
   { href: '/admin/courses', label: 'Studio de Cursos', icon: BookCopy },
-  { href: '#', label: 'Estudio de Site', icon: PanelTop },
+  { href: '/admin/site-studio', label: 'Estudio de Site', icon: PanelTop },
   { href: '#', label: 'Empresas', icon: Building },
   { href: '/admin/users', label: 'Alunos', icon: GraduationCap },
 ];
