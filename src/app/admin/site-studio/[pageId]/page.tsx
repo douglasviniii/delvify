@@ -1,7 +1,7 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,18 +68,6 @@ const initialHomePageSections = [
       descriptionColor: "#6c757d",
     },
   },
-  {
-    id: 'new-section',
-    name: 'Nova Seção',
-    component: 'DefaultSection',
-    settings: { 
-        title: 'Título da Nova Seção', 
-        description: 'Esta é uma nova seção que você pode editar.',
-        backgroundColor: "#FFFFFF",
-        titleColor: '#000000',
-        descriptionColor: "#6c757d"
-    }
-  }
 ];
 
 const getPageData = (pageId: string) => {
@@ -286,51 +274,59 @@ export default function EditSitePage() {
             <div className="flex h-full items-center justify-center bg-muted/40 overflow-auto">
                 <PagePreview sections={sections} />
             </div>
-            <aside className="h-full overflow-y-auto border-l bg-background">
-              <Accordion type="multiple" defaultValue={sections.map(s => s.id)} className="w-full">
-                {sections.map((section) => (
-                  <AccordionItem value={section.id} key={section.id}>
-                    <AccordionTrigger className="px-6 text-sm font-semibold hover:no-underline">{section.name}</AccordionTrigger>
-                    <AccordionContent className="px-6">
-                      <Tabs defaultValue="content">
-                        <TabsList className="grid w-full grid-cols-3">
-                          <TabsTrigger value="content"><Type className="w-4 h-4 mr-1"/> Conteúdo</TabsTrigger>
-                          <TabsTrigger value="style"><Palette className="w-4 h-4 mr-1"/> Estilo</TabsTrigger>
-                          <TabsTrigger value="advanced"><Settings className="w-4 h-4 mr-1"/> Avançado</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="content" className="space-y-4 pt-4">
-                            {Object.entries(section.settings).map(([key, value]) => {
-                                const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'imageUrl'];
-                                if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
-                                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                                return (
-                                <div className="space-y-2" key={key}>
-                                    <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
-                                    {key.includes('description') ? (
-                                        <Textarea id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
-                                    ) : (
-                                        <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
-                                    )}
-                                </div>
-                                )
-                            })}
-                        </TabsContent>
-                        <TabsContent value="style" className="space-y-4 pt-4">
-                           <StyleInput sectionId={section.id} settingKey="backgroundColor" label="Cor de Fundo" />
-                           <StyleInput sectionId={section.id} settingKey="titleColor" label="Cor do Título" />
-                           <StyleInput sectionId={section.id} settingKey="descriptionColor" label="Cor da Descrição" />
-                           {section.settings.hasOwnProperty('cardColor') && (
-                                <StyleInput sectionId={section.id} settingKey="cardColor" label="Cor do Card" />
-                           )}
-                        </TabsContent>
-                         <TabsContent value="advanced" className="pt-4">
-                            <p className="text-sm text-center text-muted-foreground">Opções avançadas em breve.</p>
-                        </TabsContent>
-                      </Tabs>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+            <aside className="flex flex-col h-full overflow-y-auto border-l bg-background">
+              <div className="flex-1 overflow-y-auto">
+                <Accordion type="multiple" defaultValue={sections.map(s => s.id)} className="w-full">
+                  {sections.map((section) => (
+                    <AccordionItem value={section.id} key={section.id}>
+                      <AccordionTrigger className="px-6 text-sm font-semibold hover:no-underline">{section.name}</AccordionTrigger>
+                      <AccordionContent className="px-6">
+                        <Tabs defaultValue="content">
+                          <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="content"><Type className="w-4 h-4 mr-1"/> Conteúdo</TabsTrigger>
+                            <TabsTrigger value="style"><Palette className="w-4 h-4 mr-1"/> Estilo</TabsTrigger>
+                            <TabsTrigger value="advanced"><Settings className="w-4 h-4 mr-1"/> Avançado</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="content" className="space-y-4 pt-4">
+                              {Object.entries(section.settings).map(([key, value]) => {
+                                  const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'imageUrl'];
+                                  if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
+                                  const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                                  return (
+                                  <div className="space-y-2" key={key}>
+                                      <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
+                                      {key.includes('description') ? (
+                                          <Textarea id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
+                                      ) : (
+                                          <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
+                                      )}
+                                  </div>
+                                  )
+                              })}
+                          </TabsContent>
+                          <TabsContent value="style" className="space-y-4 pt-4">
+                            <StyleInput sectionId={section.id} settingKey="backgroundColor" label="Cor de Fundo" />
+                            <StyleInput sectionId={section.id} settingKey="titleColor" label="Cor do Título" />
+                            <StyleInput sectionId={section.id} settingKey="descriptionColor" label="Cor da Descrição" />
+                            {section.settings.hasOwnProperty('cardColor') && (
+                                  <StyleInput sectionId={section.id} settingKey="cardColor" label="Cor do Card" />
+                            )}
+                          </TabsContent>
+                          <TabsContent value="advanced" className="pt-4">
+                              <p className="text-sm text-center text-muted-foreground">Opções avançadas em breve.</p>
+                          </TabsContent>
+                        </Tabs>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+              <div className="p-4 border-t">
+                  <Button variant="outline" className="w-full">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Adicionar Seção
+                  </Button>
+              </div>
             </aside>
         </div>
       </div>
