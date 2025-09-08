@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 import { submitBrandingRequest } from "./actions";
 
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -31,7 +31,7 @@ function SubmitButton() {
 export function BrandingForm() {
   const { toast } = useToast();
   const initialState = { message: "", fields: { instructions: "" } };
-  const [state, formAction] = useFormState(submitBrandingRequest, initialState);
+  const [state, formAction] = useActionState(submitBrandingRequest, initialState);
 
   useEffect(() => {
     if (state.message === "success") {
