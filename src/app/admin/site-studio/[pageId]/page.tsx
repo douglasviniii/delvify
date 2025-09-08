@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck } from 'lucide-react';
 import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
+import { useParams } from "next/navigation";
 
 
 // Mock data representing the sections of the "Home" page.
@@ -192,9 +193,10 @@ const PagePreview = ({ sections }: { sections: any[] }) => {
 }
 
 
-export default function EditSitePage({ params }: { params: { pageId: string } }) {
-  
-  const pageData = getPageData(params.pageId);
+export default function EditSitePage() {
+  const params = useParams();
+  const pageId = params.pageId as string;
+  const pageData = getPageData(pageId);
   const [sections, setSections] = useState(pageData.sections);
 
   const handleSettingChange = (sectionId: string, key: string, value: string) => {
