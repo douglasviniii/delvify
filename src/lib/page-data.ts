@@ -53,6 +53,18 @@ export const initialHomePageData = {
             layout: "default",
           },
         },
+        {
+            id: "courses",
+            name: "Seção de Cursos",
+            component: "CoursesSection",
+            settings: {}
+        },
+        {
+            id: "latest-posts",
+            name: "Seção de Blog",
+            component: "LatestPostsSection",
+            settings: {}
+        }
     ]
 };
   
