@@ -4,22 +4,19 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 function getServiceAccount(): ServiceAccount {
-    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    if (!serviceAccountString) {
-        throw new Error('A variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY não está definida.');
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (!projectId || !clientEmail || !privateKey) {
+        throw new Error('As variáveis de ambiente do Firebase (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) devem ser definidas.');
     }
-    try {
-        // A chave de serviço pode estar codificada em Base64
-        const decodedString = Buffer.from(serviceAccountString, 'base64').toString('utf-8');
-        return JSON.parse(decodedString);
-    } catch (e) {
-        // Ou pode ser uma string JSON normal
-        try {
-            return JSON.parse(serviceAccountString);
-        } catch (jsonError) {
-             throw new Error('Falha ao analisar a chave da conta de serviço. Certifique-se de que é um JSON válido ou uma string codificada em Base64.');
-        }
-    }
+
+    return {
+      projectId: projectId,
+      clientEmail: clientEmail,
+      privateKey: privateKey.replace(/\\n/g, '\n'),
+    };
 }
 
 const serviceAccount = getServiceAccount();
