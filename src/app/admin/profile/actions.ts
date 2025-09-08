@@ -35,8 +35,8 @@ interface TenantProfile {
   responsiblePeople: ResponsiblePerson[];
 }
 
-// Função para salvar dados do perfil do inquilino
-export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
+// Função para salvar dados do perfil do inquilino (agora no documento do usuário)
+export async function saveTenantProfile(userId: string, data: TenantProfile) {
   try {
     let profileImageUrl = data.profileImage;
 
@@ -47,8 +47,8 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       const imageBuffer = Buffer.from(base64Data, 'base64');
       
       const bucket = adminStorage.bucket();
-      // Salva a imagem na pasta do inquilino para isolamento
-      const fileName = `tenants/${tenantId}/profile_image.${mimeType.split('/')[1]}`;
+      // Salva a imagem na pasta do usuário para isolamento
+      const fileName = `users/${userId}/profile_image.${mimeType.split('/')[1]}`;
       const file = bucket.file(fileName);
 
       await file.save(imageBuffer, {
@@ -66,8 +66,8 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       updatedAt: new Date(),
     };
 
-    // Salva os dados na coleção 'tenants' usando o tenantId
-    const docRef = adminDb.collection('tenants').doc(tenantId);
+    // Salva os dados na coleção 'users' usando o userId
+    const docRef = adminDb.collection('users').doc(userId);
     await docRef.set(profileData, { merge: true });
 
     return { success: true, message: 'Perfil salvo com sucesso!', profileImage: profileImageUrl };
@@ -77,10 +77,10 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
   }
 }
 
-// Função para obter dados do perfil do inquilino
-export async function getTenantProfile(tenantId: string): Promise<TenantProfile | null> {
+// Função para obter dados do perfil do inquilino (agora do documento do usuário)
+export async function getTenantProfile(userId: string): Promise<TenantProfile | null> {
   try {
-    const docRef = adminDb.collection('tenants').doc(tenantId);
+    const docRef = adminDb.collection('users').doc(userId);
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
@@ -91,7 +91,7 @@ export async function getTenantProfile(tenantId: string): Promise<TenantProfile 
       }
       return data as TenantProfile;
     } else {
-      console.log('No such document for tenantId:', tenantId);
+      console.log('No such document for userId:', userId);
       return null;
     }
   } catch (error) {
