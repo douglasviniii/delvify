@@ -30,7 +30,7 @@ const initialHomePageSections = [
       description: "DelviFy oferece uma solução robusta e multi-inquilino para construir, gerenciar e escalar seu negócio de educação online com facilidade.",
       primaryButtonText: "Comece Gratuitamente",
       secondaryButtonText: "Saber Mais",
-      backgroundColor: "from-primary/10 to-transparent",
+      backgroundColor: "#F0F4F9",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
     },
@@ -48,6 +48,7 @@ const initialHomePageSections = [
         { icon: 'Newspaper', title: 'Motor de Blog', description: 'Compartilhe notícias e atualizações com uma plataforma de blog simples e integrada para cada domínio de inquilino.' },
         { icon: 'ShieldCheck', title: 'Autenticação Segura de Usuário', description: 'Níveis de acesso separados para administradores e alunos com um sistema seguro de login e registro.' },
       ],
+      backgroundColor: "#FFFFFF",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
       cardColor: "#ffffff",
@@ -62,6 +63,7 @@ const initialHomePageSections = [
       description: "Use linguagem natural para personalizar instantaneamente a marca do seu inquilino. Nossa ferramenta de GenAI interpreta suas instruções para criar a aparência perfeita para o seu site.",
       buttonText: "Experimente a IA de Marca",
       imageUrl: "https://picsum.photos/800/600",
+      backgroundColor: "#F9FAFB",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
     },
@@ -79,13 +81,13 @@ const getPageData = (pageId: string) => {
   // Return a default structure for other pages
   return {
     title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000', descriptionColor: "#6c757d" } }],
+    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000', descriptionColor: "#6c757d", backgroundColor: "#FFFFFF" } }],
   };
 };
 
 const SectionComponents: { [key: string]: React.FC<any> } = {
   HeroSection: ({ settings }) => (
-    <section className={`relative py-20 md:py-32 bg-gradient-to-b ${settings.backgroundColor}`}>
+    <section className="relative py-20 md:py-32" style={{ backgroundColor: settings.backgroundColor }}>
       <div className="container px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
@@ -117,7 +119,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
     };
 
     return (
-        <section className="py-12 md:py-24">
+        <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
         <div className="container px-4 md:px-6">
             <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
@@ -147,7 +149,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
     );
   },
   AiCustomizationSection: ({ settings }) => (
-    <section className="bg-card py-12 md:py-24">
+    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
         <div className="container px-4 md:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
@@ -177,7 +179,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
     </section>
   ),
   DefaultSection: ({ settings }) => (
-    <section className="py-12 md:py-24">
+    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
         <div className="container px-4 md:px-6">
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>{settings.title}</h2>
             <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>{settings.description}</p>
@@ -286,7 +288,7 @@ export default function EditSitePage() {
                         </TabsList>
                         <TabsContent value="content" className="space-y-4 pt-4">
                             {Object.entries(section.settings).map(([key, value]) => {
-                                const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor'];
+                                const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'imageUrl'];
                                 if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
                                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                 return (
@@ -302,15 +304,12 @@ export default function EditSitePage() {
                             })}
                         </TabsContent>
                         <TabsContent value="style" className="space-y-4 pt-4">
+                           <StyleInput sectionId={section.id} settingKey="backgroundColor" label="Cor de Fundo" />
                            <StyleInput sectionId={section.id} settingKey="titleColor" label="Cor do Título" />
                            <StyleInput sectionId={section.id} settingKey="descriptionColor" label="Cor da Descrição" />
                            {section.settings.hasOwnProperty('cardColor') && (
                                 <StyleInput sectionId={section.id} settingKey="cardColor" label="Cor do Card" />
                            )}
-                           <div className="space-y-2">
-                                <Label htmlFor={`${section.id}-backgroundColor`}>Cor de Fundo</Label>
-                                <Input id={`${section.id}-backgroundColor`} value={section.settings.backgroundColor} onChange={e => handleSettingChange(section.id, 'backgroundColor', e.target.value)} />
-                           </div>
                         </TabsContent>
                          <TabsContent value="advanced" className="pt-4">
                             <p className="text-sm text-center text-muted-foreground">Opções avançadas em breve.</p>
