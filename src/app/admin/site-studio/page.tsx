@@ -11,6 +11,10 @@ export default function AdminSiteStudioPage() {
     { id: "blog", title: "Blog", description: "A página com as postagens do seu blog." },
     { id: "about", title: "Quem Somos", description: "A página que conta a história da sua empresa." },
     { id: "contact", title: "Contato", description: "A página com informações de contato e formulário." },
+    { id: "privacy-policy", title: "Política de Privacidade", description: "Edite o conteúdo da sua política de privacidade." },
+    { id: "terms-of-use", title: "Termos de Uso", description: "Edite o conteúdo dos seus termos de uso." },
+    { id: "cookie-policy", title: "Política de Cookies", description: "Edite o conteúdo da sua política de cookies." },
+    { id: "refund-policy", title: "Política de Reembolso", description: "Edite o conteúdo da sua política de reembolso." },
   ]
 
   return (

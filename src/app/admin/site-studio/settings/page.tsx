@@ -160,129 +160,113 @@ export default function GlobalSettingsPage() {
                 <p className="text-muted-foreground">Gerencie a identidade visual e informações que aparecem em todo o site.</p>
             </div>
 
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" /> Identidade Visual</CardTitle>
-                            <CardDescription>Altere a logo e as cores principais da sua plataforma.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>Logo do Site</Label>
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16 border">
-                                        <AvatarImage src={settings.logoUrl ?? undefined} alt="Logo" />
-                                        <AvatarFallback>LG</AvatarFallback>
-                                    </Avatar>
-                                    <Input value={settings.logoUrl || ''} onChange={(e) => handleSettingChange('logoUrl', e.target.value)} placeholder="Cole a URL da sua logo"/>
-                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        Carregar
-                                    </Button>
-                                    <input type="file" ref={fileInputRef} onChange={handleLogoImageChange} className="hidden" accept="image/*" />
-                                </div>
+            <div className="grid grid-cols-1 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" /> Identidade Visual</CardTitle>
+                        <CardDescription>Altere a logo e as cores principais da sua plataforma.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                            <Label>Logo do Site</Label>
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16 border">
+                                    <AvatarImage src={settings.logoUrl ?? undefined} alt="Logo" />
+                                    <AvatarFallback>LG</AvatarFallback>
+                                </Avatar>
+                                <Input value={settings.logoUrl || ''} onChange={(e) => handleSettingChange('logoUrl', e.target.value)} placeholder="Cole a URL da sua logo"/>
+                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Carregar
+                                </Button>
+                                <input type="file" ref={fileInputRef} onChange={handleLogoImageChange} className="hidden" accept="image/*" />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="primary-color">Cor Principal (Botões e Links)</Label>
-                                <div className="flex items-center gap-2">
-                                    <Input id="primary-color" value={settings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="max-w-xs"/>
-                                    <Input type="color" value={settings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="h-10 w-10 p-1"/>
-                                </div>
-                                <p className="text-xs text-muted-foreground">Esta cor será usada em botões, links e outros elementos de destaque.</p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="primary-color">Cor Principal (Botões e Links)</Label>
+                            <div className="flex items-center gap-2">
+                                <Input id="primary-color" value={settings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="max-w-xs"/>
+                                <Input type="color" value={settings.primaryColor} onChange={(e) => handleSettingChange('primaryColor', e.target.value)} className="h-10 w-10 p-1"/>
                             </div>
-                        </CardContent>
-                    </Card>
+                            <p className="text-xs text-muted-foreground">Esta cor será usada em botões, links e outros elementos de destaque.</p>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Share2 className="h-5 w-5 text-primary" /> Redes Sociais</CardTitle>
-                            <CardDescription>Gerencie os links das suas redes sociais e onde eles serão exibidos.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            {socialPlatforms.map(platform => (
-                                <div key={platform.id} className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2 w-32">
-                                        {platform.icon}
-                                        <Label htmlFor={`social-url-${platform.id}`}>{platform.name}</Label>
-                                    </div>
-                                    <div className="flex-1">
-                                        <Input
-                                            id={`social-url-${platform.id}`}
-                                            placeholder={`https://${platform.id}.com/seu-perfil`}
-                                            value={settings.socialLinks[platform.id as keyof typeof settings.socialLinks].url}
-                                            onChange={e => handleSocialChange(platform.id as keyof typeof settings.socialLinks, 'url', e.target.value)}
-                                            disabled={!settings.socialLinks[platform.id as keyof typeof settings.socialLinks].enabled}
-                                        />
-                                    </div>
-                                    <Switch
-                                        checked={settings.socialLinks[platform.id as keyof typeof settings.socialLinks].enabled}
-                                        onCheckedChange={checked => handleSocialChange(platform.id as keyof typeof settings.socialLinks, 'enabled', checked)}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Share2 className="h-5 w-5 text-primary" /> Redes Sociais</CardTitle>
+                        <CardDescription>Gerencie os links das suas redes sociais e onde eles serão exibidos.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {socialPlatforms.map(platform => (
+                            <div key={platform.id} className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 w-32">
+                                    {platform.icon}
+                                    <Label htmlFor={`social-url-${platform.id}`}>{platform.name}</Label>
+                                </div>
+                                <div className="flex-1">
+                                    <Input
+                                        id={`social-url-${platform.id}`}
+                                        placeholder={`https://${platform.id}.com/seu-perfil`}
+                                        value={settings.socialLinks[platform.id as keyof typeof settings.socialLinks].url}
+                                        onChange={e => handleSocialChange(platform.id as keyof typeof settings.socialLinks, 'url', e.target.value)}
+                                        disabled={!settings.socialLinks[platform.id as keyof typeof settings.socialLinks].enabled}
                                     />
                                 </div>
-                            ))}
-                            <Separator />
-                            <div className="space-y-4">
-                                <Label>Onde exibir os ícones?</Label>
-                                 <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="show-in-header"
-                                        checked={settings.socialsLocation.showInHeader}
-                                        onCheckedChange={(checked) => handleNestedChange('socialsLocation', 'showInHeader', checked)}
-                                    />
-                                    <Label htmlFor="show-in-header">Exibir no Cabeçalho</Label>
-                                </div>
-                                 <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="show-in-footer"
-                                        checked={settings.socialsLocation.showInFooter}
-                                        onCheckedChange={(checked) => handleNestedChange('socialsLocation', 'showInFooter', checked)}
-                                    />
-                                    <Label htmlFor="show-in-footer">Exibir no Rodapé</Label>
-                                </div>
+                                <Switch
+                                    checked={settings.socialLinks[platform.id as keyof typeof settings.socialLinks].enabled}
+                                    onCheckedChange={checked => handleSocialChange(platform.id as keyof typeof settings.socialLinks, 'enabled', checked)}
+                                />
                             </div>
-                        </CardContent>
-                    </Card>
+                        ))}
+                        <Separator />
+                        <div className="space-y-4">
+                            <Label>Onde exibir os ícones?</Label>
+                             <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="show-in-header"
+                                    checked={settings.socialsLocation.showInHeader}
+                                    onCheckedChange={(checked) => handleNestedChange('socialsLocation', 'showInHeader', checked)}
+                                />
+                                <Label htmlFor="show-in-header">Exibir no Cabeçalho</Label>
+                            </div>
+                             <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="show-in-footer"
+                                    checked={settings.socialsLocation.showInFooter}
+                                    onCheckedChange={(checked) => handleNestedChange('socialsLocation', 'showInFooter', checked)}
+                                />
+                                <Label htmlFor="show-in-footer">Exibir no Rodapé</Label>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Info className="h-5 w-5 text-primary" /> Informações do Rodapé</CardTitle>
-                            <CardDescription>Edite as informações de contato e legais que aparecem no rodapé do site.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="footer-email">Email de Contato</Label>
-                                <Input id="footer-email" value={settings.footerInfo.email} onChange={(e) => handleNestedChange('footerInfo', 'email', e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="footer-phone">Telefone</Label>
-                                <Input id="footer-phone" value={settings.footerInfo.phone} onChange={(e) => handleNestedChange('footerInfo', 'phone', e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="footer-cnpj">CNPJ</Label>
-                                <Input id="footer-cnpj" value={settings.footerInfo.cnpj} onChange={(e) => handleNestedChange('footerInfo', 'cnpj', e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="footer-cnpj-link">Link de Consulta do CNPJ</Label>
-                                <Input id="footer-cnpj-link" value={settings.footerInfo.cnpjLink} onChange={(e) => handleNestedChange('footerInfo', 'cnpjLink', e.target.value)} />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-1">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Páginas de Políticas</CardTitle>
-                            <CardDescription>Gerencie o conteúdo das suas páginas de políticas e termos.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Button variant="outline" className="w-full justify-start">Política de Privacidade</Button>
-                            <Button variant="outline" className="w-full justify-start">Termos de Uso</Button>
-                            <Button variant="outline" className="w-full justify-start">Política de Cookies</Button>
-                            <Button variant="outline" className="w-full justify-start">Política de Reembolso</Button>
-                        </CardContent>
-                    </Card>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Info className="h-5 w-5 text-primary" /> Informações do Rodapé</CardTitle>
+                        <CardDescription>Edite as informações de contato e legais que aparecem no rodapé do site.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="footer-email">Email de Contato</Label>
+                            <Input id="footer-email" value={settings.footerInfo.email} onChange={(e) => handleNestedChange('footerInfo', 'email', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="footer-phone">Telefone</Label>
+                            <Input id="footer-phone" value={settings.footerInfo.phone} onChange={(e) => handleNestedChange('footerInfo', 'phone', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="footer-cnpj">CNPJ</Label>
+                            <Input id="footer-cnpj" value={settings.footerInfo.cnpj} onChange={(e) => handleNestedChange('footerInfo', 'cnpj', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="footer-cnpj-link">Link de Consulta do CNPJ</Label>
+                            <Input id="footer-cnpj-link" value={settings.footerInfo.cnpjLink} onChange={(e) => handleNestedChange('footerInfo', 'cnpjLink', e.target.value)} />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
             
             <div className="flex justify-end pt-4">
