@@ -28,7 +28,10 @@ const GlobalSettingsSchema = z.object({
     youtube: SocialLinksSchema,
     whatsapp: SocialLinksSchema,
   }),
-  socialsLocation: z.string(),
+  socialsLocation: z.object({
+    showInHeader: z.boolean(),
+    showInFooter: z.boolean(),
+  }),
 });
 
 const settingsRef = (tenantId: string) => 

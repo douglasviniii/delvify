@@ -53,7 +53,7 @@ export async function MainFooter() {
             <p className="text-base text-muted-foreground">
               Soluções Inovadoras para um Mundo Digital.
             </p>
-            {socialLinksToShow.length > 0 && (
+            {settings.socialsLocation.showInFooter && socialLinksToShow.length > 0 && (
                 <div className="flex space-x-4">
                     {socialLinksToShow.map(social => (
                         <Link key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">

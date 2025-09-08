@@ -20,7 +20,10 @@ export interface GlobalSettings {
     youtube: { enabled: boolean; url: string };
     whatsapp: { enabled: boolean; url: string };
   };
-  socialsLocation: string;
+  socialsLocation: {
+    showInHeader: boolean;
+    showInFooter: boolean;
+  };
 }
 
 
@@ -40,7 +43,10 @@ const defaultSettings: GlobalSettings = {
         youtube: { enabled: false, url: '' },
         whatsapp: { enabled: true, url: 'https://wa.me/554588000647' },
     },
-    socialsLocation: 'footer',
+    socialsLocation: {
+        showInHeader: false,
+        showInFooter: true,
+    },
 };
 
 
@@ -68,6 +74,10 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
           socialLinks: {
               ...defaultSettings.socialLinks,
               ...(savedData?.socialLinks || {})
+          },
+          socialsLocation: {
+            ...defaultSettings.socialsLocation,
+            ...(savedData?.socialsLocation || {})
           }
       } as GlobalSettings;
     }

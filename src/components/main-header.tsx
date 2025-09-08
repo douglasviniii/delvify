@@ -50,7 +50,7 @@ export async function MainHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-4">
-          {settings.socialsLocation === 'header-footer' && socialLinksToShow.length > 0 && (
+          {settings.socialsLocation.showInHeader && socialLinksToShow.length > 0 && (
              <div className="hidden md:flex items-center gap-4">
                 {socialLinksToShow.map(social => (
                   <Link key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">

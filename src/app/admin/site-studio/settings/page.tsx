@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Palette, Upload, Info, Share2, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from '@/components/ui/switch';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
@@ -41,7 +40,10 @@ const initialSettings: GlobalSettings = {
         youtube: { enabled: false, url: '' },
         whatsapp: { enabled: true, url: 'https://wa.me/554588000647' },
     },
-    socialsLocation: 'footer',
+    socialsLocation: {
+        showInHeader: false,
+        showInFooter: true,
+    },
 };
 
 
@@ -70,6 +72,10 @@ export default function GlobalSettingsPage() {
                             socialLinks: {
                                 ...prev.socialLinks,
                                 ...(savedSettings.socialLinks || {})
+                            },
+                            socialsLocation: {
+                                ...prev.socialsLocation,
+                                ...(savedSettings.socialsLocation || {})
                             }
                         }));
                     }
@@ -216,18 +222,24 @@ export default function GlobalSettingsPage() {
                                 </div>
                             ))}
                             <Separator />
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <Label>Onde exibir os ícones?</Label>
-                                <RadioGroup value={settings.socialsLocation} onValueChange={(val) => handleSettingChange('socialsLocation', val)} className="flex items-center gap-6">
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="footer" id="r-footer" />
-                                        <Label htmlFor="r-footer">Apenas no Rodapé</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="header-footer" id="r-header-footer" />
-                                        <Label htmlFor="r-header-footer">No Cabeçalho e Rodapé</Label>
-                                    </div>
-                                </RadioGroup>
+                                 <div className="flex items-center space-x-2">
+                                    <Switch
+                                        id="show-in-header"
+                                        checked={settings.socialsLocation.showInHeader}
+                                        onCheckedChange={(checked) => handleNestedChange('socialsLocation', 'showInHeader', checked)}
+                                    />
+                                    <Label htmlFor="show-in-header">Exibir no Cabeçalho</Label>
+                                </div>
+                                 <div className="flex items-center space-x-2">
+                                    <Switch
+                                        id="show-in-footer"
+                                        checked={settings.socialsLocation.showInFooter}
+                                        onCheckedChange={(checked) => handleNestedChange('socialsLocation', 'showInFooter', checked)}
+                                    />
+                                    <Label htmlFor="show-in-footer">Exibir no Rodapé</Label>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
