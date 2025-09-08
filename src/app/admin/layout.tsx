@@ -35,11 +35,11 @@ import {
 import { Button } from '@/components/ui/button';
 
 const menuItems = [
-  { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/courses', label: 'Courses', icon: BookCopy },
+  { href: '/admin/dashboard', label: 'Painel', icon: LayoutDashboard },
+  { href: '/admin/courses', label: 'Cursos', icon: BookCopy },
   { href: '/admin/blog', label: 'Blog', icon: Newspaper },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/settings', label: 'Branding', icon: Palette },
+  { href: '/admin/users', label: 'Usuários', icon: Users },
+  { href: '/admin/settings', label: 'Marca', icon: Palette },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -76,7 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                <Link href="#">
                   <SidebarMenuButton>
                     <Settings />
-                    <span>Settings</span>
+                    <span>Configurações</span>
                   </SidebarMenuButton>
                 </Link>
             </SidebarMenuItem>
@@ -92,16 +92,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <AvatarImage src="https://picsum.photos/32" alt="Admin" data-ai-hint="person face" />
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
-                <span className="sr-only">Toggle user menu</span>
+                <span className="sr-only">Alternar menu do usuário</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem>Configurações</DropdownMenuItem>
+              <DropdownMenuItem>Suporte</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem>Sair</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 
 export function MainHeader() {
   const navItems = [
-    { label: 'Features', href: '#' },
-    { label: 'Courses', href: '#' },
+    { label: 'Recursos', href: '#' },
+    { label: 'Cursos', href: '#' },
     { label: 'Blog', href: '#' },
-    { label: 'Pricing', href: '#' },
+    { label: 'Preços', href: '#' },
   ];
 
   return (
@@ -27,10 +27,10 @@ export function MainHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-4">
           <Button variant="ghost" asChild>
-            <Link href="/login">Log In</Link>
+            <Link href="/login">Entrar</Link>
           </Button>
           <Button asChild>
-            <Link href="/admin/dashboard">Sign Up</Link>
+            <Link href="/admin/dashboard">Cadastre-se</Link>
           </Button>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { customizeTenantBranding, type CustomizeTenantBrandingOutput } from "@/ai/flows/tenant-branding-customization";
 
 const brandingSchema = z.object({
-  instructions: z.string().min(10, "Please provide more detailed instructions."),
+  instructions: z.string().min(10, "Forneça instruções mais detalhadas."),
 });
 
 type BrandingState = {
@@ -24,7 +24,7 @@ export async function submitBrandingRequest(
 
   if (!validatedFields.success) {
     return {
-      message: "Invalid form data.",
+      message: "Dados do formulário inválidos.",
       fields: {
         instructions: formData.get("instructions") as string,
       },
@@ -41,7 +41,7 @@ export async function submitBrandingRequest(
   } catch (error) {
     console.error(error);
     return {
-        message: "An error occurred while processing your request.",
+        message: "Ocorreu um erro ao processar sua solicitação.",
         fields: validatedFields.data,
     }
   }

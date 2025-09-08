@@ -31,15 +31,15 @@ const prompt = ai.definePrompt({
   name: 'customizeTenantBrandingPrompt',
   input: {schema: CustomizeTenantBrandingInputSchema},
   output: {schema: CustomizeTenantBrandingOutputSchema},
-  prompt: `You are an expert in branding and theming for web applications. You will receive instructions from a tenant admin on how they want to customize the branding of their tenant.
+  prompt: `Você é um especialista em branding e temas para aplicações web. Você receberá instruções de um administrador de inquilino sobre como eles desejam personalizar o branding de seu inquilino.
 
-  Based on these instructions, you will generate a JSON object containing the suggested theme settings. The JSON object should include settings for colors, logos, and fonts.
+  Com base nessas instruções, você gerará um objeto JSON contendo as configurações de tema sugeridas. O objeto JSON deve incluir configurações para cores, logotipos e fontes.
 
-  Instructions: {{{brandingInstructions}}}
+  Instruções: {{{brandingInstructions}}}
 
-  Tenant ID: {{{tenantId}}}
+  ID do Inquilino: {{{tenantId}}}
   
-  Example JSON structure:
+  Exemplo de estrutura JSON:
   {
     "colors": {
       "primary": "#9466FF",
@@ -48,7 +48,7 @@ const prompt = ai.definePrompt({
     },
     "logos": {
       "url": "/path/to/logo.png",
-      "altText": "Tenant Logo"
+      "altText": "Logo do Inquilino"
     },
     "fonts": {
       "headlineFont": "Space Grotesk",
@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
     }
   }
 
-  In addition to the JSON object, you will provide a brief explanation of how you derived the theme settings from the instructions.
+  Além do objeto JSON, você fornecerá uma breve explicação de como derivou as configurações do tema a partir das instruções.
 `,
 });
 

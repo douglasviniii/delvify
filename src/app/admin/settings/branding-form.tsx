@@ -17,11 +17,11 @@ function SubmitButton() {
   return (
     <Button type="submit" disabled={pending}>
       {pending ? (
-        "Generating..."
+        "Gerando..."
       ) : (
         <>
           <Wand2 className="mr-2 h-4 w-4" />
-          Generate Theme
+          Gerar Tema
         </>
       )}
     </Button>
@@ -36,12 +36,12 @@ export function BrandingForm() {
   useEffect(() => {
     if (state.message === "success") {
       toast({
-        title: "Theme Generated!",
-        description: "Your new theme suggestions are ready.",
+        title: "Tema Gerado!",
+        description: "Suas novas sugestões de tema estão prontas.",
       });
     } else if (state.message && state.message !== "success") {
       toast({
-        title: "Error",
+        title: "Erro",
         description: state.message,
         variant: "destructive",
       });
@@ -52,11 +52,11 @@ export function BrandingForm() {
     <form action={formAction}>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="instructions">Branding Instructions</Label>
+          <Label htmlFor="instructions">Instruções de Marca</Label>
           <Textarea
             id="instructions"
             name="instructions"
-            placeholder="e.g., A clean and professional theme with a dark sidebar and green as the primary color."
+            placeholder="ex: Um tema limpo e profissional com uma barra lateral escura e verde como cor primária."
             rows={5}
             defaultValue={state.fields?.instructions}
             required
@@ -69,11 +69,11 @@ export function BrandingForm() {
         {state.data && (
             <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
                 <div>
-                    <h3 className="font-semibold">Explanation</h3>
+                    <h3 className="font-semibold">Explicação</h3>
                     <p className="text-sm text-muted-foreground">{state.data.explanation}</p>
                 </div>
                 <div>
-                    <h3 className="font-semibold">Suggested Theme (JSON)</h3>
+                    <h3 className="font-semibold">Tema Sugerido (JSON)</h3>
                     <pre className="mt-2 w-full overflow-x-auto rounded-md bg-background p-4 text-sm">
                         <code>{state.data.suggestedThemeSettings}</code>
                     </pre>
@@ -84,12 +84,12 @@ export function BrandingForm() {
         {useFormStatus().pending && (
            <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
                 <div>
-                    <h3 className="font-semibold">Explanation</h3>
+                    <h3 className="font-semibold">Explicação</h3>
                     <Skeleton className="h-4 w-3/4 mt-2" />
                     <Skeleton className="h-4 w-1/2 mt-2" />
                 </div>
                 <div>
-                    <h3 className="font-semibold">Suggested Theme (JSON)</h3>
+                    <h3 className="font-semibold">Tema Sugerido (JSON)</h3>
                     <Skeleton className="h-24 w-full mt-2" />
                 </div>
             </div>
