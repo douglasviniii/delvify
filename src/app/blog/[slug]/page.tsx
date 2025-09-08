@@ -8,12 +8,12 @@ import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 
-// This is the main tenant ID for the public-facing website.
-// In a real multi-domain app, you would resolve this based on the request's hostname.
+// Este é o ID principal do inquilino para o site público.
+// Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  // Always fetch posts from the main tenant for the public blog
+  // Sempre busca os posts do inquilino principal para o blog público
   const post = await getPostBySlug(MAIN_TENANT_ID, params.slug);
   const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 

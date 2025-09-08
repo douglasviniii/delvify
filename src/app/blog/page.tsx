@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, UserCircle } from 'lucide-react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 
-// This is the main tenant ID for the public-facing website.
-// In a real multi-domain app, you would resolve this based on the request's hostname.
+// Este é o ID principal do inquilino para o site público.
+// Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 
