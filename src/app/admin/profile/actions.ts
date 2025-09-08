@@ -40,6 +40,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
   try {
     let profileImageUrl = data.profileImage;
 
+    // Verifica se a imagem é um data URI, indicando um novo upload
     if (profileImageUrl && profileImageUrl.startsWith('data:image')) {
       const mimeType = profileImageUrl.split(';')[0].split(':')[1];
       const base64Data = profileImageUrl.split(',')[1];
@@ -55,12 +56,13 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
         public: true, 
       });
       
+      // Obtém o URL público da imagem para salvar no Firestore
       profileImageUrl = file.publicUrl();
     }
 
     const profileData = {
       ...data,
-      profileImage: profileImageUrl,
+      profileImage: profileImageUrl, // Salva o URL público
       updatedAt: new Date(),
     };
 
@@ -83,6 +85,7 @@ export async function getTenantProfile(tenantId: string): Promise<TenantProfile 
 
     if (docSnap.exists) {
       const data = docSnap.data() as any; 
+      // Converte Timestamps do Firestore para strings ISO para serialização
       if (data.updatedAt) {
           data.updatedAt = data.updatedAt.toDate().toISOString();
       }

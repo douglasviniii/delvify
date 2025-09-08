@@ -105,7 +105,7 @@ export default function AdminProfilePage() {
             profileImage: profile.profileImage || null,
         });
         setBankData(profile.bankData || initialBankData);
-        setResponsiblePeople(profile.responsiblePeople && profile.responsiblePeople.length > 0 ? profile.responsiblePeople : [{ id: 1, name: "", cpf: "", email: "", phone: "" }]);
+        setResponsiblePeople(profile.responsiblePeople && profile.responsiblePeople.length > 0 ? profile.responsiblePeople : [{ id: Date.now(), name: "", cpf: "", email: "", phone: "" }]);
       }
     } catch (error) {
       console.error("Failed to fetch profile:", error);
