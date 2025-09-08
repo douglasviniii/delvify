@@ -18,22 +18,22 @@ const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 export async function MainFooter() {
   const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 
-  const quickLinks = [
-    { label: 'Cursos', href: '/courses' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Quem Somos', href: '#' },
-    { label: 'Login', href: '/login' },
-    { label: 'Cadastre-se', href: '/signup' },
+  const allLinks = [
+    { id: 'courses', label: 'Cursos', href: '/courses' },
+    { id: 'blog', label: 'Blog', href: '/blog' },
+    { id: 'faq', label: 'FAQ', href: '/faq' },
+    { id: 'about', label: 'Quem Somos', href: '/about' },
+    { id: 'login', label: 'Login', href: '/login' },
+    { id: 'signup', label: 'Cadastre-se', href: '/signup' },
   ];
 
-  const policies = [
-    { label: 'Política de Privacidade', href: '#' },
-    { label: 'Política de Cancelamento e Reembolso', href: '#' },
-    { label: 'Termo de Uso', href: '#' },
-    { label: 'Política de Cookies', href: '#' },
-    { label: 'Política de Atendimento e Suporte', href: '#' },
-    { label: 'Política de Direitos Autorais', href: '#' },
+  const allPolicies = [
+    { id: 'privacy-policy', label: 'Política de Privacidade', href: '/privacy-policy' },
+    { id: 'refund-policy', label: 'Política de Cancelamento e Reembolso', href: '/refund-policy' },
+    { id: 'terms-of-use', label: 'Termo de Uso', href: '/terms-of-use' },
+    { id: 'cookie-policy', label: 'Política de Cookies', href: '/cookie-policy' },
+    { id: 'support-policy', label: 'Política de Atendimento e Suporte', href: '/support-policy' },
+    { id: 'copyright-policy', label: 'Política de Direitos Autorais', href: '/copyright-policy' },
   ];
   
   const socialLinksToShow = Object.entries(settings.socialLinks)
@@ -43,6 +43,9 @@ export async function MainFooter() {
       url: details.url,
       icon: socialIcons[key],
     }));
+
+  const visibleLinks = allLinks.filter(link => settings.pageVisibility[link.id] ?? true);
+  const visiblePolicies = allPolicies.filter(policy => settings.pageVisibility[policy.id] ?? true);
 
   return (
     <footer className="border-t bg-background">
@@ -66,7 +69,7 @@ export async function MainFooter() {
           <div>
             <h3 className="font-semibold text-lg mb-4">Links Rápidos</h3>
             <ul className="space-y-3">
-              {quickLinks.map((link) => (
+              {visibleLinks.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-base text-muted-foreground hover:text-primary">
                     {link.label}
@@ -78,7 +81,7 @@ export async function MainFooter() {
           <div>
             <h3 className="font-semibold text-lg mb-4">Políticas</h3>
             <ul className="space-y-3">
-              {policies.map((link) => (
+              {visiblePolicies.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-base text-muted-foreground hover:text-primary">
                     {link.label}

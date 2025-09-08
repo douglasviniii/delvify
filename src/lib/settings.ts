@@ -24,6 +24,9 @@ export interface GlobalSettings {
     showInHeader: boolean;
     showInFooter: boolean;
   };
+  pageVisibility: {
+    [key: string]: boolean;
+  }
 }
 
 
@@ -47,6 +50,20 @@ const defaultSettings: GlobalSettings = {
         showInHeader: false,
         showInFooter: true,
     },
+    pageVisibility: {
+        home: true,
+        courses: true,
+        blog: true,
+        faq: true,
+        about: true,
+        contact: true,
+        'privacy-policy': true,
+        'terms-of-use': true,
+        'cookie-policy': true,
+        'refund-policy': true,
+        'support-policy': true,
+        'copyright-policy': true,
+    }
 };
 
 
@@ -78,6 +95,10 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
           socialsLocation: {
             ...defaultSettings.socialsLocation,
             ...(savedData?.socialsLocation || {})
+          },
+          pageVisibility: {
+            ...defaultSettings.pageVisibility,
+            ...(savedData?.pageVisibility || {})
           }
       } as GlobalSettings;
     }

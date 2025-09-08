@@ -32,6 +32,7 @@ const GlobalSettingsSchema = z.object({
     showInHeader: z.boolean(),
     showInFooter: z.boolean(),
   }),
+  pageVisibility: z.record(z.boolean()),
 });
 
 const settingsRef = (tenantId: string) => 
@@ -105,4 +106,24 @@ export async function getGlobalSettings(tenantId: string): Promise<GlobalSetting
     console.error('Erro ao buscar as configurações globais:', error);
     throw new Error('Não foi possível buscar as configurações do site.');
   }
+}
+
+
+export async function savePageVisibility(tenantId: string, pageId: string, isVisible: boolean) {
+    if (!tenantId) {
+        return { success: false, message: 'ID do inquilino é obrigatório.' };
+    }
+    try {
+        await settingsRef(tenantId).set({
+            pageVisibility: {
+                [pageId]: isVisible,
+            }
+        }, { merge: true });
+        revalidatePath('/', 'layout');
+        return { success: true, message: 'Visibilidade da página atualizada com sucesso.' };
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+        console.error(`Erro ao salvar a visibilidade da página ${pageId}:`, error);
+        return { success: false, message: `Erro ao salvar: ${errorMessage}` };
+    }
 }
