@@ -11,11 +11,8 @@ import { ArrowRight, Calendar, UserCircle } from 'lucide-react';
 export default async function BlogPage() {
   const posts = await getAllBlogPosts();
 
-  const formatDate = (timestamp: any) => {
-    if (timestamp && timestamp.toDate) {
-      return timestamp.toDate().toLocaleDateString('pt-BR');
-    }
-    return 'Data inválida';
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('pt-BR');
   }
 
   return (
@@ -86,6 +83,3 @@ export default async function BlogPage() {
     </div>
   );
 }
-
-
-    

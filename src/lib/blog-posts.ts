@@ -1,6 +1,5 @@
 
 import { adminDb } from './firebase-admin';
-import { collectionGroup, getDocs, query, where, limit } from 'firebase/firestore';
 
 // This type definition needs to be maintained in sync with the one in admin/blog/page.tsx
 export type Post = {
@@ -12,7 +11,8 @@ export type Post = {
   imageUrl: string;
   author: string;
   authorId: string;
-  createdAt: any; // Firestore timestamp
+  createdAt: string; // Serialized as ISO string
+  updatedAt?: string; // Serialized as ISO string
 };
 
 
@@ -20,15 +20,25 @@ export type Post = {
 export async function getAllBlogPosts(): Promise<Post[]> {
   try {
     const posts: Post[] = [];
-    const postsQuery = query(collectionGroup(adminDb, 'blog'));
-    const querySnapshot = await getDocs(postsQuery);
+    const postsQuery = adminDb.collectionGroup('blog');
+    const querySnapshot = await postsQuery.get();
     
     querySnapshot.forEach((doc) => {
-      posts.push({ id: doc.id, ...doc.data() } as Post);
+      const data = doc.data();
+      const docData: { [key: string]: any } = { id: doc.id, ...data };
+      
+      // Ensure all timestamp fields are converted to ISO strings
+      for (const key in docData) {
+        if (docData[key] && typeof docData[key].toDate === 'function') {
+          docData[key] = docData[key].toDate().toISOString();
+        }
+      }
+
+      posts.push(docData as Post);
     });
 
     // Sort by creation date descending
-    posts.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+    posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return posts;
   } catch (error) {
@@ -40,12 +50,8 @@ export async function getAllBlogPosts(): Promise<Post[]> {
 // Function to get a single post by its slug from any tenant
 export async function getPostBySlug(slug: string): Promise<Post | null> {
     try {
-        const postsQuery = query(
-            collectionGroup(adminDb, 'blog'), 
-            where('slug', '==', slug),
-            limit(1)
-        );
-        const querySnapshot = await getDocs(postsQuery);
+        const postsQuery = adminDb.collectionGroup('blog').where('slug', '==', slug).limit(1);
+        const querySnapshot = await postsQuery.get();
 
         if (querySnapshot.empty) {
             console.log(`No post found with slug: ${slug}`);
@@ -53,7 +59,17 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
         }
 
         const postDoc = querySnapshot.docs[0];
-        return { id: postDoc.id, ...postDoc.data() } as Post;
+        const data = postDoc.data();
+        const docData: { [key: string]: any } = { id: postDoc.id, ...data };
+
+        // Ensure all timestamp fields are converted to ISO strings
+        for (const key in docData) {
+            if (docData[key] && typeof docData[key].toDate === 'function') {
+            docData[key] = docData[key].toDate().toISOString();
+            }
+        }
+
+        return docData as Post;
 
     } catch (error) {
         console.error(`Error fetching post with slug ${slug}:`, error);

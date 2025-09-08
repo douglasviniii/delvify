@@ -13,11 +13,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     notFound();
   }
   
-  const formatDate = (timestamp: any) => {
-    if (timestamp && timestamp.toDate) {
-      return timestamp.toDate().toLocaleDateString('pt-BR');
+  const formatDate = (date: Date | string) => {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return 'Data inválida';
     }
-    return 'Data inválida';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 
   return (

@@ -12,11 +12,9 @@ async function getHomePageSections() {
         const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
         const fileContent = await fs.readFile(filePath, 'utf-8');
         const data = JSON.parse(fileContent);
-        // O componente espera um array, não o objeto que o contém.
         return data; 
     } catch (error) {
-        console.error("Error fetching home page sections from file, falling back to initial data:", error);
-        // O fallback também deve retornar o array diretamente.
+        console.warn("Could not read home-page-db.json, falling back to initial data. Error:", error);
         return initialHomePageSections;
     }
 }

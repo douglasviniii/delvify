@@ -223,7 +223,7 @@ export const CoursesSection = () => (
                 </div>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {mockCourses.map(course => (
+                {mockCourses.slice(0, 8).map(course => (
                     <CourseCard key={course.id} course={course} />
                 ))}
             </div>
@@ -238,11 +238,8 @@ export const CoursesSection = () => (
 
 export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
     
-    const formatDate = (timestamp: any) => {
-        if (timestamp && timestamp.toDate) {
-            return timestamp.toDate().toLocaleDateString('pt-BR');
-        }
-        return 'Data inválida';
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
     return (
@@ -317,6 +314,6 @@ export const SectionComponents: { [key: string]: React.FC<any> } = {
     AiCustomizationSection,
     ImageTextSection,
     DefaultSection,
-    CoursesSection,
-    LatestPostsSection,
 };
+
+    
