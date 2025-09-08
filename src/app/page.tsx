@@ -3,20 +3,20 @@ import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
 import { SectionComponents } from '@/components/page-sections';
 import { initialHomePageSections } from '@/lib/page-data';
+import { promises as fs } from 'fs';
+import path from 'path';
 
+// Esta função agora lê o arquivo diretamente, igual à API.
+// É a maneira mais robusta de buscar dados locais no lado do servidor.
 async function getHomePageSections() {
     try {
-        // This fetch needs to be robust against caching issues.
-        // Using a relative path is more robust than relying on an env var.
-        const res = await fetch('/api/get-page-sections', { cache: 'no-store' });
-        if (!res.ok) {
-            throw new Error(`Failed to fetch: ${res.status}`);
-        }
-        const data = await res.json();
-        return data.sections;
+        const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        const data = JSON.parse(fileContent);
+        return data; // O arquivo já contém o array de seções diretamente
     } catch (error) {
-        console.error("Error fetching home page sections, falling back to initial data:", error);
-        // Fallback to static data if the API fails
+        console.error("Error fetching home page sections from file, falling back to initial data:", error);
+        // Fallback para dados estáticos se a leitura do arquivo falhar
         return initialHomePageSections;
     }
 }
