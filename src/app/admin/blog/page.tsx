@@ -79,16 +79,21 @@ export default function BlogManagementPage() {
       setPosts(postData);
     });
 
-    // Fetch collaborators (assuming collaborators are global or managed elsewhere)
-    // If collaborators are also tenant-specific, this query needs adjustment
-    const collabsQuery = query(collection(db, 'users'), where('role', '==', 'collaborator'));
+    // Fetch collaborators - now tenant-specific
+    const tenantCollaboratorsPath = `tenants/${user.uid}/collaborators`;
+    const collabsQuery = query(collection(db, tenantCollaboratorsPath), where('tenantId', '==', user.uid));
     const unsubscribeCollabs = onSnapshot(collabsQuery, (snapshot) => {
         const collabsData: Collaborator[] = [];
         snapshot.forEach((doc) => {
             collabsData.push({ ...doc.data(), uid: doc.id } as Collaborator);
         });
         setCollaborators(collabsData);
+    }, (error) => {
+        console.error("Error fetching collaborators: ", error);
+        // Optional: Add a toast to inform the admin if the collection doesn't exist or there's an error.
+        // toast({ title: "Aviso", description: "Não foi possível carregar colaboradores. Crie a equipe primeiro.", variant: "default" });
     });
+
 
     return () => {
       unsubscribePosts();
