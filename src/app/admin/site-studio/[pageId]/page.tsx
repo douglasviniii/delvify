@@ -179,16 +179,23 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   ImageTextSection: ({ settings }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
       <div className="container px-4 md:px-6">
-        <div className={cn("grid items-center gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
-           <div className={cn({ "lg:col-start-2": settings.layout === 'right' })}>
+        <div className={cn("grid items-center gap-8 md:gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
+           <div className={cn("space-y-4", { "lg:col-start-2": settings.layout === 'right' })}>
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
               {settings.title}
             </h2>
-            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
+            <p className="text-muted-foreground" style={{ color: settings.descriptionColor }}>
               {settings.description}
             </p>
+            {settings.buttonText && settings.buttonLink && (
+              <Button asChild>
+                <Link href={settings.buttonLink}>
+                  {settings.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
           </div>
-          <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1": settings.layout === 'right' })}>
+          <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1 lg:row-start-1": settings.layout === 'right' })}>
             {settings.imageUrl ? (
               <Image
                 src={settings.imageUrl}
@@ -262,6 +269,8 @@ export default function EditSitePage() {
         title: "Novo Título da Seção",
         description: "Esta é uma nova seção que você pode editar.",
         imageUrl: "https://picsum.photos/800/600",
+        buttonText: "Saiba Mais",
+        buttonLink: "#",
         backgroundColor: "#FFFFFF",
         titleColor: "#000000",
         descriptionColor: "#6c757d",
