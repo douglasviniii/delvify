@@ -2,10 +2,9 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, GripVertical } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,33 +16,20 @@ import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFormState, useFormStatus } from "react-dom";
-import { savePage, type SavePageState } from "./actions";
+import { savePage, getPageDataForStudio, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection } from "@/components/page-sections";
-import { initialHomePageSections } from "@/lib/page-data";
+import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection } from "@/components/page-sections";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/lib/firebase";
 
 
 const SectionComponents: Record<string, React.FC<any>> = {
     HeroSection,
     FeaturesSection,
     AiCustomizationSection,
+    CoursesSection,
+    LatestPostsSection,
     DefaultSection,
-};
-
-// This function now just returns default data for non-home pages
-const getPageData = (pageId: string) => {
-  // For now, we only have data for the home page
-  if (pageId === 'home') {
-    return {
-      title: 'Página Inicial',
-      sections: initialHomePageSections, 
-    };
-  }
-  // Return a default structure for other pages
-  return {
-    title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000', descriptionColor: "#6c757d", backgroundColor: "#FFFFFF" } }],
-  };
 };
 
 const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 'desktop' | 'mobile' }) => {
@@ -83,26 +69,32 @@ function SaveButton() {
 export default function EditSitePage() {
   const params = useParams();
   const { toast } = useToast();
+  const [user, loadingAuth] = useAuthState(auth);
   
-  const [pageId, setPageId] = useState<string | null>(null);
+  const pageId = typeof params.pageId === 'string' ? params.pageId : null;
   const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
   const [sections, setSections] = useState<any[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const initialState: SavePageState = { message: '', success: false };
   const [state, formAction] = useFormState(savePage, initialState);
 
   useEffect(() => {
-    setIsClient(true);
-    if (typeof params.pageId === 'string') {
-      const id = params.pageId;
-      setPageId(id);
-      const data = getPageData(id);
-      setPageData(data);
-      setSections(data.sections);
+    if (user && pageId) {
+        setIsLoadingPage(true);
+        getPageDataForStudio(user.uid, pageId)
+            .then(data => {
+                setPageData(data);
+                setSections(data.sections);
+            })
+            .catch(err => {
+                console.error(err);
+                toast({ title: 'Erro ao Carregar Página', description: 'Não foi possível buscar os dados da página.', variant: 'destructive'});
+            })
+            .finally(() => setIsLoadingPage(false));
     }
-  }, [params.pageId]);
+  }, [pageId, user, toast]);
 
   useEffect(() => {
     if (state.message) {
@@ -134,18 +126,14 @@ export default function EditSitePage() {
   const handleAddSection = () => {
     const newSection = {
       id: `new-section-${Math.random().toString(36).substr(2, 9)}`,
-      name: "Seção de Imagem e Texto",
-      component: "ImageTextSection",
+      name: "Seção Padrão",
+      component: "DefaultSection",
       settings: {
         title: "Novo Título da Seção",
         description: "Esta é uma nova seção que você pode editar.",
-        imageUrl: "https://picsum.photos/800/600",
-        buttonText: "Saiba Mais",
-        buttonLink: "#",
         backgroundColor: "#FFFFFF",
         titleColor: "#000000",
         descriptionColor: "#6c757d",
-        layout: "default",
       },
     };
     setSections(prevSections => [...prevSections, newSection]);
@@ -183,13 +171,22 @@ export default function EditSitePage() {
     return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection'
   }
 
-  if (!isClient || !pageData || !pageId) {
-    return null; // Or a loading spinner
+  if (loadingAuth || isLoadingPage) {
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+  }
+  
+  if (!user) {
+    return <div className="flex h-full items-center justify-center"><p>Por favor, faça login para editar.</p></div>
+  }
+
+  if (!pageData || !pageId) {
+    return <div className="flex h-full items-center justify-center"><p>Página não encontrada.</p></div>;
   }
 
   return (
     <form action={formAction} className="flex h-full flex-col">
        <input type="hidden" name="pageId" value={pageId} />
+       <input type="hidden" name="tenantId" value={user.uid} />
        <input type="hidden" name="sections" value={JSON.stringify(sections)} />
       <header className="flex-shrink-0 flex items-center justify-between gap-4 border-b bg-background p-4">
         <div className="flex items-center gap-4">
@@ -232,9 +229,12 @@ export default function EditSitePage() {
               <div className="flex-1 overflow-y-auto">
                 <Accordion type="multiple" defaultValue={sections.map(s => s.id)} className="w-full">
                   {sections.map((section) => (
-                    <AccordionItem value={section.id} key={section.id}>
-                        <div className="flex items-center px-6">
-                            <AccordionTrigger className="flex-1 text-sm font-semibold hover:no-underline">
+                    <AccordionItem value={section.id} key={section.id} className="group/item">
+                        <div className="flex items-center px-4">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 cursor-grab" type="button">
+                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <AccordionTrigger className="flex-1 text-sm font-semibold hover:no-underline px-2">
                                 <span>{section.name}</span>
                             </AccordionTrigger>
                             <Button

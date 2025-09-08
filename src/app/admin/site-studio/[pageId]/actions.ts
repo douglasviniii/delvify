@@ -3,11 +3,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { adminDb } from '@/lib/firebase-admin';
+import { auth } from '@/lib/firebase';
+import { initialHomePageData } from '@/lib/page-data';
 
 const savePageSchema = z.object({
   pageId: z.string(),
+  tenantId: z.string(),
   sections: z.string(), // JSON string of sections array
 });
 
@@ -22,6 +24,7 @@ export async function savePage(
 ): Promise<SavePageState> {
   const validatedFields = savePageSchema.safeParse({
     pageId: formData.get('pageId'),
+    tenantId: formData.get('tenantId'),
     sections: formData.get('sections'),
   });
 
@@ -32,31 +35,30 @@ export async function savePage(
     };
   }
 
-  const { pageId, sections } = validatedFields.data;
+  const { pageId, tenantId, sections } = validatedFields.data;
 
-  // This logic is now deprecated as we are not using a dynamic db file for the main page anymore.
-  // We can re-enable this when we have dynamic pages.
-  if (pageId === 'home') {
-     return {
-      message: 'A página inicial está sendo gerenciada por dados estáticos e não pode ser salva no momento.',
-      success: false,
-    };
+  if (!tenantId) {
+    return {
+      message: 'ID do inquilino não encontrado. Você precisa estar logado.',
+      success: false
+    }
   }
 
 
   try {
-    // This logic would need to be adapted for dynamic pages other than 'home'
-    const filePath = path.join(process.cwd(), `src/lib/${pageId}-page-db.json`);
+    const pageRef = adminDb.collection('tenants').doc(tenantId).collection('pages').doc(pageId);
     
-    // Pretty-print the JSON to make it human-readable
     const sectionsObject = JSON.parse(sections);
-    const formattedSections = JSON.stringify(sectionsObject, null, 2);
 
-    await fs.writeFile(filePath, formattedSections, 'utf-8');
+    await pageRef.set({
+        sections: sectionsObject,
+        updatedAt: new Date(),
+    }, { merge: true });
     
-    revalidatePath('/');
-    revalidatePath(`/${pageId}`);
-    revalidatePath(`/admin/site-studio/${pageId}`);
+    // Revalidate all relevant paths
+    revalidatePath('/'); // Revalidates the home page
+    revalidatePath(`/${pageId}`); // Revalidates a potential dynamic page
+    revalidatePath(`/admin/site-studio/${pageId}`); // Revalidates the editor page
 
     return {
       message: 'Página salva com sucesso!',
@@ -64,9 +66,42 @@ export async function savePage(
     };
   } catch (error) {
     console.error('Erro ao salvar a página:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
     return {
-      message: 'Ocorreu um erro ao salvar a página.',
+      message: `Ocorreu um erro ao salvar a página: ${errorMessage}`,
       success: false,
     };
   }
+}
+
+export async function getPageDataForStudio(tenantId: string, pageId: string) {
+    if (!tenantId) {
+        throw new Error("Tenant ID is required.");
+    }
+    
+    try {
+        const pageRef = adminDb.collection('tenants').doc(tenantId).collection('pages').doc(pageId);
+        const pageSnap = await pageRef.get();
+
+        if (pageSnap.exists) {
+            const data = pageSnap.data();
+            if (data && data.sections) {
+                 return {
+                    title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
+                    sections: data.sections,
+                };
+            }
+        }
+        
+        // If no document or no sections, return initial data
+        console.log(`No data found for page ${pageId} in tenant ${tenantId}. Returning initial data.`);
+        return {
+            title: 'Página Inicial (Padrão)',
+            sections: initialHomePageData.sections,
+        };
+
+    } catch (error) {
+        console.error(`Failed to fetch page data for ${tenantId}/${pageId}:`, error);
+        throw new Error("Could not fetch page data.");
+    }
 }
