@@ -238,8 +238,13 @@ export const CoursesSection = () => (
 
 export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
     
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const formatDate = (date: Date | string) => {
+        const d = new Date(date);
+        if (isNaN(d.getTime())) {
+          // Handle cases where the date string from the server might be invalid
+          return 'Data inválida';
+        }
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
     return (
