@@ -31,6 +31,7 @@ const initialHomePageSections = [
       description: "DelviFy oferece uma solução robusta e multi-inquilino para construir, gerenciar e escalar seu negócio de educação online com facilidade.",
       primaryButtonText: "Comece Gratuitamente",
       secondaryButtonText: "Saber Mais",
+      imageUrl: "https://picsum.photos/1200/600",
       backgroundColor: "#F0F4F9",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
@@ -90,23 +91,40 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   HeroSection: ({ settings }) => (
     <section className="relative py-20 md:py-32" style={{ backgroundColor: settings.backgroundColor }}>
       <div className="container px-4 md:px-6">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
-            {settings.title}
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
-            {settings.description}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg">
-              <Link href="/login">
-                {settings.primaryButtonText} <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="#">{settings.secondaryButtonText}</Link>
-            </Button>
-          </div>
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="text-center lg:text-left">
+              <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
+                {settings.title}
+              </h1>
+              <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
+                {settings.description}
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
+                <Button asChild size="lg">
+                  <Link href="/login">
+                    {settings.primaryButtonText} <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="#">{settings.secondaryButtonText}</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
+                {settings.imageUrl ? (
+                <Image
+                    src={settings.imageUrl}
+                    alt={settings.title}
+                    layout="fill"
+                    objectFit="cover"
+                    data-ai-hint="website hero"
+                />
+                ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted">
+                    <p className="text-muted-foreground">Cole um URL de imagem</p>
+                </div>
+                )}
+            </div>
         </div>
       </div>
     </section>
@@ -382,5 +400,7 @@ export default function EditSitePage() {
     </div>
   );
 }
+
+    
 
     
