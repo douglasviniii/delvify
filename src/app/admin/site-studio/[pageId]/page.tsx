@@ -29,7 +29,6 @@ const initialHomePageSections = [
     settings: {
       title: "A Plataforma Completa para Criação de Cursos",
       description: "DelviFy oferece uma solução robusta e multi-inquilino para construir, gerenciar e escalar seu negócio de educação online com facilidade.",
-      imageUrl: "https://picsum.photos/1200/600",
       backgroundColor: "#F0F4F9",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
@@ -89,30 +88,13 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   HeroSection: ({ settings }) => (
     <section className="relative py-20 md:py-32" style={{ backgroundColor: settings.backgroundColor }}>
       <div className="container px-4 md:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div className="text-center lg:text-left">
-              <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
-                {settings.title}
-              </h1>
-              <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
-                {settings.description}
-              </p>
-            </div>
-            <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
-                {settings.imageUrl ? (
-                <Image
-                    src={settings.imageUrl}
-                    alt={settings.title}
-                    layout="fill"
-                    objectFit="cover"
-                    data-ai-hint="website hero"
-                />
-                ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted">
-                    <p className="text-muted-foreground">Cole um URL de imagem</p>
-                </div>
-                )}
-            </div>
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
+            {settings.title}
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
+            {settings.description}
+          </p>
         </div>
       </div>
     </section>
@@ -288,7 +270,7 @@ export default function EditSitePage() {
 
   const StyleInput = ({ sectionId, settingKey, label }: { sectionId: string, settingKey: string, label: string }) => {
     const section = sections.find(s => s.id === sectionId);
-    if (!section) return null;
+    if (!section || !section.settings.hasOwnProperty(settingKey)) return null;
     const value = section.settings[settingKey as keyof typeof section.settings] as string;
     if (typeof value !== 'string') return null;
 
