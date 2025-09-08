@@ -23,6 +23,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/ui/alert-dialog';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
+const slugify = (text: string) =>
+  text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-'); // Replace multiple - with single -
+
+
 const blogSchema = z.object({
   title: z.string().min(3, 'O título é obrigatório.'),
   excerpt: z.string().min(10, 'O resumo é muito curto.').max(500, 'O resumo deve ter no máximo 500 caracteres.'),
@@ -38,6 +48,7 @@ type BlogPost = {
   authorId: string;
   createdAt: any;
   imageUrl: string;
+  slug: string;
 };
 
 type Collaborator = {
@@ -168,9 +179,11 @@ export default function BlogManagementPage() {
     }
     
     const tenantBlogCollectionPath = `tenants/${user.uid}/blog`;
+    const slug = slugify(values.title);
 
     const dataToSave = {
         title: values.title,
+        slug: slug,
         excerpt: values.excerpt,
         content: values.content,
         imageUrl: values.imageUrl,
@@ -342,3 +355,5 @@ export default function BlogManagementPage() {
     </div>
   );
 }
+
+    
