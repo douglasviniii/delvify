@@ -1,5 +1,4 @@
 
-
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection } from '@/components/page-sections';
@@ -80,4 +79,3 @@ export default async function Home() {
     </div>
   );
 }
-
