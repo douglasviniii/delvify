@@ -31,7 +31,7 @@ export function MainFooter() {
   ];
 
   return (
-    <footer className="border-t bg-card text-card-foreground">
+    <footer className="border-t bg-background">
       <div className="container py-12 px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">

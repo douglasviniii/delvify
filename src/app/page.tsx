@@ -26,7 +26,7 @@ export default async function Home() {
   const sections = await getPageSections();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <MainHeader />
       <main className="flex-1">
         {Array.isArray(sections) && sections.map(section => {
