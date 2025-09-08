@@ -7,11 +7,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Camera, Upload, Link as LinkIcon, Info, Mail, Phone, MapPin } from "lucide-react";
+import { Loader2, Palette, Camera, Upload, Link as LinkIcon, Info, Mail, Phone, MapPin, Share2, Instagram, Facebook, Youtube, Linkedin, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
 
 // This is a placeholder for the actual data fetching and saving logic.
 // In a real app, this would come from a server action and be stored in Firestore.
+
+const socialPlatforms = [
+    { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" /> },
+    { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-5 w-5" /> },
+    { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="h-5 w-5" /> },
+    { id: 'youtube', name: 'YouTube', icon: <Youtube className="h-5 w-5" /> },
+    { id: 'whatsapp', name: 'WhatsApp', icon: <MessageCircle className="h-5 w-5" /> },
+];
+
 
 export default function GlobalSettingsPage() {
     const { toast } = useToast();
@@ -28,6 +40,14 @@ export default function GlobalSettingsPage() {
         cnpj: '57.278.676/0001-69',
         cnpjLink: '#'
     });
+    const [socialLinks, setSocialLinks] = useState({
+        instagram: { enabled: true, url: 'https://instagram.com' },
+        facebook: { enabled: true, url: 'https://facebook.com' },
+        linkedin: { enabled: false, url: '' },
+        youtube: { enabled: false, url: '' },
+        whatsapp: { enabled: true, url: 'https://wa.me/554588000647' },
+    });
+    const [socialsLocation, setSocialsLocation] = useState('footer');
 
     const handleSaveChanges = async () => {
         setIsSaving(true);
@@ -47,6 +67,16 @@ export default function GlobalSettingsPage() {
           };
           reader.readAsDataURL(file);
         }
+    };
+    
+    const handleSocialChange = (platform: keyof typeof socialLinks, key: 'enabled' | 'url', value: string | boolean) => {
+        setSocialLinks(prev => ({
+            ...prev,
+            [platform]: {
+                ...prev[platform],
+                [key]: value
+            }
+        }));
     };
 
 
@@ -90,6 +120,51 @@ export default function GlobalSettingsPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Share2 className="h-5 w-5 text-primary" /> Redes Sociais</CardTitle>
+                        <CardDescription>Gerencie os links das suas redes sociais e onde eles serão exibidos.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {socialPlatforms.map(platform => (
+                            <div key={platform.id} className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 w-32">
+                                    {platform.icon}
+                                    <Label htmlFor={`social-url-${platform.id}`}>{platform.name}</Label>
+                                </div>
+                                <div className="flex-1">
+                                    <Input
+                                        id={`social-url-${platform.id}`}
+                                        placeholder={`https://${platform.id}.com/seu-perfil`}
+                                        value={socialLinks[platform.id as keyof typeof socialLinks].url}
+                                        onChange={e => handleSocialChange(platform.id as keyof typeof socialLinks, 'url', e.target.value)}
+                                        disabled={!socialLinks[platform.id as keyof typeof socialLinks].enabled}
+                                    />
+                                </div>
+                                <Switch
+                                    checked={socialLinks[platform.id as keyof typeof socialLinks].enabled}
+                                    onCheckedChange={checked => handleSocialChange(platform.id as keyof typeof socialLinks, 'enabled', checked)}
+                                />
+                            </div>
+                        ))}
+                        <Separator />
+                        <div className="space-y-2">
+                            <Label>Onde exibir os ícones?</Label>
+                             <RadioGroup defaultValue={socialsLocation} onValueChange={setSocialsLocation} className="flex items-center gap-6">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="footer" id="r-footer" />
+                                    <Label htmlFor="r-footer">Apenas no Rodapé</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="header-footer" id="r-header-footer" />
+                                    <Label htmlFor="r-header-footer">No Cabeçalho e Rodapé</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+                    </CardContent>
+                </Card>
+
                  <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Info className="h-5 w-5 text-primary" /> Informações do Rodapé</CardTitle>
@@ -151,3 +226,5 @@ export default function GlobalSettingsPage() {
     </div>
   );
 }
+
+    
