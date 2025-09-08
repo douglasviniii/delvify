@@ -1,8 +1,7 @@
 
-
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, GripVertical } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, GripVertical, Upload } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect, useActionState, useRef } from "react";
 import Image from 'next/image';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,8 @@ import { savePage, getPageDataForStudio, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection } from "@/components/page-sections";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/lib/firebase";
+import { auth, storage, db } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
 const SectionComponents: Record<string, React.FC<any>> = {
@@ -76,6 +76,9 @@ export default function EditSitePage() {
   const [sections, setSections] = useState<any[]>([]);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [isUploading, setIsUploading] = useState<string | null>(null); // Track which section is uploading
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentSectionIdForUpload, setCurrentSectionIdForUpload] = useState<string | null>(null);
 
   const initialState: SavePageState = { message: '', success: false };
   const [state, formAction] = useActionState(savePage, initialState);
@@ -122,6 +125,32 @@ export default function EditSitePage() {
         })
     })
   }
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0] && user && currentSectionIdForUpload) {
+        const file = event.target.files[0];
+        const sectionId = currentSectionIdForUpload;
+        setIsUploading(sectionId);
+        try {
+            const storageRef = ref(storage, `tenants/${user.uid}/page_images/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            handleSettingChange(sectionId, 'imageUrl', downloadURL);
+            toast({ title: 'Sucesso', description: 'Imagem carregada.' });
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast({ title: 'Erro de Upload', description: 'Não foi possível carregar a imagem.', variant: 'destructive' });
+        } finally {
+            setIsUploading(null);
+            setCurrentSectionIdForUpload(null);
+        }
+    }
+  };
+
+  const triggerFileUpload = (sectionId: string) => {
+    setCurrentSectionIdForUpload(sectionId);
+    fileInputRef.current?.click();
+  };
   
   const handleAddSection = () => {
     const newSection = {
@@ -188,6 +217,9 @@ export default function EditSitePage() {
        <input type="hidden" name="pageId" value={pageId} />
        <input type="hidden" name="tenantId" value={user.uid} />
        <input type="hidden" name="sections" value={JSON.stringify(sections)} />
+       {/* Hidden file input */}
+       <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
+
       <header className="flex-shrink-0 flex items-center justify-between gap-4 border-b bg-background p-4">
         <div className="flex items-center gap-4">
             <Button asChild variant="outline" size="icon">
@@ -262,7 +294,32 @@ export default function EditSitePage() {
                               {Object.entries(section.settings).map(([key, value]) => {
                                   const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'layout'];
                                   if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
+                                  
                                   const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                                  
+                                  if (key.toLowerCase().includes('imageurl')) {
+                                    return (
+                                        <div className="space-y-2" key={key}>
+                                            <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
+                                            <div className="flex items-center gap-2">
+                                                <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} placeholder="Cole uma URL ou carregue"/>
+                                                <Button type="button" variant="outline" size="icon" onClick={() => triggerFileUpload(section.id)} disabled={isUploading === section.id}>
+                                                    {isUploading === section.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
+                                             {(value as string) && (
+                                                <Image 
+                                                    src={value as string} 
+                                                    alt="Preview da imagem" 
+                                                    width={100} 
+                                                    height={100} 
+                                                    className="mt-2 rounded-md object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                    )
+                                  }
+
                                   return (
                                   <div className="space-y-2" key={key}>
                                       <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
@@ -335,3 +392,5 @@ export default function EditSitePage() {
     </form>
   );
 }
+
+    
