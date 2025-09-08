@@ -47,6 +47,8 @@ export async function MainFooter() {
   const visibleLinks = allLinks.filter(link => settings.pageVisibility[link.id] ?? true);
   const visiblePolicies = allPolicies.filter(policy => settings.pageVisibility[policy.id] ?? true);
 
+  const copyrightText = settings.footerInfo.copyrightText.replace('{YEAR}', new Date().getFullYear().toString());
+
   return (
     <footer className="border-t bg-background">
       <div className="container py-16">
@@ -104,7 +106,7 @@ export async function MainFooter() {
           </div>
         </div>
         <div className="border-t mt-12 pt-8 text-center text-base text-muted-foreground">
-          &copy; {new Date().getFullYear()} DelviFy Tecnologia Da Informação LTDA.
+          {copyrightText}
         </div>
       </div>
     </footer>

@@ -31,7 +31,8 @@ const initialSettings: GlobalSettings = {
         email: 'contato@delvind.com',
         phone: '45 8800-0647',
         cnpj: '57.278.676/0001-69',
-        cnpjLink: 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj=57278676000169'
+        cnpjLink: 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj=57278676000169',
+        copyrightText: `© ${new Date().getFullYear()} DelviFy Tecnologia Da Informação LTDA.`,
     },
     socialLinks: {
         instagram: { enabled: true, url: 'https://instagram.com' },
@@ -44,6 +45,7 @@ const initialSettings: GlobalSettings = {
         showInHeader: false,
         showInFooter: true,
     },
+    pageVisibility: {}
 };
 
 
@@ -265,6 +267,11 @@ export default function GlobalSettingsPage() {
                             <Label htmlFor="footer-cnpj-link">Link de Consulta do CNPJ</Label>
                             <Input id="footer-cnpj-link" value={settings.footerInfo.cnpjLink} onChange={(e) => handleNestedChange('footerInfo', 'cnpjLink', e.target.value)} />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="footer-copyright">Texto de Copyright</Label>
+                            <Input id="footer-copyright" value={settings.footerInfo.copyrightText} onChange={(e) => handleNestedChange('footerInfo', 'copyrightText', e.target.value)} />
+                            <p className="text-xs text-muted-foreground">Use {'{YEAR}'} para inserir o ano atual automaticamente.</p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -277,5 +284,3 @@ export default function GlobalSettingsPage() {
         </div>
     );
 }
-
-    

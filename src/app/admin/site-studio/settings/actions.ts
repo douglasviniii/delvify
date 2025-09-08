@@ -20,6 +20,7 @@ const GlobalSettingsSchema = z.object({
     phone: z.string(),
     cnpj: z.string(),
     cnpjLink: z.string().url(),
+    copyrightText: z.string(),
   }),
   socialLinks: z.object({
     instagram: SocialLinksSchema,

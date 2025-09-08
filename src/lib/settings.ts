@@ -12,6 +12,7 @@ export interface GlobalSettings {
     phone: string;
     cnpj: string;
     cnpjLink: string;
+    copyrightText: string;
   };
   socialLinks: {
     instagram: { enabled: boolean; url: string };
@@ -37,7 +38,8 @@ const defaultSettings: GlobalSettings = {
         email: 'contato@delvind.com',
         phone: '45 8800-0647',
         cnpj: '57.278.676/0001-69',
-        cnpjLink: 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj=57278676000169'
+        cnpjLink: 'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj=57278676000169',
+        copyrightText: `© {YEAR} DelviFy Tecnologia Da Informação LTDA.`,
     },
     socialLinks: {
         instagram: { enabled: true, url: 'https://instagram.com' },
