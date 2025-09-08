@@ -2,18 +2,28 @@ import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admi
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
-const serviceAccount: ServiceAccount = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-};
+function getServiceAccount(): ServiceAccount {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (!projectId || !clientEmail || !privateKey) {
+        throw new Error('As variáveis de ambiente do Firebase (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) devem ser definidas.');
+    }
+
+    return {
+      projectId: projectId,
+      clientEmail: clientEmail,
+      privateKey: privateKey.replace(/\\n/g, '\n'),
+    };
+}
 
 let adminApp: App;
 
 if (!getApps().length) {
   try {
     adminApp = initializeApp({
-      credential: cert(serviceAccount),
+      credential: cert(getServiceAccount()),
       storageBucket: 'venda-fcil-pdv.firebasestorage.app',
     });
   } catch (error: any) {
