@@ -68,6 +68,18 @@ const initialHomePageSections = [
       descriptionColor: "#6c757d",
     },
   },
+  {
+    id: 'new-section',
+    name: 'Nova Seção',
+    component: 'DefaultSection',
+    settings: { 
+        title: 'Título da Nova Seção', 
+        description: 'Esta é uma nova seção que você pode editar.',
+        backgroundColor: "#FFFFFF",
+        titleColor: '#000000',
+        descriptionColor: "#6c757d"
+    }
+  }
 ];
 
 const getPageData = (pageId: string) => {
