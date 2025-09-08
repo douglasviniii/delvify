@@ -127,7 +127,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <DropdownMenuContent align="end" className="w-56 mb-2">
                 <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Perfil</DropdownMenuItem>
+                <Link href="/admin/profile">
+                  <DropdownMenuItem>Perfil</DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem>Faturamento</DropdownMenuItem>
                 <DropdownMenuItem>Equipe</DropdownMenuItem>
                 <DropdownMenuItem>Assinatura</DropdownMenuItem>
