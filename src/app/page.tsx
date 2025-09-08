@@ -1,7 +1,7 @@
 
 import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
-import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection } from '@/components/page-sections';
+import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection } from '@/components/page-sections';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { adminDb } from '@/lib/firebase-admin';
 import { initialHomePageSections } from '@/lib/page-data';
@@ -16,7 +16,8 @@ const SectionComponents: Record<string, React.FC<any>> = {
   AiCustomizationSection,
   CoursesSection,
   LatestPostsSection,
-  DefaultSection
+  DefaultSection,
+  CtaSection
 };
 
 async function getPageSections(tenantId: string, pageId: string) {

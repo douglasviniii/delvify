@@ -1,5 +1,4 @@
 
-
 export const initialHomePageData = {
     sections: [
         {
@@ -64,6 +63,17 @@ export const initialHomePageData = {
             name: "Seção de Blog",
             component: "LatestPostsSection",
             settings: {}
+        },
+        {
+            id: "cta-section",
+            name: "Seção de CTA",
+            component: "CtaSection",
+            settings: {
+                title: "Quer Vender na DelviFy?",
+                description: "Crie sua conta de parceiro, configure sua plataforma e comece a vender seus cursos e produtos em seu próprio domínio.",
+                buttonText: "Crie sua Conta Agora",
+                buttonLink: "/signup"
+            }
         }
     ]
 };

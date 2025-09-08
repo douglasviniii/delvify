@@ -11,6 +11,7 @@ export function MainFooter() {
     { label: 'FAQ', href: '/faq' },
     { label: 'Quem Somos', href: '#' },
     { label: 'Login', href: '/login' },
+    { label: 'Cadastre-se', href: '/signup' },
   ];
 
   const policies = [
