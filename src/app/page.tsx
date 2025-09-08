@@ -7,8 +7,6 @@ import { initialHomePageSections } from '@/lib/page-data';
 // This is a mock function. In a real app, you would fetch this from a database.
 async function getPageSections() {
   // For now, we'll just return the hardcoded sections.
-  // In a real app, you'd fetch this from a database.
-  // We'll simulate that by returning the initial data.
   return initialHomePageSections;
 }
 
