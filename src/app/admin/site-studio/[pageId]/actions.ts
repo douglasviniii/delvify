@@ -1,7 +1,10 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 const savePageSchema = z.object({
   pageId: z.string(),
@@ -29,14 +32,28 @@ export async function savePage(
     };
   }
 
+  const { pageId, sections } = validatedFields.data;
+
+  // Only save if it's the home page for now
+  if (pageId !== 'home') {
+    return {
+      message: 'Atualmente, apenas a página inicial pode ser salva.',
+      success: false,
+    };
+  }
+
   try {
-    // In a real app, you would save this to a database.
-    // For now, we'll just log it to the console.
-    console.log(`Salvando página: ${validatedFields.data.pageId}`);
-    console.log('Dados das seções:', JSON.parse(validatedFields.data.sections));
+    const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
     
-    // Revalidate the path to show the changes would be reflected if fetched from a DB
-    revalidatePath(`/admin/site-studio/${validatedFields.data.pageId}`);
+    // Pretty-print the JSON to make it human-readable
+    const sectionsObject = JSON.parse(sections);
+    const formattedSections = JSON.stringify(sectionsObject, null, 2);
+
+    await fs.writeFile(filePath, formattedSections, 'utf-8');
+    
+    // Revalidate the home page path to reflect changes immediately
+    revalidatePath('/');
+    revalidatePath(`/admin/site-studio/${pageId}`);
 
     return {
       message: 'Página salva com sucesso!',

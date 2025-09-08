@@ -23,15 +23,13 @@ import { SectionComponents } from "@/components/page-sections";
 import { initialHomePageSections } from "@/lib/page-data";
 
 
-// Mock data representing the sections of the "Home" page.
-// In a real application, this would be fetched from a database based on the pageId.
-
+// This function now just returns default data for non-home pages
 const getPageData = (pageId: string) => {
   // For now, we only have data for the home page
   if (pageId === 'home') {
     return {
       title: 'Página Inicial',
-      sections: initialHomePageSections,
+      sections: initialHomePageSections, // This is used for initial state before DB is fetched
     };
   }
   // Return a default structure for other pages
@@ -95,7 +93,15 @@ export default function EditSitePage() {
       setPageId(id);
       const data = getPageData(id);
       setPageData(data);
-      setSections(data.sections);
+      // On the client, we can fetch the latest data from our "DB"
+      if (id === 'home') {
+          fetch('/api/get-page-sections')
+              .then(res => res.json())
+              .then(data => setSections(data.sections))
+              .catch(() => setSections(initialHomePageSections)); // Fallback
+      } else {
+          setSections(data.sections);
+      }
     }
   }, [params.pageId]);
 
