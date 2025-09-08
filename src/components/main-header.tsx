@@ -6,7 +6,7 @@ export function MainHeader() {
   const navItems = [
     { label: 'Cursos', href: '/courses' },
     { label: 'Blog', href: '/blog' },
-    { label: 'FAQ', href: '#' },
+    { label: 'FAQ', href: '/faq' },
     { label: 'Quem Somos', href: '#' },
   ];
 
