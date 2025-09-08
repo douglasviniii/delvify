@@ -224,7 +224,9 @@ export default function EditSitePage() {
   }
 
   const StyleInput = ({ sectionId, settingKey, label }: { sectionId: string, settingKey: string, label: string }) => {
-    const value = sections.find(s => s.id === sectionId)?.settings[settingKey];
+    const section = sections.find(s => s.id === sectionId);
+    if (!section) return null;
+    const value = section.settings[settingKey as keyof typeof section.settings] as string;
     if (typeof value !== 'string') return null;
 
     return (
