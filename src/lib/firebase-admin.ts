@@ -25,7 +25,7 @@ if (!getApps().length) {
   try {
     adminApp = initializeApp({
       credential: cert(getServiceAccount()),
-      storageBucket: 'venda-fcil-pdv.appspot.com',
+      storageBucket: 'venda-fcil-pdv.firebasestorage.app', // CORRIGIDO
     });
   } catch (error) {
     console.error('Erro na inicialização do Firebase Admin:', error);
