@@ -1,16 +1,9 @@
 
 
-'use client';
-
-import { useState, useEffect } from 'react';
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
-import { Search } from 'lucide-react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
-import type { GlobalSettings } from '@/lib/settings';
-import { Skeleton } from '@/components/ui/skeleton';
+import FaqClientContent from './faq-client-content';
 
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
@@ -46,103 +39,17 @@ const faqData = [
 ];
 
 
-const LoadingSkeleton = () => (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <Skeleton className="h-8 w-28" />
-          <div className="ml-10 hidden gap-6 md:flex">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-6 w-16" />
-          </div>
-          <div className="ml-auto">
-            <Skeleton className="h-10 w-20" />
-          </div>
-        </div>
-      </header>
-      <main className="flex-1">
-        <section className="py-12 md:py-20">
-          <div className="container max-w-4xl px-4 md:px-6">
-            <div className="text-center mb-12">
-              <Skeleton className="h-10 w-3/4 mx-auto" />
-              <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
-              <div className="mt-8 relative max-w-2xl mx-auto">
-                <Skeleton className="h-12 w-full rounded-full" />
-              </div>
-            </div>
-             <div className="w-full space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-20 w-full rounded-lg" />
-                ))}
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-)
-
-
-export default function FAQPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [settings, setSettings] = useState<GlobalSettings | null>(null);
-
-  useEffect(() => {
-    getGlobalSettingsForTenant(MAIN_TENANT_ID).then(setSettings);
-  }, []);
-
-  const filteredFaqs = faqData.filter(faq => 
-    faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  
-  if (!settings) {
-    return <LoadingSkeleton />;
-  }
+export default async function FAQPage() {
+  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <MainHeader settings={settings} />
       <main className="flex-1">
-        <section className="py-12 md:py-20">
-          <div className="container max-w-4xl px-4 md:px-6">
-            <div className="text-center mb-12">
-              <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl">Perguntas Frequentes (FAQ)</h1>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Encontre aqui as respostas para as dúvidas mais comuns sobre nossa plataforma.
-              </p>
-              <div className="mt-8 relative max-w-2xl mx-auto">
-                <Input 
-                  placeholder="O que você está procurando?" 
-                  className="h-12 text-lg pl-12 pr-4 rounded-full shadow-md border-2 border-transparent focus:border-primary transition-colors"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
-              </div>
-            </div>
-
-            <Accordion type="single" collapsible className="w-full space-y-4">
-              {filteredFaqs.length > 0 ? filteredFaqs.map((faq, index) => (
-                <AccordionItem value={`item-${index}`} key={index} className="border rounded-lg bg-card overflow-hidden">
-                  <AccordionTrigger className="p-6 text-lg font-semibold text-left hover:no-underline">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="p-6 pt-0 text-muted-foreground text-base">
-                    <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: faq.answer.replace(/\n/g, '<br />') }} />
-                  </AccordionContent>
-                </AccordionItem>
-              )) : (
-                <div className="text-center py-16 border rounded-lg">
-                    <h2 className="text-xl font-semibold">Nenhum resultado encontrado.</h2>
-                    <p className="text-muted-foreground mt-2">Tente uma busca diferente ou verifique todas as nossas perguntas.</p>
-                </div>
-              )}
-            </Accordion>
-          </div>
-        </section>
+        <FaqClientContent faqData={faqData} />
       </main>
       <MainFooter />
     </div>
   );
 }
+
