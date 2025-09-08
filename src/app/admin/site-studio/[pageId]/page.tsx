@@ -2,7 +2,7 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,9 @@ import { MainFooter } from '@/components/main-footer';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useFormState, useFormStatus } from "react-dom";
+import { savePage, type SavePageState } from "./actions";
+import { useToast } from "@/hooks/use-toast";
 
 
 // Mock data representing the sections of the "Home" page.
@@ -67,6 +70,7 @@ const initialHomePageSections = [
       title: "Personalize Sua Plataforma com IA",
       description: "Use linguagem natural para personalizar instantaneamente a marca do seu inquilino. Nossa ferramenta de GenAI interpreta suas instruções para criar a aparência perfeita para o seu site.",
       buttonText: "Experimente a IA de Marca",
+      buttonLink: "/admin/settings",
       imageUrl: "https://picsum.photos/800/600",
       backgroundColor: "#F9FAFB",
       titleColor: "#000000",
@@ -169,11 +173,13 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
                 <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
                     {settings.description}
                 </p>
-                <Button asChild className="mt-6">
-                    <Link href="/admin/settings">
-                    {settings.buttonText} <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                </Button>
+                {settings.buttonText && settings.buttonLink && (
+                  <Button asChild className="mt-6">
+                      <Link href={settings.buttonLink}>
+                      {settings.buttonText} <ArrowRight className="ml-2 h-5 w-5" />
+                      </Link>
+                  </Button>
+                )}
             </div>
             <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1": settings.layout === 'right' })}>
                 {settings.imageUrl ? (
@@ -243,9 +249,9 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
 
 const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 'desktop' | 'mobile' }) => {
     return (
-        <div className={cn("bg-white shadow-lg overflow-hidden", {
+        <div className={cn("bg-white shadow-lg overflow-hidden transition-all", {
             "w-full h-full rounded-lg border": previewMode === 'desktop',
-            "w-[375px] h-[667px] rounded-[20px] border-[8px] border-black": previewMode === 'mobile'
+            "w-[375px] h-[667px] rounded-[20px] border-[8px] border-black mx-auto": previewMode === 'mobile'
         })}>
             <div className="h-full w-full overflow-auto">
                 <main className="flex-1">
@@ -259,14 +265,34 @@ const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 
     )
 }
 
+function SaveButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending}>
+            {pending ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                </>
+            ) : (
+                'Salvar Alterações'
+            )}
+        </Button>
+    )
+}
+
 export default function EditSitePage() {
   const params = useParams();
   const pageId = params.pageId as string;
+  const { toast } = useToast();
   
   const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+
+  const initialState: SavePageState = { message: '', success: false };
+  const [state, formAction] = useFormState(savePage, initialState);
 
   useEffect(() => {
     setIsClient(true);
@@ -274,6 +300,16 @@ export default function EditSitePage() {
     setPageData(data);
     setSections(data.sections);
   }, [pageId]);
+
+  useEffect(() => {
+    if (state.message) {
+        toast({
+            title: state.success ? 'Sucesso!' : 'Erro!',
+            description: state.message,
+            variant: state.success ? 'default' : 'destructive',
+        })
+    }
+  }, [state, toast]);
 
   const handleSettingChange = (sectionId: string, key: string, value: string | string[]) => {
     setSections(prevSections => {
@@ -349,7 +385,9 @@ export default function EditSitePage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <form action={formAction} className="flex h-full flex-col">
+       <input type="hidden" name="pageId" value={pageId} />
+       <input type="hidden" name="sections" value={JSON.stringify(sections)} />
       <header className="flex-shrink-0 flex items-center justify-between gap-4 border-b bg-background p-4">
         <div className="flex items-center gap-4">
             <Button asChild variant="outline" size="icon">
@@ -363,22 +401,22 @@ export default function EditSitePage() {
         </div>
 
         <div className="flex items-center gap-2">
-            <Button variant={previewMode === 'desktop' ? 'default' : 'outline'} size="icon" onClick={() => setPreviewMode('desktop')}>
+            <Button type="button" variant={previewMode === 'desktop' ? 'default' : 'outline'} size="icon" onClick={() => setPreviewMode('desktop')}>
                 <Monitor className="h-4 w-4" />
                 <span className="sr-only">Desktop</span>
             </Button>
-            <Button variant={previewMode === 'mobile' ? 'default' : 'outline'} size="icon" onClick={() => setPreviewMode('mobile')}>
+            <Button type="button" variant={previewMode === 'mobile' ? 'default' : 'outline'} size="icon" onClick={() => setPreviewMode('mobile')}>
                 <Smartphone className="h-4 w-4" />
                 <span className="sr-only">Mobile</span>
             </Button>
         </div>
 
         <div className="flex items-center gap-2">
-            <Button variant="outline">
+            <Button type="button" variant="outline">
                 <Eye className="mr-2 h-4 w-4" />
                 Visualizar
             </Button>
-            <Button>Salvar Alterações</Button>
+            <SaveButton />
         </div>
       </header>
 
@@ -394,7 +432,7 @@ export default function EditSitePage() {
                     <AccordionItem value={section.id} key={section.id}>
                       <AccordionTrigger className="px-6 text-sm font-semibold hover:no-underline">
                         <span className="flex-1 text-left">{section.name}</span>
-                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {e.stopPropagation(); handleDeleteSection(section.id)}}>
+                         <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={(e) => {e.stopPropagation(); handleDeleteSection(section.id)}}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </AccordionTrigger>
@@ -471,7 +509,7 @@ export default function EditSitePage() {
                 </Accordion>
               </div>
               <div className="p-4 border-t">
-                  <Button variant="outline" className="w-full" onClick={handleAddSection}>
+                  <Button type="button" variant="outline" className="w-full" onClick={handleAddSection}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Adicionar Seção
                   </Button>
@@ -479,6 +517,6 @@ export default function EditSitePage() {
             </aside>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
