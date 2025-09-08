@@ -2,7 +2,7 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, Layers, Newspaper, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,70 +13,18 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import Image from 'next/image';
-import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck } from 'lucide-react';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFormState, useFormStatus } from "react-dom";
 import { savePage, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
+import { SectionComponents } from "@/components/page-sections";
+import { initialHomePageSections } from "@/lib/page-data";
 
 
 // Mock data representing the sections of the "Home" page.
 // In a real application, this would be fetched from a database based on the pageId.
-const initialHomePageSections = [
-  {
-    id: "hero",
-    name: "Seção de Herói",
-    component: "HeroSection",
-    settings: {
-      title: "A Plataforma Completa para Criação de Cursos",
-      description: "DelviFy oferece uma solução robusta e multi-inquilino para construir, gerenciar e escalar seu negócio de educação online com facilidade.",
-      backgroundColor: "#F0F4F9",
-      titleColor: "#000000",
-      descriptionColor: "#6c757d",
-      button1Text: "Ir para Cursos",
-      button1Link: "/admin/site-studio/courses",
-      button2Text: "Saber Mais",
-      button2Link: "/admin/site-studio/about",
-    },
-  },
-  {
-    id: "features",
-    name: "Seção de Recursos",
-    component: "FeaturesSection",
-    settings: {
-      title: "Recursos Poderosos para a Educação Moderna",
-      description: "Tudo que você precisa para criar uma plataforma de aprendizado online de sucesso.",
-      features: [
-        { icon: 'Layers', title: 'Arquitetura Multi-Inquilino', description: 'Isole e sirva conteúdo, marca e páginas de destino personalizadas com base no domínio.' },
-        { icon: 'Palette', title: 'Painel de Administração Específico do Inquilino', description: 'Gerencie cursos, marca e usuários com uma interface de administração dedicada, incluindo personalização com IA.' },
-        { icon: 'Newspaper', title: 'Motor de Blog', description: 'Compartilhe notícias e atualizações com uma plataforma de blog simples e integrada para cada domínio de inquilino.' },
-        { icon: 'ShieldCheck', title: 'Autenticação Segura de Usuário', description: 'Níveis de acesso separados para administradores e alunos com um sistema seguro de login e registro.' },
-      ],
-      backgroundColor: "#FFFFFF",
-      titleColor: "#000000",
-      descriptionColor: "#6c757d",
-      cardColor: "#ffffff",
-    },
-  },
-  {
-    id: "ai-customization",
-    name: "Seção de IA",
-    component: "AiCustomizationSection",
-    settings: {
-      title: "Personalize Sua Plataforma com IA",
-      description: "Use linguagem natural para personalizar instantaneamente a marca do seu inquilino. Nossa ferramenta de GenAI interpreta suas instruções para criar a aparência perfeita para o seu site.",
-      buttonText: "Experimente a IA de Marca",
-      buttonLink: "/admin/settings",
-      imageUrl: "https://picsum.photos/800/600",
-      backgroundColor: "#F9FAFB",
-      titleColor: "#000000",
-      descriptionColor: "#6c757d",
-      layout: "default",
-    },
-  },
-];
 
 const getPageData = (pageId: string) => {
   // For now, we only have data for the home page
@@ -91,158 +39,6 @@ const getPageData = (pageId: string) => {
     title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
     sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000', descriptionColor: "#6c757d", backgroundColor: "#FFFFFF" } }],
   };
-};
-
-const SectionComponents: { [key: string]: React.FC<any> } = {
- HeroSection: ({ settings }) => (
-    <section className="relative py-20 md:py-32" style={{ backgroundColor: settings.backgroundColor }}>
-      <div className="container px-4 md:px-6">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
-            {settings.title}
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
-            {settings.description}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            {settings.button1Text && settings.button1Link && (
-              <Button asChild size="lg">
-                <Link href={settings.button1Link}>
-                  {settings.button1Text} <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            )}
-            {settings.button2Text && settings.button2Link && (
-              <Button asChild size="lg" variant="outline">
-                <Link href={settings.button2Link}>{settings.button2Text}</Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  ),
-  FeaturesSection: ({ settings }) => {
-    const featureIcons: { [key: string]: React.ReactNode } = {
-        Layers: <Layers className="h-8 w-8 text-primary" />,
-        Palette: <PaletteIcon className="h-8 w-8 text-primary" />,
-        Newspaper: <Newspaper className="h-8 w-8 text-primary" />,
-        ShieldCheck: <ShieldCheck className="h-8 w-8 text-primary" />,
-    };
-
-    return (
-        <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-        <div className="container px-4 md:px-6">
-            <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
-                {settings.title}
-            </h2>
-            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
-                {settings.description}
-            </p>
-            </div>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {settings.features.map((feature: any) => (
-                <Card key={feature.title} className="text-center" style={{ backgroundColor: settings.cardColor }}>
-                <CardHeader>
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                    {featureIcons[feature.icon]}
-                    </div>
-                    <CardTitle className="font-headline">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-                </Card>
-            ))}
-            </div>
-        </div>
-        </section>
-    );
-  },
-  AiCustomizationSection: ({ settings }) => (
-    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-        <div className="container px-4 md:px-6">
-        <div className={cn("grid items-center gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
-            <div className={cn({ "lg:col-start-2": settings.layout === 'right' })}>
-                <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
-                    {settings.title}
-                </h2>
-                <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
-                    {settings.description}
-                </p>
-                {settings.buttonText && settings.buttonLink && (
-                  <Button asChild className="mt-6">
-                      <Link href={settings.buttonLink}>
-                      {settings.buttonText} <ArrowRight className="ml-2 h-5 w-5" />
-                      </Link>
-                  </Button>
-                )}
-            </div>
-            <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1": settings.layout === 'right' })}>
-                {settings.imageUrl ? (
-                    <Image
-                        src={settings.imageUrl}
-                        alt="Personalização com IA"
-                        layout="fill"
-                        objectFit="cover"
-                        data-ai-hint="abstract technology"
-                    />
-                 ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-muted">
-                        <p className="text-muted-foreground">Cole um URL de imagem</p>
-                    </div>
-                )}
-            </div>
-        </div>
-        </div>
-    </section>
-  ),
-  ImageTextSection: ({ settings }) => (
-    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-      <div className="container px-4 md:px-6">
-        <div className={cn("grid items-center gap-8 md:gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
-           <div className={cn("space-y-4", { "lg:col-start-2": settings.layout === 'right' })}>
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
-              {settings.title}
-            </h2>
-            <p className="text-muted-foreground" style={{ color: settings.descriptionColor }}>
-              {settings.description}
-            </p>
-            {settings.buttonText && settings.buttonLink && (
-              <Button asChild>
-                <Link href={settings.buttonLink}>
-                  {settings.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            )}
-          </div>
-          <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1 lg:row-start-1": settings.layout === 'right' })}>
-            {settings.imageUrl ? (
-              <Image
-                src={settings.imageUrl}
-                alt={settings.title}
-                layout="fill"
-                objectFit="cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted">
-                <p className="text-muted-foreground">Cole um URL de imagem</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  ),
-  DefaultSection: ({ settings }) => (
-    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-        <div className="container px-4 md:px-6">
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>{settings.title}</h2>
-            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>{settings.description}</p>
-        </div>
-    </section>
-  )
 };
 
 const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 'desktop' | 'mobile' }) => {
@@ -441,7 +237,10 @@ export default function EditSitePage() {
                                 size="icon"
                                 className="h-8 w-8 shrink-0"
                                 type="button"
-                                onClick={() => handleDeleteSection(section.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSection(section.id)
+                                }}
                             >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                                 <span className="sr-only">Excluir seção</span>
@@ -531,5 +330,3 @@ export default function EditSitePage() {
     </form>
   );
 }
-
-    
