@@ -1,14 +1,15 @@
 
 'use client';
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Camera } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type ResponsiblePerson = {
   id: number;
@@ -20,6 +21,7 @@ type ResponsiblePerson = {
 
 export default function AdminProfilePage() {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // State for company data
   const [companyName, setCompanyName] = useState("");
@@ -30,6 +32,7 @@ export default function AdminProfilePage() {
   const [state, setState] = useState("");
   const [cep, setCep] = useState("");
   const [stateRegistration, setStateRegistration] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   
   // State for bank data
   const [bank, setBank] = useState("");
@@ -66,10 +69,21 @@ export default function AdminProfilePage() {
         person.id === id ? { ...person, [field]: value } : person
     ));
   };
+  
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSaveChanges = () => {
     const formData = {
-        companyData: { companyName, cnpj, address, neighborhood, city, state, cep, stateRegistration },
+        companyData: { companyName, cnpj, address, neighborhood, city, state, cep, stateRegistration, profileImage },
         bankData: { bank, agency, account, accountType },
         responsiblePeople
     };
@@ -85,9 +99,35 @@ export default function AdminProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">Perfil da Empresa</h1>
-        <p className="text-muted-foreground">Gerencie as informações da sua empresa e dados bancários.</p>
+      <div className="flex items-center gap-6">
+         <div className="relative group">
+            <Avatar className="h-24 w-24 border">
+                <AvatarImage src={profileImage ?? undefined} alt="Foto da Empresa" />
+                <AvatarFallback className="text-3xl">
+                    {companyName ? companyName.charAt(0).toUpperCase() : 'C'}
+                </AvatarFallback>
+            </Avatar>
+            <Button
+                variant="outline"
+                size="icon"
+                className="absolute bottom-0 right-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => fileInputRef.current?.click()}
+            >
+                <Camera className="h-4 w-4" />
+                <span className="sr-only">Editar foto</span>
+            </Button>
+            <Input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
+            />
+        </div>
+        <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">Perfil da Empresa</h1>
+            <p className="text-muted-foreground">Gerencie as informações da sua empresa e dados bancários.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -225,3 +265,5 @@ export default function AdminProfilePage() {
     </div>
   );
 }
+
+    
