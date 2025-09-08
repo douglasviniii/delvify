@@ -19,15 +19,18 @@ function getServiceAccount(): ServiceAccount {
     };
 }
 
-const serviceAccount = getServiceAccount();
-
 let adminApp: App;
 
 if (!getApps().length) {
-  adminApp = initializeApp({
-    credential: cert(serviceAccount),
-    storageBucket: 'venda-fcil-pdv.appspot.com',
-  });
+  try {
+    adminApp = initializeApp({
+      credential: cert(getServiceAccount()),
+      storageBucket: 'venda-fcil-pdv.appspot.com',
+    });
+  } catch (error) {
+    console.error('Erro na inicialização do Firebase Admin:', error);
+    throw error;
+  }
 } else {
   adminApp = getApps()[0];
 }
