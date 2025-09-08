@@ -1,12 +1,10 @@
 import React from 'react';
-import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { ClientHeader } from './client-header';
+import type { GlobalSettings } from '@/lib/settings';
 
-// Este é o ID principal do inquilino para o site público.
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-// O componente principal será async (Server Component) para buscar os dados.
-export async function MainHeader() {
-  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
+// O componente principal agora é um componente simples que recebe as configurações
+// e as repassa para o componente de cliente.
+export function MainHeader({ settings }: { settings: GlobalSettings }) {
   return <ClientHeader settings={settings} />;
 }

@@ -10,7 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Search, Star } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getGlobalSettingsForTenant } from "@/lib/settings";
+import type { GlobalSettings } from "@/lib/settings";
+
+
+// This is the main tenant ID for the public-facing website.
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 // Mock Data for Courses - should be consistent with home page
 const allMockCourses = [
@@ -55,13 +61,23 @@ const CourseCard = ({ course }: { course: any }) => (
 
 export default function CoursesPage() {
     const [searchTerm, setSearchTerm] = useState("");
+    const [settings, setSettings] = useState<GlobalSettings | null>(null);
+
+    useEffect(() => {
+        getGlobalSettingsForTenant(MAIN_TENANT_ID).then(setSettings);
+    }, []);
+
     const filteredCourses = allMockCourses.filter(course => 
         course.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    if (!settings) {
+        return <div>Carregando...</div>; // Ou um componente de esqueleto
+    }
+
     return (
         <div className="flex min-h-screen flex-col bg-background">
-            <MainHeader />
+            <MainHeader settings={settings} />
             <main className="flex-1">
                 <section className="py-12 md:py-20">
                     <div className="container px-4 md:px-6">
