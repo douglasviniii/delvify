@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from 'next/image';
 import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck } from 'lucide-react';
 import { MainHeader } from '@/components/main-header';
@@ -34,6 +34,10 @@ const initialHomePageSections = [
       backgroundColor: "#F0F4F9",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
+      button1Text: "Ir para Cursos",
+      button1Link: "/admin/site-studio/courses",
+      button2Text: "Saber Mais",
+      button2Link: "/admin/site-studio/about",
     },
   },
   {
@@ -88,7 +92,7 @@ const getPageData = (pageId: string) => {
 };
 
 const SectionComponents: { [key: string]: React.FC<any> } = {
-  HeroSection: ({ settings }) => (
+ HeroSection: ({ settings }) => (
     <section className="relative py-20 md:py-32" style={{ backgroundColor: settings.backgroundColor }}>
       <div className="container px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
@@ -98,6 +102,20 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
           <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
             {settings.description}
           </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            {settings.button1Text && settings.button1Link && (
+              <Button asChild size="lg">
+                <Link href={settings.button1Link}>
+                  {settings.button1Text} <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            )}
+            {settings.button2Text && settings.button2Link && (
+              <Button asChild size="lg" variant="outline">
+                <Link href={settings.button2Link}>{settings.button2Text}</Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </section>
@@ -240,8 +258,18 @@ const PagePreview = ({ sections }: { sections: any[] }) => {
 export default function EditSitePage() {
   const params = useParams();
   const pageId = params.pageId as string;
-  const pageData = getPageData(pageId);
-  const [sections, setSections] = useState(pageData.sections);
+  
+  const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
+  const [sections, setSections] = useState<any[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const data = getPageData(pageId);
+    setPageData(data);
+    setSections(data.sections);
+  }, [pageId]);
+
 
   const handleSettingChange = (sectionId: string, key: string, value: string | string[]) => {
     setSections(prevSections => {
@@ -262,7 +290,7 @@ export default function EditSitePage() {
   
   const handleAddSection = () => {
     const newSection = {
-      id: `new-section-${Date.now()}`,
+      id: `new-section-${Math.random().toString(36).substr(2, 9)}`,
       name: "Seção de Imagem e Texto",
       component: "ImageTextSection",
       settings: {
@@ -306,6 +334,10 @@ export default function EditSitePage() {
 
   const hasLayout = (section: any) => {
     return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection'
+  }
+
+  if (!isClient || !pageData) {
+    return null; // Or a loading spinner
   }
 
   return (
