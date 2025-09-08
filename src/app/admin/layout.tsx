@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -41,7 +42,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { signOut, User } from 'firebase/auth';
+import { getTenantProfile } from './profile/actions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -57,6 +60,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>('Admin');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        try {
+          const profile = await getTenantProfile(currentUser.uid);
+          if (profile) {
+            setProfileImage(profile.profileImage);
+            setCompanyName(profile.companyName || 'Admin');
+          }
+        } catch (error) {
+          console.error("Failed to fetch tenant profile for layout", error);
+        }
+      }
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -114,14 +140,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="w-full justify-start gap-2 px-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://picsum.photos/32" alt="Admin" data-ai-hint="person face" />
-                    <AvatarFallback>A</AvatarFallback>
-                  </Avatar>
-                   <div className="text-left">
-                      <p className="text-sm font-medium">DelviFy Admin</p>
-                      <p className="text-xs text-muted-foreground truncate">delvify@delvin.com</p>
-                   </div>
+                  {isLoading ? (
+                    <>
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profileImage ?? undefined} alt={companyName} data-ai-hint="person face" />
+                        <AvatarFallback>{companyName ? companyName.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
+                      </Avatar>
+                      <div className="text-left">
+                          <p className="text-sm font-medium">{companyName}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                      </div>
+                    </>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 mb-2">
