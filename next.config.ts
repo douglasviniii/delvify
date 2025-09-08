@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'darkgreen-lark-741030.hostingersite.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
