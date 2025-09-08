@@ -29,8 +29,6 @@ const initialHomePageSections = [
     settings: {
       title: "A Plataforma Completa para Criação de Cursos",
       description: "DelviFy oferece uma solução robusta e multi-inquilino para construir, gerenciar e escalar seu negócio de educação online com facilidade.",
-      primaryButtonText: "Comece Gratuitamente",
-      secondaryButtonText: "Saber Mais",
       imageUrl: "https://picsum.photos/1200/600",
       backgroundColor: "#F0F4F9",
       titleColor: "#000000",
@@ -99,16 +97,6 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
               <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
                 {settings.description}
               </p>
-              <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
-                <Button asChild size="lg">
-                  <Link href="/login">
-                    {settings.primaryButtonText} <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="#">{settings.secondaryButtonText}</Link>
-                </Button>
-              </div>
             </div>
             <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
                 {settings.imageUrl ? (
@@ -185,13 +173,19 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
             </Button>
             </div>
             <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
-            <Image
-                src={settings.imageUrl}
-                alt="Personalização com IA"
-                layout="fill"
-                objectFit="cover"
-                data-ai-hint="abstract technology"
-            />
+            {settings.imageUrl ? (
+                <Image
+                    src={settings.imageUrl}
+                    alt="Personalização com IA"
+                    layout="fill"
+                    objectFit="cover"
+                    data-ai-hint="abstract technology"
+                />
+             ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted">
+                    <p className="text-muted-foreground">Cole um URL de imagem</p>
+                </div>
+            )}
             </div>
         </div>
         </div>
