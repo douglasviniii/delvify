@@ -31,6 +31,7 @@ const initialHomePageSections = [
       primaryButtonText: "Comece Gratuitamente",
       secondaryButtonText: "Saber Mais",
       backgroundColor: "from-primary/10 to-transparent",
+      titleColor: "#000000",
     },
   },
   {
@@ -45,7 +46,8 @@ const initialHomePageSections = [
         { icon: 'Palette', title: 'Painel de Administração Específico do Inquilino', description: 'Gerencie cursos, marca e usuários com uma interface de administração dedicada, incluindo personalização com IA.' },
         { icon: 'Newspaper', title: 'Motor de Blog', description: 'Compartilhe notícias e atualizações com uma plataforma de blog simples e integrada para cada domínio de inquilino.' },
         { icon: 'ShieldCheck', title: 'Autenticação Segura de Usuário', description: 'Níveis de acesso separados para administradores e alunos com um sistema seguro de login e registro.' },
-      ]
+      ],
+      titleColor: "#000000",
     },
   },
   {
@@ -57,6 +59,7 @@ const initialHomePageSections = [
       description: "Use linguagem natural para personalizar instantaneamente a marca do seu inquilino. Nossa ferramenta de GenAI interpreta suas instruções para criar a aparência perfeita para o seu site.",
       buttonText: "Experimente a IA de Marca",
       imageUrl: "https://picsum.photos/800/600",
+      titleColor: "#000000",
     },
   },
 ];
@@ -72,7 +75,7 @@ const getPageData = (pageId: string) => {
   // Return a default structure for other pages
   return {
     title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.' } }],
+    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000' } }],
   };
 };
 
@@ -81,7 +84,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
     <section className={`relative py-20 md:py-32 bg-gradient-to-b ${settings.backgroundColor}`}>
       <div className="container px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
+          <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
             {settings.title}
           </h1>
           <p className="mt-4 text-lg text-muted-foreground md:text-xl">
@@ -113,7 +116,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
         <section className="py-12 md:py-24">
         <div className="container px-4 md:px-6">
             <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">
+            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
                 {settings.title}
             </h2>
             <p className="mt-4 text-muted-foreground">
@@ -144,7 +147,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
         <div className="container px-4 md:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">
+            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
                 {settings.title}
             </h2>
             <p className="mt-4 text-muted-foreground">
@@ -172,7 +175,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   DefaultSection: ({ settings }) => (
     <section className="py-12 md:py-24">
         <div className="container px-4 md:px-6">
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">{settings.title}</h2>
+            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>{settings.title}</h2>
             <p className="mt-4 text-muted-foreground">{settings.description}</p>
         </div>
     </section>
@@ -256,7 +259,7 @@ export default function EditSitePage() {
                         </TabsList>
                         <TabsContent value="content" className="space-y-4 pt-4">
                             {Object.entries(section.settings).map(([key, value]) => {
-                                if (key === 'features' || typeof value !== 'string' || key === 'backgroundColor') return null;
+                                if (key === 'features' || typeof value !== 'string' || key === 'backgroundColor' || key === 'titleColor') return null;
                                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                 return (
                                 <div className="space-y-2" key={key}>
@@ -272,11 +275,22 @@ export default function EditSitePage() {
                         </TabsContent>
                         <TabsContent value="style" className="space-y-4 pt-4">
                             {Object.entries(section.settings).map(([key, value]) => {
-                                if (key !== 'backgroundColor' || typeof value !== 'string') return null;
+                                if ((key !== 'backgroundColor' && key !== 'titleColor') || typeof value !== 'string') return null;
                                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                 return (
                                 <div className="space-y-2" key={key}>
-                                    <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
+                                    <div className="flex items-center justify-between">
+                                      <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
+                                      {key === 'titleColor' && 
+                                        <Input 
+                                          type="color" 
+                                          id={`${section.id}-${key}-picker`} 
+                                          value={value as string} 
+                                          onChange={e => handleSettingChange(section.id, key, e.target.value)}
+                                          className="p-0 h-6 w-6 border-none"
+                                          />
+                                      }
+                                    </div>
                                     <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
                                 </div>
                                 )
@@ -296,5 +310,3 @@ export default function EditSitePage() {
     </div>
   );
 }
-
-    
