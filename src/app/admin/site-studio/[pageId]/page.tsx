@@ -98,7 +98,7 @@ export default function EditSitePage() {
       if (id === 'home') {
           fetch('/api/get-page-sections')
               .then(res => res.json())
-              .then(data => setSections(data.sections))
+              .then(data => setSections(data)) // The API now returns the array directly
               .catch(() => setSections(initialHomePageSections)); // Fallback
       } else {
           setSections(data.sections);

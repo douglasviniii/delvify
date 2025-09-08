@@ -6,17 +6,16 @@ import { initialHomePageSections } from '@/lib/page-data';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-// Esta função agora lê o arquivo diretamente, igual à API.
-// É a maneira mais robusta de buscar dados locais no lado do servidor.
 async function getHomePageSections() {
     try {
         const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
         const fileContent = await fs.readFile(filePath, 'utf-8');
         const data = JSON.parse(fileContent);
-        return data; // O arquivo já contém o array de seções diretamente
+        // O componente espera um array, não o objeto que o contém.
+        return data; 
     } catch (error) {
         console.error("Error fetching home page sections from file, falling back to initial data:", error);
-        // Fallback para dados estáticos se a leitura do arquivo falhar
+        // O fallback também deve retornar o array diretamente.
         return initialHomePageSections;
     }
 }
