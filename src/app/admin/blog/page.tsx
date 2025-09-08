@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -66,14 +67,20 @@ export default function BlogManagementPage() {
   });
 
   useEffect(() => {
+    if (!user) return; // Don't fetch anything if user is not logged in
+
+    // Tenant-specific collection path
+    const tenantBlogCollectionPath = `tenants/${user.uid}/blog`;
+
     // Fetch blog posts
-    const postsQuery = query(collection(db, 'blog'), orderBy('createdAt', 'desc'));
+    const postsQuery = query(collection(db, tenantBlogCollectionPath), orderBy('createdAt', 'desc'));
     const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
       const postData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
       setPosts(postData);
     });
 
-    // Fetch collaborators
+    // Fetch collaborators (assuming collaborators are global or managed elsewhere)
+    // If collaborators are also tenant-specific, this query needs adjustment
     const collabsQuery = query(collection(db, 'users'), where('role', '==', 'collaborator'));
     const unsubscribeCollabs = onSnapshot(collabsQuery, (snapshot) => {
         const collabsData: Collaborator[] = [];
@@ -87,14 +94,14 @@ export default function BlogManagementPage() {
       unsubscribePosts();
       unsubscribeCollabs();
     };
-  }, []);
+  }, [user]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
+    if (event.target.files && event.target.files[0] && user) {
       const file = event.target.files[0];
       setIsUploading(true);
       try {
-        const storageRef = ref(storage, `blog_covers/${Date.now()}_${file.name}`);
+        const storageRef = ref(storage, `tenants/${user.uid}/blog_covers/${Date.now()}_${file.name}`);
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
         form.setValue('imageUrl', downloadURL, { shouldValidate: true });
@@ -109,7 +116,8 @@ export default function BlogManagementPage() {
   };
 
   const handleEdit = async (post: BlogPost) => {
-    const postRef = doc(db, 'blog', post.id);
+    if (!user) return;
+    const postRef = doc(db, `tenants/${user.uid}/blog`, post.id);
     const postSnap = await getDoc(postRef);
     if (postSnap.exists()) {
         const fullPostData = postSnap.data();
@@ -127,8 +135,9 @@ export default function BlogManagementPage() {
   };
   
   const handleDelete = async (id: string) => {
+      if (!user) return;
       try {
-          await deleteDoc(doc(db, 'blog', id));
+          await deleteDoc(doc(db, `tenants/${user.uid}/blog`, id));
           toast({ title: 'Post Excluído', description: 'O post foi removido com sucesso.' });
       } catch(e) {
           console.error("Error deleting document: ", e);
@@ -152,6 +161,8 @@ export default function BlogManagementPage() {
             authorName = selectedCollaborator.displayName;
         }
     }
+    
+    const tenantBlogCollectionPath = `tenants/${user.uid}/blog`;
 
     const dataToSave = {
         title: values.title,
@@ -164,10 +175,10 @@ export default function BlogManagementPage() {
 
     try {
       if (editingPost) {
-        await updateDoc(doc(db, 'blog', editingPost.id), { ...dataToSave, updatedAt: serverTimestamp() });
+        await updateDoc(doc(db, tenantBlogCollectionPath, editingPost.id), { ...dataToSave, updatedAt: serverTimestamp() });
         toast({ title: 'Post Atualizado' });
       } else {
-        await addDoc(collection(db, 'blog'), {
+        await addDoc(collection(db, tenantBlogCollectionPath), {
             ...dataToSave,
             createdAt: serverTimestamp()
         });
