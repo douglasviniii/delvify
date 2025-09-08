@@ -3,16 +3,8 @@
 import { Logo } from '@/components/logo';
 import { Instagram, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 
 export function MainFooter() {
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
-
-
   const quickLinks = [
     { label: 'Cursos', href: '#' },
     { label: 'Blog', href: '#' },
@@ -85,7 +77,7 @@ export function MainFooter() {
           </div>
         </div>
         <div className="border-t mt-8 pt-6 text-center text-sm text-muted-foreground">
-          &copy; {currentYear} DelviFy Tecnologia Da Informação LTDA.
+          &copy; {new Date().getFullYear()} DelviFy Tecnologia Da Informação LTDA.
         </div>
       </div>
     </footer>
