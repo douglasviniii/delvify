@@ -2,12 +2,13 @@
 import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
 import { SectionComponents } from '@/components/page-sections';
+import { initialHomePageSections } from '@/lib/page-data';
 
 async function getHomePageSections() {
     try {
         // This fetch needs to be robust against caching issues.
-        // Adding a cache-busting parameter.
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/get-page-sections`, { cache: 'no-store' });
+        // Using a relative path is more robust than relying on an env var.
+        const res = await fetch('/api/get-page-sections', { cache: 'no-store' });
         if (!res.ok) {
             throw new Error(`Failed to fetch: ${res.status}`);
         }
@@ -16,7 +17,6 @@ async function getHomePageSections() {
     } catch (error) {
         console.error("Error fetching home page sections, falling back to initial data:", error);
         // Fallback to static data if the API fails
-        const { initialHomePageSections } = await import('@/lib/page-data');
         return initialHomePageSections;
     }
 }
