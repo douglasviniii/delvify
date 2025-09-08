@@ -254,13 +254,13 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
                     <Carousel
                         opts={{
                             align: "start",
-                            loop: true,
+                            loop: posts.length > 3,
                         }}
-                        className="w-full"
+                        className="w-full max-w-6xl mx-auto"
                     >
                         <CarouselContent>
                             {posts.map((post) => (
-                                <CarouselItem key={post.id} className="md:basis-1/2 lg:basis-1/4">
+                                <CarouselItem key={post.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                                     <div className="p-1 h-full">
                                         <Card className="flex flex-col h-full overflow-hidden">
                                             <CardHeader className="p-0">
@@ -315,5 +315,3 @@ export const SectionComponents: { [key: string]: React.FC<any> } = {
     ImageTextSection,
     DefaultSection,
 };
-
-    
