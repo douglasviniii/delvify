@@ -3,14 +3,11 @@ import {
   BookCopy,
   LayoutDashboard,
   Newspaper,
-  Palette,
   Settings,
-  Users,
   LogOut,
   Building,
   GraduationCap,
   PanelTop,
-  Store,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -123,8 +120,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <DropdownMenuItem>Faturamento</DropdownMenuItem>
                 <DropdownMenuItem>Equipe</DropdownMenuItem>
                 <DropdownMenuItem>Assinatura</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>Sair</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
