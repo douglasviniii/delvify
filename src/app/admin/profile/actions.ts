@@ -3,28 +3,7 @@
 
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { initializeApp, getApps, App } from 'firebase-admin/app';
-import { credential } from 'firebase-admin';
-
-// Initialize Firebase Admin SDK
-const firebaseConfig = {
-  credential: credential.cert({
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  }),
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-};
-
-let adminApp: App;
-if (!getApps().length) {
-  adminApp = initializeApp(firebaseConfig);
-} else {
-  adminApp = getApps()[0];
-}
-
-const db = getFirestore(adminApp);
-const storage = getStorage(adminApp);
+import { adminDb, adminStorage } from '@/lib/firebase-admin';
 
 interface ResponsiblePerson {
   id: number;
@@ -66,7 +45,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       const base64Data = profileImageUrl.split(',')[1];
       const imageBuffer = Buffer.from(base64Data, 'base64');
       
-      const bucket = storage.bucket();
+      const bucket = adminStorage.bucket();
       const fileName = `profile_images/${tenantId}.${mimeType.split('/')[1]}`;
       const file = bucket.file(fileName);
 
@@ -85,7 +64,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       updatedAt: new Date(),
     };
 
-    const docRef = db.collection('tenants').doc(tenantId);
+    const docRef = adminDb.collection('tenants').doc(tenantId);
     await docRef.set(profileData, { merge: true });
 
     return { success: true, message: 'Perfil salvo com sucesso!', profileImage: profileImageUrl };
@@ -98,7 +77,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
 // Function to get tenant profile data
 export async function getTenantProfile(tenantId: string): Promise<TenantProfile | null> {
   try {
-    const docRef = db.collection('tenants').doc(tenantId);
+    const docRef = adminDb.collection('tenants').doc(tenantId);
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
