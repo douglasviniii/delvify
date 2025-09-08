@@ -2,7 +2,7 @@
 
 'use client'
 
-import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle } from "lucide-react";
+import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,8 @@ import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck } fr
 import { MainHeader } from '@/components/main-header';
 import { MainFooter } from '@/components/main-footer';
 import { useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 
 // Mock data representing the sections of the "Home" page.
@@ -65,6 +67,7 @@ const initialHomePageSections = [
       backgroundColor: "#F9FAFB",
       titleColor: "#000000",
       descriptionColor: "#6c757d",
+      layout: "default",
     },
   },
 ];
@@ -140,34 +143,34 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   AiCustomizationSection: ({ settings }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
         <div className="container px-4 md:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
-                {settings.title}
-            </h2>
-            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
-                {settings.description}
-            </p>
-            <Button asChild className="mt-6">
-                <Link href="/admin/settings">
-                {settings.buttonText} <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-            </Button>
+        <div className={cn("grid items-center gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
+            <div className={cn({ "lg:col-start-2": settings.layout === 'right' })}>
+                <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
+                    {settings.title}
+                </h2>
+                <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
+                    {settings.description}
+                </p>
+                <Button asChild className="mt-6">
+                    <Link href="/admin/settings">
+                    {settings.buttonText} <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                </Button>
             </div>
-            <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
-            {settings.imageUrl ? (
-                <Image
-                    src={settings.imageUrl}
-                    alt="Personalização com IA"
-                    layout="fill"
-                    objectFit="cover"
-                    data-ai-hint="abstract technology"
-                />
-             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted">
-                    <p className="text-muted-foreground">Cole um URL de imagem</p>
-                </div>
-            )}
+            <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1": settings.layout === 'right' })}>
+                {settings.imageUrl ? (
+                    <Image
+                        src={settings.imageUrl}
+                        alt="Personalização com IA"
+                        layout="fill"
+                        objectFit="cover"
+                        data-ai-hint="abstract technology"
+                    />
+                 ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-muted">
+                        <p className="text-muted-foreground">Cole um URL de imagem</p>
+                    </div>
+                )}
             </div>
         </div>
         </div>
@@ -176,8 +179,8 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
   ImageTextSection: ({ settings }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
       <div className="container px-4 md:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
+        <div className={cn("grid items-center gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
+           <div className={cn({ "lg:col-start-2": settings.layout === 'right' })}>
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
               {settings.title}
             </h2>
@@ -185,7 +188,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
               {settings.description}
             </p>
           </div>
-          <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-lg">
+          <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1": settings.layout === 'right' })}>
             {settings.imageUrl ? (
               <Image
                 src={settings.imageUrl}
@@ -233,7 +236,7 @@ export default function EditSitePage() {
   const pageData = getPageData(pageId);
   const [sections, setSections] = useState(pageData.sections);
 
-  const handleSettingChange = (sectionId: string, key: string, value: string) => {
+  const handleSettingChange = (sectionId: string, key: string, value: string | string[]) => {
     setSections(prevSections => {
         return prevSections.map(section => {
             if (section.id === sectionId) {
@@ -262,6 +265,7 @@ export default function EditSitePage() {
         backgroundColor: "#FFFFFF",
         titleColor: "#000000",
         descriptionColor: "#6c757d",
+        layout: "default",
       },
     };
     setSections(prevSections => [...prevSections, newSection]);
@@ -290,6 +294,10 @@ export default function EditSitePage() {
         </div>
     );
 };
+
+  const hasLayout = (section: any) => {
+    return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection'
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -328,11 +336,11 @@ export default function EditSitePage() {
                           <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="content"><Type className="w-4 h-4 mr-1"/> Conteúdo</TabsTrigger>
                             <TabsTrigger value="style"><Palette className="w-4 h-4 mr-1"/> Estilo</TabsTrigger>
-                            <TabsTrigger value="advanced"><Settings className="w-4 h-4 mr-1"/> Avançado</TabsTrigger>
+                            <TabsTrigger value="layout" disabled={!hasLayout(section)}><Settings className="w-4 h-4 mr-1"/> Layout</TabsTrigger>
                           </TabsList>
                           <TabsContent value="content" className="space-y-4 pt-4">
                               {Object.entries(section.settings).map(([key, value]) => {
-                                  const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor'];
+                                  const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'layout'];
                                   if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
                                   const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                   return (
@@ -355,8 +363,39 @@ export default function EditSitePage() {
                                   <StyleInput sectionId={section.id} settingKey="cardColor" label="Cor do Card" />
                             )}
                           </TabsContent>
-                          <TabsContent value="advanced" className="pt-4">
-                              <p className="text-sm text-center text-muted-foreground">Opções avançadas em breve.</p>
+                          <TabsContent value="layout" className="space-y-4 pt-4">
+                            <div className="space-y-2">
+                                <Label>Posição da Imagem</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Escolha onde a imagem deve ser exibida em telas maiores.
+                                </p>
+                            </div>
+                             <RadioGroup 
+                                defaultValue={section.settings.layout} 
+                                onValueChange={value => handleSettingChange(section.id, 'layout', value)}
+                                className="grid grid-cols-2 gap-4"
+                            >
+                                <div>
+                                    <RadioGroupItem value="default" id={`${section.id}-layout-default`} className="peer sr-only" />
+                                    <Label
+                                    htmlFor={`${section.id}-layout-default`}
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                    >
+                                        <AlignHorizontalJustifyStart className="mb-3 h-6 w-6" />
+                                        Esquerda
+                                    </Label>
+                                </div>
+                                <div>
+                                    <RadioGroupItem value="right" id={`${section.id}-layout-right`} className="peer sr-only" />
+                                    <Label
+                                    htmlFor={`${section.id}-layout-right`}
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                    >
+                                        <AlignHorizontalJustifyEnd className="mb-3 h-6 w-6" />
+                                        Direita
+                                    </Label>
+                                </div>
+                            </RadioGroup>
                           </TabsContent>
                         </Tabs>
                       </AccordionContent>
