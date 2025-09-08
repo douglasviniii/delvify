@@ -32,6 +32,7 @@ const initialHomePageSections = [
       secondaryButtonText: "Saber Mais",
       backgroundColor: "from-primary/10 to-transparent",
       titleColor: "#000000",
+      descriptionColor: "#6c757d",
     },
   },
   {
@@ -48,6 +49,8 @@ const initialHomePageSections = [
         { icon: 'ShieldCheck', title: 'Autenticação Segura de Usuário', description: 'Níveis de acesso separados para administradores e alunos com um sistema seguro de login e registro.' },
       ],
       titleColor: "#000000",
+      descriptionColor: "#6c757d",
+      cardColor: "#ffffff",
     },
   },
   {
@@ -60,6 +63,7 @@ const initialHomePageSections = [
       buttonText: "Experimente a IA de Marca",
       imageUrl: "https://picsum.photos/800/600",
       titleColor: "#000000",
+      descriptionColor: "#6c757d",
     },
   },
 ];
@@ -75,7 +79,7 @@ const getPageData = (pageId: string) => {
   // Return a default structure for other pages
   return {
     title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000' } }],
+    sections: [{ id: 'default', name: 'Conteúdo Principal', component: 'DefaultSection', settings: { title: 'Título Padrão', description: 'Descrição Padrão.', titleColor: '#000000', descriptionColor: "#6c757d" } }],
   };
 };
 
@@ -87,7 +91,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
           <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl" style={{ color: settings.titleColor }}>
             {settings.title}
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground md:text-xl">
+          <p className="mt-4 text-lg text-muted-foreground md:text-xl" style={{ color: settings.descriptionColor }}>
             {settings.description}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -119,13 +123,13 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
                 {settings.title}
             </h2>
-            <p className="mt-4 text-muted-foreground">
+            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
                 {settings.description}
             </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {settings.features.map((feature: any) => (
-                <Card key={feature.title} className="text-center">
+                <Card key={feature.title} className="text-center" style={{ backgroundColor: settings.cardColor }}>
                 <CardHeader>
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                     {featureIcons[feature.icon]}
@@ -150,7 +154,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
                 {settings.title}
             </h2>
-            <p className="mt-4 text-muted-foreground">
+            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>
                 {settings.description}
             </p>
             <Button asChild className="mt-6">
@@ -176,7 +180,7 @@ const SectionComponents: { [key: string]: React.FC<any> } = {
     <section className="py-12 md:py-24">
         <div className="container px-4 md:px-6">
             <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>{settings.title}</h2>
-            <p className="mt-4 text-muted-foreground">{settings.description}</p>
+            <p className="mt-4 text-muted-foreground" style={{ color: settings.descriptionColor }}>{settings.description}</p>
         </div>
     </section>
   )
@@ -219,6 +223,27 @@ export default function EditSitePage() {
     })
   }
 
+  const StyleInput = ({ sectionId, settingKey, label }: { sectionId: string, settingKey: string, label: string }) => {
+    const value = sections.find(s => s.id === sectionId)?.settings[settingKey];
+    if (typeof value !== 'string') return null;
+
+    return (
+        <div className="space-y-2">
+            <div className="flex items-center justify-between">
+                <Label htmlFor={`${sectionId}-${settingKey}`}>{label}</Label>
+                <Input
+                    type="color"
+                    id={`${sectionId}-${settingKey}-picker`}
+                    value={value}
+                    onChange={e => handleSettingChange(sectionId, settingKey, e.target.value)}
+                    className="p-0 h-6 w-6 border-none"
+                />
+            </div>
+            <Input id={`${sectionId}-${settingKey}`} value={value} onChange={e => handleSettingChange(sectionId, settingKey, e.target.value)} />
+        </div>
+    );
+};
+
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center gap-4 border-b bg-background p-4 sm:p-6">
@@ -259,7 +284,8 @@ export default function EditSitePage() {
                         </TabsList>
                         <TabsContent value="content" className="space-y-4 pt-4">
                             {Object.entries(section.settings).map(([key, value]) => {
-                                if (key === 'features' || typeof value !== 'string' || key === 'backgroundColor' || key === 'titleColor') return null;
+                                const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor'];
+                                if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
                                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                                 return (
                                 <div className="space-y-2" key={key}>
@@ -274,27 +300,15 @@ export default function EditSitePage() {
                             })}
                         </TabsContent>
                         <TabsContent value="style" className="space-y-4 pt-4">
-                            {Object.entries(section.settings).map(([key, value]) => {
-                                if ((key !== 'backgroundColor' && key !== 'titleColor') || typeof value !== 'string') return null;
-                                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                                return (
-                                <div className="space-y-2" key={key}>
-                                    <div className="flex items-center justify-between">
-                                      <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
-                                      {key === 'titleColor' && 
-                                        <Input 
-                                          type="color" 
-                                          id={`${section.id}-${key}-picker`} 
-                                          value={value as string} 
-                                          onChange={e => handleSettingChange(section.id, key, e.target.value)}
-                                          className="p-0 h-6 w-6 border-none"
-                                          />
-                                      }
-                                    </div>
-                                    <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
-                                </div>
-                                )
-                            })}
+                           <StyleInput sectionId={section.id} settingKey="titleColor" label="Cor do Título" />
+                           <StyleInput sectionId={section.id} settingKey="descriptionColor" label="Cor da Descrição" />
+                           {section.settings.hasOwnProperty('cardColor') && (
+                                <StyleInput sectionId={section.id} settingKey="cardColor" label="Cor do Card" />
+                           )}
+                           <div className="space-y-2">
+                                <Label htmlFor={`${section.id}-backgroundColor`}>Cor de Fundo</Label>
+                                <Input id={`${section.id}-backgroundColor`} value={section.settings.backgroundColor} onChange={e => handleSettingChange(section.id, 'backgroundColor', e.target.value)} />
+                           </div>
                         </TabsContent>
                          <TabsContent value="advanced" className="pt-4">
                             <p className="text-sm text-center text-muted-foreground">Opções avançadas em breve.</p>
