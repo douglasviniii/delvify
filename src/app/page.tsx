@@ -49,12 +49,12 @@ export default function Home() {
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Button asChild size="lg">
-                  <Link href="/login">
-                    Comece Gratuitamente <ArrowRight className="ml-2 h-5 w-5" />
+                  <Link href="/admin/site-studio/courses">
+                    Ir para Cursos <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link href="#">Saber Mais</Link>
+                  <Link href="/admin/site-studio/about">Saber Mais</Link>
                 </Button>
               </div>
             </div>
