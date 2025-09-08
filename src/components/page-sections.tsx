@@ -11,7 +11,6 @@ import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import type { Post } from '@/lib/blog-posts';
-import { useEffect, useState } from 'react';
 
 // Mock Data for Courses
 const mockCourses = [
@@ -164,44 +163,6 @@ export const AiCustomizationSection = ({ settings }: { settings: any }) => (
     </section>
   );
 
-export const ImageTextSection = ({ settings }: { settings: any }) => (
-    <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
-      <div className="container px-4 md:px-6">
-        <div className={cn("grid items-center gap-8 md:gap-12 lg:grid-cols-2", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
-           <div className={cn("space-y-4", { "lg:col-start-2": settings.layout === 'right' })}>
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl" style={{ color: settings.titleColor }}>
-              {settings.title}
-            </h2>
-            <p className="text-muted-foreground" style={{ color: settings.descriptionColor }}>
-              {settings.description}
-            </p>
-            {settings.buttonText && settings.buttonLink && (
-              <Button asChild>
-                <Link href={settings.buttonLink}>
-                  {settings.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            )}
-          </div>
-          <div className={cn("relative h-80 w-full overflow-hidden rounded-lg shadow-lg", { "lg:col-start-1 lg:row-start-1": settings.layout === 'right' })}>
-            {settings.imageUrl ? (
-              <Image
-                src={settings.imageUrl}
-                alt={settings.title}
-                layout="fill"
-                objectFit="cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted">
-                <p className="text-muted-foreground">Cole um URL de imagem</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
 export const DefaultSection = ({ settings }: { settings: any }) => (
     <section className="py-12 md:py-24" style={{ backgroundColor: settings.backgroundColor }}>
         <div className="container px-4 md:px-6">
@@ -241,10 +202,9 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
     const formatDate = (date: Date | string) => {
         const d = new Date(date);
         if (isNaN(d.getTime())) {
-          // Handle cases where the date string from the server might be invalid
           return 'Data inválida';
         }
-        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
     }
 
     return (
@@ -311,12 +271,3 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
         </section>
     )
 }
-
-
-export const SectionComponents: { [key: string]: React.FC<any> } = {
-    HeroSection,
-    FeaturesSection,
-    AiCustomizationSection,
-    ImageTextSection,
-    DefaultSection,
-};

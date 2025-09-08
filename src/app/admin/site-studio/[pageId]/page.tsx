@@ -19,9 +19,16 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFormState, useFormStatus } from "react-dom";
 import { savePage, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { SectionComponents } from "@/components/page-sections";
+import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection } from "@/components/page-sections";
 import { initialHomePageSections } from "@/lib/page-data";
 
+
+const SectionComponents: Record<string, React.FC<any>> = {
+    HeroSection,
+    FeaturesSection,
+    AiCustomizationSection,
+    DefaultSection,
+};
 
 // This function now just returns default data for non-home pages
 const getPageData = (pageId: string) => {
@@ -29,7 +36,6 @@ const getPageData = (pageId: string) => {
   if (pageId === 'home') {
     return {
       title: 'Página Inicial',
-      // This is used for initial state before DB is fetched
       sections: initialHomePageSections, 
     };
   }
@@ -94,15 +100,7 @@ export default function EditSitePage() {
       setPageId(id);
       const data = getPageData(id);
       setPageData(data);
-      // On the client, we can fetch the latest data from our "DB"
-      if (id === 'home') {
-          fetch('/api/get-page-sections')
-              .then(res => res.json())
-              .then(data => setSections(data)) // The API now returns the array directly
-              .catch(() => setSections(initialHomePageSections)); // Fallback
-      } else {
-          setSections(data.sections);
-      }
+      setSections(data.sections);
     }
   }, [params.pageId]);
 

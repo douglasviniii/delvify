@@ -1,5 +1,6 @@
-export const initialHomePageSections = [
-    {
+
+export const homePageData = {
+    hero: {
       id: "hero",
       name: "Seção de Herói",
       component: "HeroSection",
@@ -10,12 +11,12 @@ export const initialHomePageSections = [
         titleColor: "#000000",
         descriptionColor: "#6c757d",
         button1Text: "Ir para Cursos",
-        button1Link: "/admin/site-studio/courses",
+        button1Link: "/courses",
         button2Text: "Saber Mais",
-        button2Link: "/admin/site-studio/about",
+        button2Link: "#",
       },
     },
-    {
+    features: {
       id: "features",
       name: "Seção de Recursos",
       component: "FeaturesSection",
@@ -34,7 +35,7 @@ export const initialHomePageSections = [
         cardColor: "#ffffff",
       },
     },
-    {
+    aiCustomization: {
       id: "ai-customization",
       name: "Seção de IA",
       component: "AiCustomizationSection",
@@ -50,5 +51,6 @@ export const initialHomePageSections = [
         layout: "default",
       },
     },
-  ];
+  };
   
+export const initialHomePageSections = Object.values(homePageData);

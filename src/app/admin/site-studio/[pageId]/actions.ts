@@ -34,16 +34,19 @@ export async function savePage(
 
   const { pageId, sections } = validatedFields.data;
 
-  // Only save if it's the home page for now
-  if (pageId !== 'home') {
-    return {
-      message: 'Atualmente, apenas a página inicial pode ser salva.',
+  // This logic is now deprecated as we are not using a dynamic db file for the main page anymore.
+  // We can re-enable this when we have dynamic pages.
+  if (pageId === 'home') {
+     return {
+      message: 'A página inicial está sendo gerenciada por dados estáticos e não pode ser salva no momento.',
       success: false,
     };
   }
 
+
   try {
-    const filePath = path.join(process.cwd(), 'src/lib/home-page-db.json');
+    // This logic would need to be adapted for dynamic pages other than 'home'
+    const filePath = path.join(process.cwd(), `src/lib/${pageId}-page-db.json`);
     
     // Pretty-print the JSON to make it human-readable
     const sectionsObject = JSON.parse(sections);
@@ -51,8 +54,8 @@ export async function savePage(
 
     await fs.writeFile(filePath, formattedSections, 'utf-8');
     
-    // Revalidate the home page path to reflect changes immediately
     revalidatePath('/');
+    revalidatePath(`/${pageId}`);
     revalidatePath(`/admin/site-studio/${pageId}`);
 
     return {
