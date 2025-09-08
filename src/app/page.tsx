@@ -61,12 +61,19 @@ export default async function Home() {
                 console.warn(`Component for section type "${section.component}" not found.`);
                 return <DefaultSection key={section.id} settings={{title: "Componente não encontrado", description: `O componente para "${section.name}" não foi encontrado.`}} />;
             }
-             // Inject posts into LatestPostsSection
-            const props = section.component === 'LatestPostsSection' 
-                ? { settings: section.settings, posts: latestPosts.slice(0, 4) }
-                : { settings: section.settings };
+            
+            // Base props for all components
+            const props: { [key: string]: any } = { 
+                key: section.id, 
+                settings: section.settings 
+            };
 
-            return <Component key={section.id} {...props} />;
+            // Inject posts only into LatestPostsSection
+            if (section.component === 'LatestPostsSection') {
+                props.posts = latestPosts.slice(0, 4);
+            }
+
+            return <Component {...props} />;
         })}
       </main>
       <MainFooter />
