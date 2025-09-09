@@ -63,7 +63,6 @@ export default async function Home() {
             
             // Base props for all components
             const props: { [key: string]: any } = { 
-                key: section.id, 
                 settings: section.settings 
             };
 
@@ -72,7 +71,7 @@ export default async function Home() {
                 props.posts = latestPosts.slice(0, 4);
             }
 
-            return <Component {...props} />;
+            return <Component key={section.id} {...props} />;
         })}
       </main>
       <MainFooter />
