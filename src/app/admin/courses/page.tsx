@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -16,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal, CheckCircle2, Eye } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal, CheckCircle2, Eye, Star } from 'lucide-react';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -53,10 +54,10 @@ type Course = {
   description: string;
 };
 
-const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean }) => {
+const CourseCard = ({ course, onStatusChange, isChangingStatus, onEdit, onDelete }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean, onEdit: () => void, onDelete: () => void }) => {
     return (
     <Card className="overflow-hidden shadow-lg flex flex-col group relative">
-        <Link href={`/admin/courses/${course.id}`} className="flex flex-col flex-1">
+        <Link href={`/courses/${course.id}`} className="flex flex-col flex-1" target="_blank">
             <CardHeader className="p-0">
                 <div className="relative aspect-video w-full">
                     <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
@@ -67,8 +68,16 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Cour
                 </div>
             </CardHeader>
             <CardContent className="p-4 flex-1 flex flex-col">
-                <h3 className="font-headline text-lg font-semibold flex-1 leading-tight">{course.title}</h3>
+                <h3 className="font-headline text-lg font-semibold flex-1 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
+                <div className="flex items-center gap-1 text-yellow-500 mt-4">
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <span className="text-xs text-muted-foreground ml-1">(0)</span>
+                </div>
             </CardContent>
         </Link>
         <CardFooter className="p-4 bg-muted/20 flex justify-between items-center z-10">
@@ -79,18 +88,59 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Cour
                     </span>
                 ) : `R$ ${course.price}`}
             </div>
-            <Button 
-              size="sm" 
-              variant={course.status === 'published' ? 'secondary' : 'default'}
-              onClick={(e) => {
-                  e.stopPropagation(); // Impede que o clique no botão ative o link do card
-                  onStatusChange(course.status === 'draft' ? 'published' : 'draft')
-              }}
-              disabled={isChangingStatus}
-            >
-                {isChangingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : (course.status === 'published' ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4"/>)}
-                {course.status === 'published' ? 'Publicado' : 'Publicar'}
-            </Button>
+            <div className='flex items-center gap-2'>
+                <Button 
+                size="sm" 
+                variant={course.status === 'published' ? 'secondary' : 'default'}
+                onClick={(e) => {
+                    e.stopPropagation(); 
+                    onStatusChange(course.status === 'draft' ? 'published' : 'draft')
+                }}
+                disabled={isChangingStatus}
+                >
+                    {isChangingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : (course.status === 'published' ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4"/>)}
+                    {course.status === 'published' ? 'Publicado' : 'Publicar'}
+                </Button>
+                <DropdownMenu>
+                   <DropdownMenuTrigger asChild>
+                       <Button variant="ghost" className="h-8 w-8 p-0">
+                           <span className="sr-only">Abrir menu</span>
+                           <MoreHorizontal className="h-4 w-4" />
+                       </Button>
+                   </DropdownMenuTrigger>
+                   <DropdownMenuContent align="end">
+                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                       <DropdownMenuItem onClick={onEdit}>
+                           <Edit className="mr-2 h-4 w-4" /> Editar Detalhes
+                       </DropdownMenuItem>
+                       <Link href={`/admin/courses/${course.id}`} passHref>
+                        <DropdownMenuItem>
+                            Gerenciar Episódios
+                        </DropdownMenuItem>
+                       </Link>
+                       <DropdownMenuSeparator />
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                                </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Esta ação não pode ser desfeita. Isso excluirá permanentemente o curso e todos os seus episódios.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={onDelete}>Sim, excluir</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                   </DropdownMenuContent>
+               </DropdownMenu>
+            </div>
         </CardFooter>
     </Card>
     )
@@ -430,6 +480,8 @@ export default function AdminCoursesPage() {
                             course={course}
                             onStatusChange={(newStatus) => handleStatusChange(course.id, newStatus)}
                             isChangingStatus={statusChangingCourseId === course.id}
+                            onEdit={() => handleEdit(course)}
+                            onDelete={() => handleDelete(course.id)}
                         />
                     ))}
                  </div>
@@ -446,3 +498,5 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
+
+    
