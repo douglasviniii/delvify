@@ -3,29 +3,38 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Book, Compass, GraduationCap, LogOut, ShoppingBag, User } from 'lucide-react';
+import { Book, Compass, GraduationCap, LogOut, ShoppingBag, User as UserIcon } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { signOut, type User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
 
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
   { href: '/student/courses', label: 'Meus Cursos', icon: Book },
-  { href: '/student/profile', label: 'Meu Perfil', icon: User },
+  { href: '/student/profile', label: 'Meu Perfil', icon: UserIcon },
   { href: '/student/certificates', label: 'Certificados', icon: GraduationCap },
   { href: '/student/purchases', label: 'Minhas Compras', icon: ShoppingBag },
 ];
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [user, loading] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);

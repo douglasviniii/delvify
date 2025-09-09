@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { db, auth, storage } from '@/lib/firebase';
 import { doc, getDoc, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import type { User } from 'firebase/auth';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -47,12 +47,19 @@ export default function CourseModulesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState<number | null>(null); // Track which module index is uploading
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [user] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const courseId = params.courseId as string;
   
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const form = useForm<z.infer<typeof courseModulesSchema>>({
     resolver: zodResolver(courseModulesSchema),
     defaultValues: {
@@ -280,5 +287,3 @@ export default function CourseModulesPage() {
     </div>
   );
 }
-
-    

@@ -21,7 +21,8 @@ import Image from 'next/image';
 import TiptapEditor from '../../../components/ui/tiptap-editor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/ui/alert-dialog';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import type { User } from 'firebase/auth';
+
 
 const slugify = (text: string) =>
   text
@@ -64,18 +65,16 @@ export default function BlogManagementPage() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const [user] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const form = useForm<z.infer<typeof blogSchema>>({
-    resolver: zodResolver(blogSchema),
-    defaultValues: {
-      title: '',
-      excerpt: '',
-      content: '',
-      imageUrl: '',
-      authorId: '',
-    },
-  });
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!user) return; // Don't fetch anything if user is not logged in
@@ -211,7 +210,22 @@ export default function BlogManagementPage() {
     }
   };
   
+  const form = useForm<z.infer<typeof blogSchema>>({
+    resolver: zodResolver(blogSchema),
+    defaultValues: {
+      title: '',
+      excerpt: '',
+      content: '',
+      imageUrl: '',
+      authorId: '',
+    },
+  });
+
   const imageUrl = form.watch('imageUrl');
+  
+  if (loading) {
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -355,5 +369,3 @@ export default function BlogManagementPage() {
     </div>
   );
 }
-
-    

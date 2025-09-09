@@ -1,5 +1,4 @@
 
-
 'use client'
 
 import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, GripVertical, Upload } from "lucide-react";
@@ -19,7 +18,7 @@ import { useFormStatus } from "react-dom";
 import { savePage, getPageDataForStudio, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/page-sections";
-import { useAuthState } from "react-firebase-hooks/auth";
+import type { User } from 'firebase/auth';
 import { auth, storage, db } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAllBlogPosts, type Post } from "@/lib/blog-posts";
@@ -82,7 +81,8 @@ function SaveButton() {
 export default function EditSitePage() {
   const params = useParams();
   const { toast } = useToast();
-  const [user, loadingAuth] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
   
   const pageId = typeof params.pageId === 'string' ? params.pageId : null;
   const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
@@ -96,6 +96,14 @@ export default function EditSitePage() {
 
   const initialState: SavePageState = { message: '', success: false };
   const [state, formAction] = useActionState(savePage, initialState);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      setLoadingAuth(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (user && pageId) {
@@ -409,4 +417,3 @@ export default function EditSitePage() {
     </form>
   );
 }
-    

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { FileEdit, PlusCircle, Settings, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthState } from 'react-firebase-hooks/auth';
+import type { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useEffect, useState } from "react";
 import { getGlobalSettings, savePageVisibility } from "./settings/actions";
@@ -17,10 +17,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 
 export default function AdminSiteStudioPage() {
-  const [user] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const pages = [
     { id: "home", title: "Página Inicial", description: "A página principal de boas-vindas do seu site." },
