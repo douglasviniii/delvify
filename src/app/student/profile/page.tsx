@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useRef } from 'react';
 import { auth, db } from '@/lib/firebase';
 import type { User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -10,8 +10,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Edit, Save } from 'lucide-react';
+import { Loader2, Edit, Save, Camera } from 'lucide-react';
 import { updateStudentProfile } from './actions';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 type UserProfile = {
@@ -25,6 +26,7 @@ type UserProfile = {
   city: string;
   state: string;
   cep: string;
+  photoURL: string | null;
 };
 
 const initialProfileState: UserProfile = {
@@ -38,6 +40,7 @@ const initialProfileState: UserProfile = {
     city: '',
     state: '',
     cep: '',
+    photoURL: null,
 };
 
 export default function StudentProfilePage() {
@@ -47,6 +50,7 @@ export default function StudentProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, startTransition] = useTransition();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,10 +72,16 @@ export default function StudentProfilePage() {
           if (docSnap.exists()) {
             setProfile(docSnap.data() as UserProfile);
           } else {
+            // Se não houver perfil no Firestore, preenche com os dados do Auth
+             setProfile(prev => ({
+                ...prev,
+                email: user.email || '',
+                socialName: user.displayName || '',
+                photoURL: user.photoURL || null
+             }));
             toast({
-              title: "Perfil não encontrado",
-              description: "Não foi possível carregar seus dados de perfil.",
-              variant: "destructive",
+              title: "Complete seu perfil",
+              description: "Alguns dos seus dados não foram encontrados. Por favor, complete o cadastro.",
             });
           }
         } catch (error) {
@@ -92,9 +102,21 @@ export default function StudentProfilePage() {
     }
   }, [user, loadingAuth, toast]);
   
-  const handleInputChange = (field: keyof UserProfile, value: string) => {
+  const handleInputChange = (field: keyof Omit<UserProfile, 'photoURL'>, value: string) => {
       setProfile(prev => ({...prev, [field]: value}));
   };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfile(prev => ({...prev, photoURL: reader.result as string}));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const handleSave = async () => {
       if (!user) return;
@@ -103,6 +125,9 @@ export default function StudentProfilePage() {
           const result = await updateStudentProfile(user.uid, profile);
           if (result.success) {
               toast({ title: "Sucesso!", description: "Seu perfil foi atualizado."});
+              if (result.newPhotoURL) {
+                  setProfile(prev => ({...prev, photoURL: result.newPhotoURL}));
+              }
               setIsEditing(false);
           } else {
               toast({ title: "Erro", description: result.message, variant: "destructive"});
@@ -128,10 +153,37 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between">
-            <div>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Meu Perfil</h1>
-                <p className="text-muted-foreground">Visualize e gerencie suas informações pessoais.</p>
+       <div className="flex items-start justify-between">
+            <div className="flex items-center gap-6">
+                <div className="relative group">
+                    <Avatar className="h-24 w-24 border">
+                        <AvatarImage src={profile.photoURL ?? undefined} alt={profile.socialName} />
+                        <AvatarFallback className="text-3xl">{profile.socialName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    {isEditing && (
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="absolute bottom-0 right-0 rounded-full"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Camera className="h-4 w-4" />
+                            <span className="sr-only">Editar foto</span>
+                        </Button>
+                    )}
+                    <Input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        disabled={!isEditing}
+                    />
+                </div>
+                <div>
+                    <h1 className="font-headline text-3xl font-bold tracking-tight">Meu Perfil</h1>
+                    <p className="text-muted-foreground">Visualize e gerencie suas informações pessoais.</p>
+                </div>
             </div>
             {!isEditing && (
               <Button variant="outline" onClick={() => setIsEditing(true)}>
@@ -208,7 +260,10 @@ export default function StudentProfilePage() {
             </CardContent>
              {isEditing && (
                 <CardFooter className="justify-end gap-4">
-                    <Button variant="ghost" onClick={() => setIsEditing(false)}>Cancelar</Button>
+                    <Button variant="ghost" onClick={() => {
+                        setIsEditing(false);
+                        // TODO: reset state to original if needed
+                    }}>Cancelar</Button>
                     <Button onClick={handleSave} disabled={isSaving}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Salvar Alterações

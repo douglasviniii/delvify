@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -16,6 +16,7 @@ const profileSchema = z.object({
   city: z.string().min(2, 'A cidade é obrigatória.'),
   state: z.string().min(2, 'O estado é obrigatório.'),
   cep: z.string().min(8, 'O CEP é obrigatório.'),
+  photoURL: z.string().nullable(),
 });
 
 export async function updateStudentProfile(uid: string, data: any) {
@@ -23,17 +24,7 @@ export async function updateStudentProfile(uid: string, data: any) {
         return { success: false, message: 'Usuário não autenticado.'};
     }
 
-    const validatedFields = profileSchema.safeParse({
-        name: data.name,
-        socialName: data.socialName,
-        cpf: data.cpf,
-        birthDate: data.birthDate,
-        address: data.address,
-        neighborhood: data.neighborhood,
-        city: data.city,
-        state: data.state,
-        cep: data.cep,
-    });
+    const validatedFields = profileSchema.safeParse(data);
     
     if (!validatedFields.success) {
         return { 
@@ -42,25 +33,46 @@ export async function updateStudentProfile(uid: string, data: any) {
         };
     }
     
-    const { socialName, ...firestoreData } = validatedFields.data;
+    const { socialName, photoURL, ...firestoreData } = validatedFields.data;
 
     try {
+        let finalPhotoURL = photoURL;
+
+        if (photoURL && photoURL.startsWith('data:image')) {
+            const mimeType = photoURL.split(';')[0].split(':')[1];
+            const base64Data = photoURL.split(',')[1];
+            const imageBuffer = Buffer.from(base64Data, 'base64');
+            
+            const bucket = adminStorage.bucket();
+            const fileName = `users/${uid}/profile_image.${mimeType.split('/')[1]}`;
+            const file = bucket.file(fileName);
+
+            await file.save(imageBuffer, {
+                metadata: { contentType: mimeType },
+                public: true, 
+            });
+            
+            finalPhotoURL = file.publicUrl();
+        }
+
         // Update Firestore document
         const userDocRef = adminDb.collection('users').doc(uid);
         await userDocRef.update({
             ...firestoreData,
-            socialName, // Make sure socialName is also saved in Firestore
+            socialName,
+            photoURL: finalPhotoURL,
         });
 
         // Update Firebase Auth profile
         await getAuth().updateUser(uid, {
             displayName: socialName,
+            photoURL: finalPhotoURL,
         });
 
-        revalidatePath('/student/profile');
-        revalidatePath('/student/layout'); // Revalidate layout to update display name
+        revalidatePath('/student/profile', 'page');
+        revalidatePath('/student', 'layout');
 
-        return { success: true, message: 'Perfil atualizado com sucesso!' };
+        return { success: true, message: 'Perfil atualizado com sucesso!', newPhotoURL: finalPhotoURL };
 
     } catch (error) {
         console.error("Error updating student profile:", error);

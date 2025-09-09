@@ -2,14 +2,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Book, Compass, GraduationCap, LogOut, ShoppingBag, User as UserIcon } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
 import { signOut, type User } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
@@ -38,7 +37,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     });
 
     getGlobalSettingsForTenant(MAIN_TENANT_ID).then(settings => {
-        setLogoUrl(settings.logoUrl);
+        if(settings) {
+            setLogoUrl(settings.logoUrl);
+        }
     })
 
     return () => unsubscribe();
@@ -83,7 +84,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
              <Link href="/student/profile" className="block rounded-md p-2 hover:bg-muted">
                 <div className="flex items-center gap-3">
                     <Avatar>
-                        <AvatarImage src={user.photoURL ?? undefined} />
+                        <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'Avatar'} />
                         <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className='overflow-hidden'>
