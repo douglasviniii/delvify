@@ -65,27 +65,18 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
     }
     
     try {
-        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
-        // Firestore queries with 'where' clauses on different fields might require a composite index.
-        // If this query fails due to a missing index, a fallback to fetching all and filtering is needed.
-        // For now, we assume the simple index on 'slug' is sufficient or will be auto-created.
-        const q = postsCollectionRef.where('slug', '==', slug).limit(1);
-        const querySnapshot = await q.get();
-
-        if (querySnapshot.empty) {
+        const allPosts = await getAllBlogPosts(tenantId);
+        const post = allPosts.find(p => p.slug === slug);
+        
+        if (!post) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
             return null;
         }
         
-        const postDoc = querySnapshot.docs[0];
-        return serializePost(postDoc);
+        return post;
 
     } catch (error) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
-        // Fallback for cases where the query fails (e.g., missing index)
-        console.log("Fallback: Fetching all posts and filtering by slug.");
-        const allPosts = await getAllBlogPosts(tenantId);
-        const post = allPosts.find(p => p.slug === slug);
-        return post || null;
+        return null;
     }
 }
