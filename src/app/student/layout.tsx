@@ -16,7 +16,6 @@ import { useState, useEffect } from 'react';
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
   { href: '/student/courses', label: 'Meus Cursos', icon: Book },
-  { href: '/student/profile', label: 'Meu Perfil', icon: UserIcon },
   { href: '/student/certificates', label: 'Certificados', icon: GraduationCap },
   { href: '/student/purchases', label: 'Minhas Compras', icon: ShoppingBag },
 ];
@@ -71,17 +70,19 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                 </Link>
             ))}
         </nav>
-        <div className="mt-auto">
-             <div className="flex items-center gap-3 p-2">
-                <Avatar>
-                    <AvatarImage src={user.photoURL ?? undefined} />
-                    <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className='overflow-hidden'>
-                    <p className="text-sm font-medium truncate">{user.displayName ?? 'Aluno'}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+        <div className="mt-auto space-y-1">
+             <Link href="/student/profile" className="block rounded-md p-2 hover:bg-muted">
+                <div className="flex items-center gap-3">
+                    <Avatar>
+                        <AvatarImage src={user.photoURL ?? undefined} />
+                        <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className='overflow-hidden'>
+                        <p className="text-sm font-medium truncate">{user.displayName ?? 'Aluno'}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
                 </div>
-            </div>
+            </Link>
             <Button variant="ghost" className="w-full justify-start gap-3" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
                 <span>Sair</span>
