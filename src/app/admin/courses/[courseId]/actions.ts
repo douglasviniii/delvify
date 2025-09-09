@@ -46,8 +46,7 @@ export async function saveCourseModules(tenantId: string, courseId: string, modu
             batch.update(moduleRef, data);
         } else {
             // Novo módulo, adiciona
-            // A ID será gerada automaticamente pelo Firestore
-            const moduleRef = doc(collection(modulesCollectionRef));
+            const moduleRef = doc(modulesCollectionRef); // Gera um novo doc com ID automático dentro da coleção
             batch.set(moduleRef, data);
         }
     });
