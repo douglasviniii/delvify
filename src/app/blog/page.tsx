@@ -2,90 +2,70 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { getAllBlogPosts } from '@/lib/blog-posts';
+import { getAllBlogPosts, type Post } from '@/lib/blog-posts';
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, UserCircle } from 'lucide-react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
+import { adminDb } from '@/lib/firebase-admin';
+import { initialPageData } from '@/lib/page-data';
+import { DefaultSection, BlogPageSection } from '@/components/page-sections';
 
 // Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
 // Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
+const SectionComponents: Record<string, React.FC<any>> = {
+  BlogPageSection,
+  DefaultSection,
+};
+
+async function getPageSections(tenantId: string, pageId: string) {
+    try {
+        const pageRef = adminDb.collection('tenants').doc(tenantId).collection('pages').doc(pageId);
+        const pageSnap = await pageRef.get();
+
+        if (pageSnap.exists) {
+            const pageData = pageSnap.data();
+            if (pageData && Array.isArray(pageData.sections)) {
+                return pageData.sections;
+            }
+        }
+        
+        console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
+        return initialPageData[pageId]?.sections || [];
+    } catch (error) {
+        console.error("Error fetching page sections, returning initial data:", error);
+        return initialPageData[pageId]?.sections || [];
+    }
+}
+
 
 export default async function BlogPage() {
   const posts = await getAllBlogPosts(TENANT_ID_WITH_POSTS);
   const settings = await getGlobalSettingsForTenant(TENANT_ID_WITH_POSTS);
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  }
+  const sections = await getPageSections(TENANT_ID_WITH_POSTS, 'blog');
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <MainHeader settings={settings} />
       <main className="flex-1">
-        <section className="py-12 md:py-20">
-          <div className="container px-4 md:px-6">
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl">Nosso Blog</h1>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Fique por dentro das últimas notícias, dicas e insights da nossa equipe.
-              </p>
-            </div>
+         {sections.map(section => {
+            const Component = SectionComponents[section.component];
+            if (!Component) {
+                console.warn(`Component for section type "${section.component}" not found.`);
+                return <DefaultSection key={section.id} settings={{title: "Componente não encontrado", description: `O componente para "${section.name}" não foi encontrado.`}} />;
+            }
+            
+            const props: { [key: string]: any } = { 
+                settings: section.settings 
+            };
 
-            {posts.length > 0 ? (
-                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {posts.map((post) => (
-                    <Card key={post.id} className="flex flex-col">
-                        <CardHeader>
-                            <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
-                                <Image
-                                    src={post.imageUrl}
-                                    alt={post.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                        </CardHeader>
-                        <CardContent className="flex-1 space-y-4">
-                            <CardTitle className="font-headline text-xl leading-snug">
-                                <Link href={`/blog/${post.slug}`} className="hover:text-primary transition-colors">
-                                    {post.title}
-                                </Link>
-                            </CardTitle>
-                            <CardDescription>{post.excerpt}</CardDescription>
-                        </CardContent>
-                        <CardFooter className="flex flex-col items-start gap-4">
-                           <div className="flex w-full justify-between items-center text-xs text-muted-foreground">
-                                <div className="flex items-center gap-2">
-                                    <UserCircle className="h-4 w-4" />
-                                    <span>{post.author}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>{formatDate(post.createdAt)}</span>
-                                </div>
-                           </div>
-                           <Button asChild variant="outline" className="w-full">
-                                <Link href={`/blog/${post.slug}`}>
-                                    Ler mais <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                ))}
-                </div>
-            ) : (
-              <div className="text-center py-16 border rounded-lg">
-                <h2 className="text-2xl font-semibold">Nenhum post encontrado.</h2>
-                <p className="text-muted-foreground mt-2">Volte em breve para conferir as novidades!</p>
-              </div>
-            )}
-          </div>
-        </section>
+            if (section.component === 'BlogPageSection') {
+                props.posts = posts;
+            }
+
+            return <Component key={section.id} {...props} />;
+        })}
       </main>
       <MainFooter />
     </div>

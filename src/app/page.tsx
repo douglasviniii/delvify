@@ -1,10 +1,11 @@
 
+
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
-import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection } from '@/components/page-sections';
+import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection, BlogPageSection } from '@/components/page-sections';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { adminDb } from '@/lib/firebase-admin';
-import { initialHomePageData } from '@/lib/page-data';
+import { initialPageData } from '@/lib/page-data';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 
@@ -18,6 +19,7 @@ const SectionComponents: Record<string, React.FC<any>> = {
   AiCustomizationSection,
   CoursesSection,
   LatestPostsSection,
+  BlogPageSection,
   DefaultSection,
   CtaSection
 };
@@ -36,10 +38,10 @@ async function getPageSections(tenantId: string, pageId: string) {
         }
         // If no sections are found or data is invalid, return default
         console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
-        return initialHomePageData.sections;
+        return initialPageData[pageId]?.sections || [];
     } catch (error) {
         console.error("Error fetching page sections, returning initial data:", error);
-        return initialHomePageData.sections;
+        return initialPageData[pageId]?.sections || [];
     }
 }
 

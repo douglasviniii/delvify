@@ -72,9 +72,12 @@ const homePageSections: Section[] = [
     },
     {
         id: "latest-posts",
-        name: "Seção de Blog",
+        name: "Seção de Blog da Home",
         component: "LatestPostsSection",
-        settings: {}
+        settings: {
+            title: "Últimas do Blog",
+            description: "Fique por dentro das novidades, dicas e artigos."
+        }
     },
     {
         id: "cta-section",
@@ -111,7 +114,18 @@ export const initialPageData: Record<string, PageData> = {
         sections: homePageSections,
     },
     courses: createDefaultPageData("Cursos", "CoursesSection"),
-    blog: createDefaultPageData("Blog", "LatestPostsSection"),
+    blog: {
+        title: "Página do Blog",
+        sections: [{
+            id: 'blog-page-main',
+            name: "Conteúdo da Página do Blog",
+            component: 'BlogPageSection',
+            settings: {
+                title: "Nosso Blog",
+                description: "Fique por dentro das últimas notícias, dicas e insights da nossa equipe."
+            }
+        }]
+    },
     faq: createDefaultPageData("FAQ", "DefaultSection"),
     about: createDefaultPageData("Quem Somos", "DefaultSection"),
     contact: createDefaultPageData("Contato", "DefaultSection"),

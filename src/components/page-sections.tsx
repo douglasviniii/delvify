@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck, Search, Star, Rocket } from 'lucide-react';
+import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck, Search, Star, Rocket, Calendar, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -50,6 +51,16 @@ const CourseCard = ({ course }: { course: any }) => (
         </CardFooter>
     </Card>
 );
+
+// Helper function to format date, can be used by blog sections
+const formatDate = (date: Date | string) => {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return 'Data inválida';
+    }
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
 
 // Centralized Section Components
 export const HeroSection = ({ settings }: { settings: any }) => (
@@ -197,23 +208,14 @@ export const CoursesSection = () => (
     </section>
 )
 
-export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
-    
-    const formatDate = (date: Date | string) => {
-        const d = new Date(date);
-        if (isNaN(d.getTime())) {
-          return 'Data inválida';
-        }
-        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-    }
-
+export const LatestPostsSection = ({ posts, settings }: { posts: Post[], settings: any }) => {
     if (!posts || posts.length === 0) {
         return (
             <section className="py-12 md:py-24 bg-secondary/50">
                 <div className="container mx-auto px-4 md:px-6">
                      <div className="mx-auto mb-12 max-w-2xl text-center">
-                        <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">Últimas do Blog</h2>
-                        <p className="mt-4 text-muted-foreground">Fique por dentro das novidades, dicas e artigos.</p>
+                        <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">{settings.title}</h2>
+                        <p className="mt-4 text-muted-foreground">{settings.description}</p>
                     </div>
                     <div className="text-center py-16 border rounded-lg bg-background">
                         <h2 className="text-xl font-semibold">Nenhum post encontrado.</h2>
@@ -228,8 +230,8 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
         <section className="py-12 md:py-24 bg-secondary/50">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="mx-auto mb-12 max-w-2xl text-center">
-                    <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">Últimas do Blog</h2>
-                    <p className="mt-4 text-muted-foreground">Fique por dentro das novidades, dicas e artigos.</p>
+                    <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">{settings.title}</h2>
+                    <p className="mt-4 text-muted-foreground">{settings.description}</p>
                 </div>
                 <Carousel
                     opts={{
@@ -280,6 +282,67 @@ export const LatestPostsSection = ({ posts }: { posts: Post[] }) => {
         </section>
     )
 }
+
+export const BlogPageSection = ({ posts, settings }: { posts: Post[], settings: any }) => (
+    <section className="py-12 md:py-20">
+        <div className="container px-4 md:px-6">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl">{settings.title}</h1>
+              <p className="mt-4 text-lg text-muted-foreground">{settings.description}</p>
+            </div>
+
+            {posts.length > 0 ? (
+                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {posts.map((post) => (
+                    <Card key={post.id} className="flex flex-col">
+                        <CardHeader>
+                            <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
+                                <Image
+                                    src={post.imageUrl}
+                                    alt={post.title}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-1 space-y-4">
+                            <CardTitle className="font-headline text-xl leading-snug">
+                                <Link href={`/blog/${post.slug}`} className="hover:text-primary transition-colors">
+                                    {post.title}
+                                </Link>
+                            </CardTitle>
+                            <CardDescription>{post.excerpt}</CardDescription>
+                        </CardContent>
+                        <CardFooter className="flex flex-col items-start gap-4">
+                           <div className="flex w-full justify-between items-center text-xs text-muted-foreground">
+                                <div className="flex items-center gap-2">
+                                    <UserCircle className="h-4 w-4" />
+                                    <span>{post.author}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{formatDate(post.createdAt)}</span>
+                                </div>
+                           </div>
+                           <Button asChild variant="outline" className="w-full">
+                                <Link href={`/blog/${post.slug}`}>
+                                    Ler mais <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ))}
+                </div>
+            ) : (
+              <div className="text-center py-16 border rounded-lg">
+                <h2 className="text-2xl font-semibold">Nenhum post encontrado.</h2>
+                <p className="text-muted-foreground mt-2">Volte em breve para conferir as novidades!</p>
+              </div>
+            )}
+        </div>
+    </section>
+);
+
 
 export const CtaSection = ({ settings }: { settings: any }) => (
     <section className="py-12 md:py-24 bg-primary/5 text-center">
