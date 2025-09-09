@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 
-export default function CourseContent({ course, modules }: { course: Course; modules: Module[] }) {
+export default function CourseViewer({ course, modules }: { course: Course; modules: Module[] }) {
     const [activeModule, setActiveModule] = useState<Module | null>(modules.length > 0 ? modules[0] : null);
     const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
 

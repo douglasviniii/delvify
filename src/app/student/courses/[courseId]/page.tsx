@@ -2,7 +2,7 @@
 
 import { notFound } from 'next/navigation';
 import { getCourseById, getCourseModules } from '@/lib/courses';
-import CourseContent from '@/app/courses/[courseId]/course-content';
+import CourseViewer from './course-viewer';
 
 
 // Este é o ID do inquilino para o qual os cursos estão sendo criados no admin.
@@ -26,6 +26,6 @@ export default async function StudentCoursePage({ params }: { params: { courseId
     const modules = await getCourseModules(TENANT_ID_WITH_COURSES, courseId);
 
     return (
-       <CourseContent course={course} modules={modules} />
+       <CourseViewer course={course} modules={modules} />
     );
 }
