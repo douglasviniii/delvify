@@ -23,7 +23,6 @@ const moduleSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(3, 'O título do módulo é obrigatório.'),
   contentUrl: z.string().url('A URL do conteúdo é obrigatória.'),
-  order: z.number(),
 });
 
 const courseModulesSchema = z.object({
@@ -192,7 +191,7 @@ export default function CourseModulesPage() {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => append({ title: '', contentUrl: '', order: fields.length })}
+                onClick={() => append({ title: '', contentUrl: '' })}
               >
                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Módulo
               </Button>

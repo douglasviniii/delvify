@@ -24,6 +24,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const courseSchema = z.object({
   title: z.string().min(3, 'O título é obrigatório.'),
@@ -51,6 +52,7 @@ export default function AdminCoursesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [user] = useAuthState(auth);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof courseSchema>>({
     resolver: zodResolver(courseSchema),
@@ -141,16 +143,19 @@ export default function AdminCoursesPage() {
       if (editingCourse) {
         await updateDoc(doc(db, tenantCoursesCollectionPath, editingCourse.id), { ...values, updatedAt: serverTimestamp() });
         toast({ title: 'Curso Atualizado' });
+        setIsDialogOpen(false);
+        router.push(`/admin/courses/${editingCourse.id}`);
       } else {
-        await addDoc(collection(db, tenantCoursesCollectionPath), {
+        const newCourseRef = await addDoc(collection(db, tenantCoursesCollectionPath), {
             ...values,
             createdAt: serverTimestamp()
         });
-        toast({ title: 'Curso Criado como Rascunho' });
+        toast({ title: 'Curso Criado como Rascunho', description: 'Agora adicione os módulos do curso.' });
+        setIsDialogOpen(false);
+        router.push(`/admin/courses/${newCourseRef.id}`);
       }
       form.reset();
       setEditingCourse(null);
-      setIsDialogOpen(false);
     } catch (error) {
       console.error(error);
       toast({ title: 'Erro ao salvar curso', description: 'Não foi possível salvar o curso.', variant: 'destructive' });
@@ -232,7 +237,7 @@ export default function AdminCoursesPage() {
                         <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={form.formState.isSubmitting}>
                             {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            {editingCourse ? 'Salvar Alterações' : 'Criar Rascunho'}
+                            {editingCourse ? 'Salvar Alterações' : 'Criar e Gerenciar Módulos'}
                         </Button>
                     </DialogFooter>
                 </form>
