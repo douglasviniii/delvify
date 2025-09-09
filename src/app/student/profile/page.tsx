@@ -169,7 +169,7 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-6">
                 <div className="relative group">
                     <Avatar className="h-24 w-24 border">
@@ -196,25 +196,25 @@ export default function StudentProfilePage() {
                         disabled={!isEditing}
                     />
                 </div>
-                <div>
+                <div className='flex flex-col'>
                     <h1 className="font-headline text-3xl font-bold tracking-tight">Meu Perfil</h1>
                     <p className="text-muted-foreground">Visualize e gerencie suas informações pessoais.</p>
+                     <div className='flex items-center gap-2 mt-4'>
+                        {isEditing ? (
+                            <>
+                                <Button onClick={handleSave} disabled={isSaving}>
+                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                    Salvar
+                                </Button>
+                                <Button variant="ghost" onClick={handleCancel}>Cancelar</Button>
+                            </>
+                        ) : (
+                            <Button variant="outline" onClick={() => setIsEditing(true)}>
+                                <Edit className="mr-2 h-4 w-4" /> Editar Perfil
+                            </Button>
+                        )}
+                    </div>
                 </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              {isEditing ? (
-                  <>
-                      <Button variant="ghost" onClick={handleCancel}>Cancelar</Button>
-                      <Button onClick={handleSave} disabled={isSaving}>
-                          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          Salvar
-                      </Button>
-                  </>
-              ) : (
-                <Button variant="outline" onClick={() => setIsEditing(true)}>
-                    <Edit className="mr-2 h-4 w-4" /> Editar Perfil
-                </Button>
-              )}
             </div>
         </div>
 
