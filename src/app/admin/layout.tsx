@@ -20,14 +20,6 @@ import { useState, useEffect } from 'react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
@@ -65,7 +57,9 @@ const AdminSidebarMenu = () => {
   const { setOpenMobile } = useSidebar();
   
   const handleLinkClick = () => {
-    setOpenMobile(false);
+    if(setOpenMobile) {
+      setOpenMobile(false);
+    }
   }
 
   return (
@@ -164,9 +158,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarFooter>
             <Separator className="my-2" />
             <div className="p-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start gap-2 px-2">
+                <Button asChild variant="ghost" className="w-full h-auto justify-start gap-2 px-2">
+                  <Link href="/admin/profile">
                     {isLoading ? (
                       <>
                         <Skeleton className="h-8 w-8 rounded-full" />
@@ -187,19 +180,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </div>
                       </>
                     )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mb-2">
-                  <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <Link href="/admin/profile">
-                    <DropdownMenuItem>Perfil</DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem>Faturamento</DropdownMenuItem>
-                  <DropdownMenuItem>Equipe</DropdownMenuItem>
-                  <DropdownMenuItem>Assinatura</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </Button>
             </div>
 
             <Separator className="my-2" />
