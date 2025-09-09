@@ -23,6 +23,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Link from 'next/link';
 
 const courseSchema = z.object({
   title: z.string().min(3, 'O título é obrigatório.'),
@@ -278,9 +279,11 @@ export default function AdminCoursesPage() {
                                    <DropdownMenuItem onClick={() => handleEdit(course)}>
                                        <Edit className="mr-2 h-4 w-4" /> Editar Detalhes
                                    </DropdownMenuItem>
-                                   <DropdownMenuItem>
-                                       Gerenciar Módulos
-                                   </DropdownMenuItem>
+                                   <Link href={`/admin/courses/${course.id}`} passHref>
+                                    <DropdownMenuItem>
+                                        Gerenciar Módulos
+                                    </DropdownMenuItem>
+                                   </Link>
                                    <DropdownMenuSeparator />
                                    <AlertDialog>
                                         <AlertDialogTrigger asChild>
