@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
 import CourseReviews from './course-reviews';
+import Link from 'next/link';
 
 
 // Este é o ID do inquilino para o qual os cursos estão sendo criados no admin.
@@ -57,8 +58,8 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                                         </span>
                                     ) : `R$ ${course.price}`}
                                 </div>
-                                <Button size="lg" className="w-full text-lg h-12">
-                                    Comprar Agora
+                                <Button size="lg" className="w-full text-lg h-12" asChild>
+                                    <Link href="/login">Comprar Agora</Link>
                                 </Button>
                             </div>
                        </div>

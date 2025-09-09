@@ -173,10 +173,10 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] md:h-[calc(100vh-12rem)]">
+        <div className="flex flex-col md:flex-row h-full md:h-[calc(100vh-56px)]">
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col bg-slate-900 text-white">
-                <div className="flex-1 relative aspect-video">
+                <div className="flex-1 relative aspect-video md:aspect-auto">
                     {renderContent()}
                 </div>
                  <div className="p-4 bg-slate-800 flex justify-between items-center">

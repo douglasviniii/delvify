@@ -98,12 +98,18 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     router.push('/login');
   };
 
+  const isWatchPage = pathname.includes('/watch');
+
   if (loading) {
       return <div>Carregando...</div>;
   }
   
   if (!user) {
       return null;
+  }
+
+  if(isWatchPage) {
+      return <main className="h-screen flex flex-col">{children}</main>;
   }
 
 
