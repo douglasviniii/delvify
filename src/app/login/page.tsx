@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -21,6 +21,9 @@ import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, UserPlus, Building } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
+
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('delvify@delvin.com');
@@ -28,6 +31,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    getGlobalSettingsForTenant(MAIN_TENANT_ID).then(settings => {
+      setLogoUrl(settings.logoUrl);
+    });
+  }, []);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,7 +77,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <div className="absolute top-8">
-        <Logo />
+        <Logo logoUrl={logoUrl}/>
       </div>
       <Card className="w-full max-w-sm">
         <CardHeader>

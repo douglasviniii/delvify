@@ -12,6 +12,7 @@ import { signOut, type User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
@@ -20,10 +21,13 @@ const menuItems = [
   { href: '/student/purchases', label: 'Minhas Compras', icon: ShoppingBag },
 ];
 
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -32,6 +36,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       setUser(currentUser);
       setLoading(false);
     });
+
+    getGlobalSettingsForTenant(MAIN_TENANT_ID).then(settings => {
+        setLogoUrl(settings.logoUrl);
+    })
+
     return () => unsubscribe();
   }, []);
 
@@ -55,7 +64,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     <div className="flex min-h-screen">
       <aside className="w-64 border-r bg-background flex flex-col p-4">
         <div className="mb-8">
-            <Logo />
+            <Logo logoUrl={logoUrl} />
         </div>
         <nav className="flex-1 space-y-2">
             {menuItems.map((item) => (

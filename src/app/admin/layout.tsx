@@ -45,6 +45,7 @@ import { auth } from '@/lib/firebase';
 import { signOut, User } from 'firebase/auth';
 import { getTenantProfile } from './profile/actions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -63,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<User | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>('Admin');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -70,13 +72,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setUser(currentUser);
       if (currentUser) {
         try {
-          const profile = await getTenantProfile(currentUser.uid);
+          const [profile, settings] = await Promise.all([
+            getTenantProfile(currentUser.uid),
+            getGlobalSettingsForTenant(currentUser.uid)
+          ]);
+
           if (profile) {
             setProfileImage(profile.profileImage);
             setCompanyName(profile.companyName || 'Admin');
           }
+          if(settings) {
+            setLogoUrl(settings.logoUrl);
+          }
         } catch (error) {
-          console.error("Failed to fetch tenant profile for layout", error);
+          console.error("Failed to fetch tenant profile or settings for layout", error);
         }
       }
       setIsLoading(false);
@@ -115,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Sidebar>
         <SidebarHeader>
           <div className="p-2">
-            <Logo />
+            <Logo logoUrl={logoUrl} />
           </div>
         </SidebarHeader>
         <SidebarContent>
