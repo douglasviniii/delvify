@@ -169,11 +169,11 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-start justify-between">
+       <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-6">
                 <div className="relative group">
                     <Avatar className="h-24 w-24 border">
-                        <AvatarImage src={profile.photoURL ?? undefined} alt={profile.socialName} />
+                        <AvatarImage src={profile.photoURL ?? undefined} alt={profile.socialName || ''} />
                         <AvatarFallback className="text-3xl">{profile.socialName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     {isEditing && (
