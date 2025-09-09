@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { auth } from '@/lib/firebase';
-import { initialHomePageData } from '@/lib/page-data';
+import { initialPageData } from '@/lib/page-data';
 
 const savePageSchema = z.object({
   pageId: z.string(),
@@ -93,11 +93,25 @@ export async function getPageDataForStudio(tenantId: string, pageId: string) {
             }
         }
         
-        // If no document or no sections, return initial data
-        console.log(`No data found for page ${pageId} in tenant ${tenantId}. Returning initial data.`);
+        // Fallback to specific initial data for the given pageId
+        if (initialPageData[pageId]) {
+             console.log(`No data found for page ${pageId} in tenant ${tenantId}. Returning initial data.`);
+             return initialPageData[pageId];
+        }
+
+        // If pageId is not in our initial data map, return a very generic default
+        console.warn(`No specific initial data for pageId: ${pageId}. Returning generic default.`);
         return {
-            title: 'Página Inicial (Padrão)',
-            sections: initialHomePageData.sections,
+            title: `Página ${pageId}`,
+            sections: [{
+                id: 'default-section',
+                name: 'Seção Padrão',
+                component: 'DefaultSection',
+                settings: {
+                    title: `Bem-vindo à página ${pageId}`,
+                    description: 'Edite esta página para adicionar seu conteúdo.'
+                }
+            }]
         };
 
     } catch (error) {
