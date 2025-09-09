@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
 import { signOut, type User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger
+  SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -35,8 +35,35 @@ const menuItems = [
 
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-export default function StudentLayout({ children }: { children: React.ReactNode }) {
+const StudentSidebarMenu = () => {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+  
+  const handleLinkClick = () => {
+    setOpenMobile(false);
+  }
+
+  return (
+    <SidebarMenu>
+        {menuItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+            <Link href={item.href} onClick={handleLinkClick}>
+                <SidebarMenuButton
+                isActive={pathname.startsWith(item.href)}
+                className="w-full justify-start gap-3"
+                >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                </SidebarMenuButton>
+            </Link>
+            </SidebarMenuItem>
+        ))}
+    </SidebarMenu>
+  );
+};
+
+
+export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -84,21 +111,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             </div>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarMenu>
-                {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.label}>
-                    <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                        isActive={pathname.startsWith(item.href)}
-                        className="w-full justify-start gap-3"
-                        >
-                            <item.icon className="h-5 w-5" />
-                            <span>{item.label}</span>
-                        </SidebarMenuButton>
-                    </Link>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
+            <StudentSidebarMenu />
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>

@@ -38,6 +38,7 @@ import {
   SidebarInset,
   SidebarFooter,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -59,6 +60,34 @@ const menuItems = [
   { href: '/admin/users', label: 'Alunos', icon: GraduationCap },
 ];
 
+const AdminSidebarMenu = () => {
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+  
+  const handleLinkClick = () => {
+    setOpenMobile(false);
+  }
+
+  return (
+    <SidebarMenu>
+      {menuItems.map((item) => (
+        <SidebarMenuItem key={item.label}>
+          <Link href={item.href} onClick={handleLinkClick}>
+            <SidebarMenuButton
+              isActive={pathname.startsWith(item.href)}
+              tooltip={item.label}
+            >
+              <item.icon />
+              <span>{item.label}</span>
+            </SidebarMenuButton>
+          </Link>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+};
+
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -68,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [companyName, setCompanyName] = useState<string>('Admin');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
@@ -115,7 +144,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isSiteStudioEditorPage = pathname.startsWith('/admin/site-studio/') && pathname !== '/admin/site-studio/settings' && pathname.split('/').length > 3;
 
-  // Retorna um layout especial apenas para a página de edição de página (ex: /admin/site-studio/home)
   if (isSiteStudioEditorPage) {
     return <main className="h-screen flex flex-col">{children}</main>;
   }
@@ -131,21 +159,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <Link href={item.href}>
-                    <SidebarMenuButton
-                      isActive={pathname.startsWith(item.href)}
-                      tooltip={item.label}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <AdminSidebarMenu />
           </SidebarContent>
           <SidebarFooter>
             <Separator className="my-2" />
