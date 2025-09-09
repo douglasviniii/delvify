@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { adminDb } from './firebase-admin';
@@ -65,18 +66,29 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
     }
     
     try {
-        const allPosts = await getAllBlogPosts(tenantId);
-        const post = allPosts.find(p => p.slug === slug);
-        
-        if (!post) {
+        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
+        const snapshot = await postsCollectionRef.where('slug', '==', slug).limit(1).get();
+
+        if (snapshot.empty) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
             return null;
         }
         
-        return post;
+        const postDoc = snapshot.docs[0];
+        return serializePost(postDoc);
 
     } catch (error) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
-        return null;
+        // Fallback for environments where indexes might not be configured.
+        // This is less efficient but more robust.
+        try {
+            console.log(`Falling back to manual search for slug: ${slug}`);
+            const allPosts = await getAllBlogPosts(tenantId);
+            const post = allPosts.find(p => p.slug === slug);
+            return post || null;
+        } catch (fallbackError) {
+             console.error(`Fallback search also failed for slug ${slug}:`, fallbackError);
+             return null;
+        }
     }
 }
