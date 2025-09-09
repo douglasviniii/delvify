@@ -12,7 +12,6 @@ import { signOut, type User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +24,7 @@ import {
   SidebarProvider,
   SidebarTrigger
 } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
@@ -76,67 +76,69 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="p-4">
-              <Logo logoUrl={logoUrl} />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-              {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.label}>
-                  <Link href={item.href} passHref>
-                      <SidebarMenuButton
-                      isActive={pathname.startsWith(item.href)}
-                      className="w-full justify-start gap-3"
-                      >
-                          <item.icon className="h-5 w-5" />
-                          <span>{item.label}</span>
-                      </SidebarMenuButton>
-                  </Link>
-                  </SidebarMenuItem>
-              ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarMenu>
-              <SidebarMenuItem>
-                   <Link href="/student/profile" className="block rounded-md p-2 hover:bg-muted">
-                      <div className="flex items-center gap-3">
-                          <Avatar>
-                              <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'Avatar'} />
-                              <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className='overflow-hidden'>
-                              <p className="text-sm font-medium truncate">{user.displayName ?? 'Aluno'}</p>
-                              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                          </div>
-                      </div>
-                  </Link>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                  <SidebarMenuButton onClick={handleLogout} className="w-full justify-start gap-3">
-                      <LogOut className="h-5 w-5" />
-                      <span>Sair</span>
-                  </SidebarMenuButton>
-              </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-         <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
-            <SidebarTrigger>
-                <Menu />
-            </SidebarTrigger>
-            <div className="md:hidden">
+      <TooltipProvider>
+        <Sidebar>
+          <SidebarHeader>
+            <div className="p-4">
                 <Logo logoUrl={logoUrl} />
             </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-            {children}
-        </main>
-      </SidebarInset>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+                {menuItems.map((item) => (
+                    <SidebarMenuItem key={item.label}>
+                    <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                        isActive={pathname.startsWith(item.href)}
+                        className="w-full justify-start gap-3"
+                        >
+                            <item.icon className="h-5 w-5" />
+                            <span>{item.label}</span>
+                        </SidebarMenuButton>
+                    </Link>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <Link href="/student/profile" className="block rounded-md p-2 hover:bg-muted">
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'Avatar'} />
+                                <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className='overflow-hidden'>
+                                <p className="text-sm font-medium truncate">{user.displayName ?? 'Aluno'}</p>
+                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                            </div>
+                        </div>
+                    </Link>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={handleLogout} className="w-full justify-start gap-3">
+                        <LogOut className="h-5 w-5" />
+                        <span>Sair</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
+              <SidebarTrigger>
+                  <Menu />
+              </SidebarTrigger>
+              <div className="md:hidden">
+                  <Logo logoUrl={logoUrl} />
+              </div>
+          </header>
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+              {children}
+          </main>
+        </SidebarInset>
+      </TooltipProvider>
     </SidebarProvider>
   );
 }

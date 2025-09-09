@@ -47,6 +47,7 @@ import { signOut, User } from 'firebase/auth';
 import { getTenantProfile } from './profile/actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -122,100 +123,102 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="p-2">
-            <Logo logoUrl={logoUrl} />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <Link href={item.href}>
-                  <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href)}
-                    tooltip={item.label}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <Separator className="my-2" />
-          <div className="p-2">
-             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start gap-2 px-2">
-                  {isLoading ? (
-                    <>
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <div className="space-y-1">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-32" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={profileImage ?? undefined} alt={companyName} data-ai-hint="person face" />
-                        <AvatarFallback>{companyName ? companyName.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
-                      </Avatar>
-                      <div className="text-left overflow-hidden">
-                          <p className="text-sm font-medium truncate">{companyName}</p>
-                          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </div>
-                    </>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 mb-2">
-                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <Link href="/admin/profile">
-                  <DropdownMenuItem>Perfil</DropdownMenuItem>
-                </Link>
-                <DropdownMenuItem>Faturamento</DropdownMenuItem>
-                <DropdownMenuItem>Equipe</DropdownMenuItem>
-                <DropdownMenuItem>Assinatura</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <Separator className="my-2" />
-          <SidebarMenu>
-            <SidebarMenuItem>
-               <Link href="/admin/settings">
-                  <SidebarMenuButton isActive={pathname === '/admin/settings'}>
-                    <Settings />
-                    <span>Configuração</span>
-                  </SidebarMenuButton>
-                </Link>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleLogout}>
-                  <LogOut />
-                  <span>Sair</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
-            <SidebarTrigger>
-                <Menu />
-            </SidebarTrigger>
-            <div className="md:hidden">
-                <Logo logoUrl={logoUrl} />
+      <TooltipProvider>
+        <Sidebar>
+          <SidebarHeader>
+            <div className="p-2">
+              <Logo logoUrl={logoUrl} />
             </div>
-        </header>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
-      </SidebarInset>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.label}>
+                  <Link href={item.href}>
+                    <SidebarMenuButton
+                      isActive={pathname.startsWith(item.href)}
+                      tooltip={item.label}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter>
+            <Separator className="my-2" />
+            <div className="p-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start gap-2 px-2">
+                    {isLoading ? (
+                      <>
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-32" />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={profileImage ?? undefined} alt={companyName} data-ai-hint="person face" />
+                          <AvatarFallback>{companyName ? companyName.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-left overflow-hidden">
+                            <p className="text-sm font-medium truncate">{companyName}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                        </div>
+                      </>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 mb-2">
+                  <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link href="/admin/profile">
+                    <DropdownMenuItem>Perfil</DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem>Faturamento</DropdownMenuItem>
+                  <DropdownMenuItem>Equipe</DropdownMenuItem>
+                  <DropdownMenuItem>Assinatura</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <Separator className="my-2" />
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <Link href="/admin/settings">
+                    <SidebarMenuButton isActive={pathname === '/admin/settings'}>
+                      <Settings />
+                      <span>Configuração</span>
+                    </SidebarMenuButton>
+                  </Link>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                  <SidebarMenuButton onClick={handleLogout}>
+                    <LogOut />
+                    <span>Sair</span>
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
+              <SidebarTrigger>
+                  <Menu />
+              </SidebarTrigger>
+              <div className="md:hidden">
+                  <Logo logoUrl={logoUrl} />
+              </div>
+          </header>
+          <main className="flex-1 p-4 sm:p-6">{children}</main>
+        </SidebarInset>
+      </TooltipProvider>
     </SidebarProvider>
   );
 }
