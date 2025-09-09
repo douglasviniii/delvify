@@ -55,20 +55,22 @@ type Course = {
 
 const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean }) => (
     <Card className="overflow-hidden shadow-lg flex flex-col group relative">
-        <CardHeader className="p-0">
-            <div className="relative aspect-video w-full">
-                <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
-                {course.tag && (
-                    <Badge variant="secondary" className="absolute top-2 right-2">{course.tag}</Badge>
-                )}
-                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-            </div>
-        </CardHeader>
-        <CardContent className="p-4 flex-1 flex flex-col">
-            <h3 className="font-headline text-lg font-semibold flex-1 leading-tight">{course.title}</h3>
-            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
-        </CardContent>
-        <CardFooter className="p-4 bg-muted/20 flex justify-between items-center">
+        <Link href={`/admin/courses/${course.id}`} className="flex flex-col flex-1">
+            <CardHeader className="p-0">
+                <div className="relative aspect-video w-full">
+                    <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
+                    {course.tag && (
+                        <Badge variant="secondary" className="absolute top-2 right-2">{course.tag}</Badge>
+                    )}
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                </div>
+            </CardHeader>
+            <CardContent className="p-4 flex-1 flex flex-col">
+                <h3 className="font-headline text-lg font-semibold flex-1 leading-tight">{course.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
+            </CardContent>
+        </Link>
+        <CardFooter className="p-4 bg-muted/20 flex justify-between items-center z-10">
              <div className="text-lg font-bold text-primary">
                 {course.promotionalPrice && course.promotionalPrice !== course.price ? (
                     <span>
@@ -79,7 +81,10 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Cour
             <Button 
               size="sm" 
               variant={course.status === 'published' ? 'secondary' : 'default'}
-              onClick={() => onStatusChange(course.status === 'draft' ? 'published' : 'draft')}
+              onClick={(e) => {
+                  e.stopPropagation(); // Impede que o clique no botão ative o link do card
+                  onStatusChange(course.status === 'draft' ? 'published' : 'draft')
+              }}
               disabled={isChangingStatus}
             >
                 {isChangingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : (course.status === 'published' ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4"/>)}
