@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 
 export default function StudentSignupPage() {
   const [name, setName] = useState('');
+  const [socialName, setSocialName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -57,13 +58,14 @@ export default function StudentSignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Update user profile with display name
-      await updateProfile(user, { displayName: name });
+      // Update user profile with display name (social name)
+      await updateProfile(user, { displayName: socialName || name });
       
       // Save additional user data to Firestore
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         name,
+        socialName: socialName || name,
         email,
         cpf,
         birthDate,
@@ -113,9 +115,15 @@ export default function StudentSignupPage() {
         </CardHeader>
         <form onSubmit={handleSignup}>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="name">Nome Completo</Label>
-                <Input id="name" type="text" placeholder="Seu nome completo" required value={name} onChange={(e) => setName(e.target.value)} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="name">Nome Completo (para certificados e faturas)</Label>
+                    <Input id="name" type="text" placeholder="Seu nome completo" required value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="socialName">Nome Social / Apelido</Label>
+                    <Input id="socialName" type="text" placeholder="Como devemos te chamar?" required value={socialName} onChange={(e) => setSocialName(e.target.value)} />
+                </div>
             </div>
 
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

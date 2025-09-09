@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 
 type UserProfile = {
   name: string;
+  socialName: string;
   email: string;
   cpf: string;
   birthDate: string;
@@ -101,9 +102,15 @@ export default function StudentProfilePage() {
             <CardContent className="space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Nome Completo</Label>
+                        <Label htmlFor="name">Nome Completo (Legal)</Label>
                         <Input id="name" value={profile.name} readOnly />
                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="socialName">Nome Social / Apelido</Label>
+                        <Input id="socialName" value={profile.socialName} readOnly />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" value={profile.email} readOnly />
