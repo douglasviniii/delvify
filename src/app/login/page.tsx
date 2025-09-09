@@ -19,7 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UserPlus, Building } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('delvify@delvin.com');
@@ -33,12 +34,24 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({
-        title: 'Login bem-sucedido!',
-        description: 'Redirecionando para o painel...',
-      });
-      router.push('/admin/dashboard');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // A simple way to distinguish between an admin/tenant and a student.
+      // In a real app, this could be based on custom claims in Firebase Auth.
+      if (userCredential.user.uid === 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2') {
+         toast({
+          title: 'Login de Admin bem-sucedido!',
+          description: 'Redirecionando para o painel...',
+        });
+        router.push('/admin/dashboard');
+      } else {
+         toast({
+          title: 'Login bem-sucedido!',
+          description: 'Redirecionando para sua área...',
+        });
+        router.push('/student/courses');
+      }
+
     } catch (error) {
       console.error('Erro de login:', error);
       toast({
@@ -60,7 +73,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Login</CardTitle>
           <CardDescription>
-            Digite seu e-mail abaixo para fazer login em sua conta.
+            Acesse sua conta de aluno ou de administrador.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
@@ -98,14 +111,30 @@ export default function LoginPage() {
                 'Entrar'
               )}
             </Button>
-            <div className="mt-4 text-center text-sm">
-              Não tem uma conta?{' '}
-              <Link href="#" className="underline">
-                Cadastre-se
-              </Link>
-            </div>
           </CardFooter>
         </form>
+        
+        <Separator className="my-4" />
+        
+        <div className="p-6 pt-0 text-center text-sm text-muted-foreground">
+          Ainda não tem uma conta?
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 px-6 pb-6">
+            <Button variant="outline" asChild>
+                <Link href="/signup/student">
+                    <UserPlus className="mr-2 h-4 w-4"/>
+                    Sou Aluno
+                </Link>
+            </Button>
+             <Button variant="outline" asChild>
+                <Link href="/signup/tenant">
+                    <Building className="mr-2 h-4 w-4"/>
+                    Quero Vender
+                </Link>
+            </Button>
+        </div>
+
       </Card>
     </div>
   );
