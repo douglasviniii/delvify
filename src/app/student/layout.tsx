@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Book, Compass, GraduationCap, LogOut, ShoppingBag, User as UserIcon } from 'lucide-react';
+import { Book, Compass, GraduationCap, LogOut, ShoppingBag } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { signOut, type User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
@@ -62,25 +63,27 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 border-r bg-background flex flex-col p-4">
-        <div className="mb-8">
+    <div className="flex h-screen overflow-hidden">
+      <aside className="w-64 border-r bg-background flex flex-col">
+        <div className="p-4 border-b">
             <Logo logoUrl={logoUrl} />
         </div>
-        <nav className="flex-1 space-y-2">
-            {menuItems.map((item) => (
-                <Link key={item.label} href={item.href} passHref>
-                    <Button
-                    variant={pathname.startsWith(item.href) ? 'secondary' : 'ghost'}
-                    className="w-full justify-start gap-3"
-                    >
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.label}</span>
-                    </Button>
-                </Link>
-            ))}
-        </nav>
-        <div className="mt-auto space-y-1">
+        <ScrollArea className="flex-1">
+            <nav className="space-y-2 p-4">
+                {menuItems.map((item) => (
+                    <Link key={item.label} href={item.href} passHref>
+                        <Button
+                        variant={pathname.startsWith(item.href) ? 'secondary' : 'ghost'}
+                        className="w-full justify-start gap-3"
+                        >
+                            <item.icon className="h-5 w-5" />
+                            <span>{item.label}</span>
+                        </Button>
+                    </Link>
+                ))}
+            </nav>
+        </ScrollArea>
+        <div className="mt-auto space-y-1 p-4 border-t">
              <Link href="/student/profile" className="block rounded-md p-2 hover:bg-muted">
                 <div className="flex items-center gap-3">
                     <Avatar>
@@ -99,8 +102,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             </Button>
         </div>
       </aside>
-      <main className="flex-1 p-8">
-        {children}
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-8">
+            {children}
+        </div>
       </main>
     </div>
   );
