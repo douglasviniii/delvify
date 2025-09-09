@@ -1,15 +1,109 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useActionState } from 'react';
 import type { Course, Module } from '@/lib/courses';
-import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight, Star as StarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { submitReview } from '@/app/courses/[courseId]/actions'; // Re-using the same server action
+import { useFormStatus } from 'react-dom';
+import { Loader2 } from 'lucide-react';
+
+
+function ReviewSubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button className="w-full" type="submit" disabled={pending}>
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Enviar Avaliação
+        </Button>
+    )
+}
+
+function StarRating({ rating, setRating }: { rating: number, setRating?: (r: number) => void }) {
+    const [hover, setHover] = useState(0);
+
+    return (
+        <div className="flex items-center">
+            {[...Array(5)].map((_, index) => {
+                const ratingValue = index + 1;
+                return (
+                    <button
+                        key={index}
+                        type="button"
+                        onClick={() => setRating?.(ratingValue)}
+                        onMouseEnter={() => setHover(ratingValue)}
+                        onMouseLeave={() => setHover(0)}
+                        className="focus:outline-none"
+                    >
+                        <StarIcon
+                            className="h-8 w-8 transition-colors"
+                            fill={ratingValue <= (hover || rating) ? '#FBBF24' : 'none'}
+                            stroke={ratingValue <= (hover || rating) ? '#FBBF24' : 'currentColor'}
+                        />
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+const CourseReviewForm = ({ courseId, tenantId }: { courseId: string; tenantId: string }) => {
+    const [user, loading] = useAuthState(auth);
+    const { toast } = useToast();
+    const formRef = useRef<HTMLFormElement>(null);
+    const [rating, setRating] = useState(0);
+
+    const [state, formAction] = useActionState(submitReview, { success: false });
+
+    useEffect(() => {
+        if (state.message) {
+            toast({
+                title: state.success ? 'Sucesso!' : 'Erro!',
+                description: state.message,
+                variant: state.success ? 'default' : 'destructive',
+            });
+            if (state.success) {
+                formRef.current?.reset();
+                setRating(0);
+            }
+        }
+    }, [state, toast]);
+
+    if(loading) return <Loader2 className="animate-spin" />;
+
+    if(!user) return <p className='text-sm text-muted-foreground'>Você precisa estar logado para avaliar.</p>
+
+    return (
+        <form ref={formRef} action={formAction} className="space-y-4">
+            <input type="hidden" name="courseId" value={courseId} />
+            <input type="hidden" name="tenantId" value={tenantId} />
+            <input type="hidden" name="userId" value={user.uid} />
+            <input type="hidden" name="userName" value={user.displayName ?? 'Aluno Anônimo'} />
+            <input type="hidden" name="userAvatar" value={user.photoURL ?? ''} />
+            <input type="hidden" name="rating" value={rating} />
+            
+            <div>
+                <label className="block mb-2 font-medium">Sua nota:</label>
+                <StarRating rating={rating} setRating={setRating} />
+            </div>
+            <div>
+                <label htmlFor="comment" className="block mb-2 font-medium">Seu comentário:</label>
+                <Textarea id="comment" name="comment" placeholder="Descreva sua experiência com o curso..." rows={5} required />
+                 {state?.issues?.map(issue => <p key={issue} className="text-red-500 text-sm mt-1">{issue}</p>)}
+            </div>
+            <ReviewSubmitButton />
+        </form>
+    )
+}
+
 
 export default function CourseViewer({ course, modules }: { course: Course; modules: Module[] }) {
     const [activeModule, setActiveModule] = useState<Module | null>(modules.length > 0 ? modules[0] : null);
@@ -109,7 +203,7 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
                 </div>
                 <Separator />
                 <Tabs defaultValue="episodes" className="flex-1 flex flex-col min-h-0">
-                    <TabsList className="grid w-full grid-cols-2 rounded-none">
+                    <TabsList className="grid w-full grid-cols-3 rounded-none">
                         <TabsTrigger value="episodes">
                             <PlayCircle className="mr-2 h-4 w-4" />
                             Episódios
@@ -117,6 +211,10 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
                         <TabsTrigger value="tools">
                              <Notebook className="mr-2 h-4 w-4" />
                             Ferramentas
+                        </TabsTrigger>
+                         <TabsTrigger value="review">
+                             <StarIcon className="mr-2 h-4 w-4" />
+                            Avaliar
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="episodes" className="flex-1 overflow-auto">
@@ -159,6 +257,9 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
                                 </Button>
                             </div>
                         </div>
+                    </TabsContent>
+                     <TabsContent value="review" className="flex-1 overflow-auto p-4">
+                        <CourseReviewForm courseId={course.id} tenantId={course.tenantId} />
                     </TabsContent>
                 </Tabs>
             </aside>

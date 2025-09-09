@@ -5,6 +5,7 @@ import { adminDb } from './firebase-admin';
 
 export type Course = {
   id: string;
+  tenantId: string; // Added tenantId to course type
   title: string;
   description: string;
   price: string;
@@ -68,7 +69,8 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
     const querySnapshot = await coursesQuery.get();
     
     querySnapshot.forEach((doc) => {
-      courses.push(serializeDoc(doc) as Course);
+      const courseData = serializeDoc(doc) as Omit<Course, 'tenantId'>;
+      courses.push({ ...courseData, tenantId });
     });
 
     return courses;
@@ -86,7 +88,8 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
     try {
         const docRef = await adminDb.doc(`tenants/${tenantId}/courses/${courseId}`).get();
         if (docRef.exists) {
-            return serializeDoc(docRef) as Course;
+            const courseData = serializeDoc(docRef) as Omit<Course, 'tenantId'>;
+            return { ...courseData, tenantId };
         }
         return null;
     } catch (error) {

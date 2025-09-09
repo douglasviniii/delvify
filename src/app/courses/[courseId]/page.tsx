@@ -65,8 +65,6 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                     </div>
                 </div>
                 <CourseReviews 
-                    courseId={courseId} 
-                    tenantId={TENANT_ID_WITH_COURSES}
                     initialReviews={reviews} 
                 />
             </main>
