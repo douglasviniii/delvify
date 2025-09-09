@@ -34,6 +34,7 @@ const courseSchema = z.object({
   description: z.string().min(10, 'A descrição é muito curta.'),
   price: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido. Use 123,45").min(1, 'O preço é obrigatório.'),
   promotionalPrice: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido.").optional().or(z.literal('')),
+  category: z.string().min(2, 'A categoria é obrigatória.'),
   tag: z.string().optional(),
   coverImageUrl: z.string().url('A URL da imagem de capa é obrigatória.'),
   contentType: z.enum(['video', 'pdf'], { required_error: 'Selecione o tipo de conteúdo.' }),
@@ -45,6 +46,7 @@ type Course = {
   title: string;
   price: string;
   promotionalPrice?: string;
+  category: string;
   tag?: string;
   contentType: 'video' | 'pdf';
   status: 'draft' | 'published';
@@ -67,6 +69,7 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus, onEdit, onDelete
                 </div>
             </CardHeader>
             <CardContent className="p-4 flex-1 flex flex-col">
+                <Badge variant="outline" className="mb-2 w-fit">{course.category}</Badge>
                 <h3 className="font-headline text-lg font-semibold flex-1 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
                 <div className="flex items-center gap-1 text-yellow-500 mt-4">
@@ -154,11 +157,13 @@ export default function AdminCoursesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -170,6 +175,7 @@ export default function AdminCoursesPage() {
       description: '',
       price: '',
       promotionalPrice: '',
+      category: '',
       tag: '',
       coverImageUrl: '',
       contentType: undefined,
@@ -265,6 +271,7 @@ export default function AdminCoursesPage() {
     }
     
     const tenantCoursesCollectionPath = `tenants/${user.uid}/courses`;
+    const tenantCategoriesCollectionPath = `tenants/${user.uid}/categories`;
 
     try {
       if (editingCourse) {
@@ -280,6 +287,12 @@ export default function AdminCoursesPage() {
         setIsDialogOpen(false);
         router.push(`/admin/courses/${newCourseRef.id}`);
       }
+      
+      // Add or update category
+      const categoryDocRef = doc(db, tenantCategoriesCollectionPath, values.category.toLowerCase());
+      await updateDoc(categoryDocRef, { name: values.category, updatedAt: serverTimestamp() }, { merge: true });
+
+
       form.reset();
       setEditingCourse(null);
     } catch (error) {
@@ -289,6 +302,10 @@ export default function AdminCoursesPage() {
   };
   
   const coverImageUrl = form.watch('coverImageUrl');
+
+  if (loading) {
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -333,19 +350,15 @@ export default function AdminCoursesPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField control={form.control} name="contentType" render={({ field }) => (
-                            <FormItem><FormLabel>Tipo de Conteúdo Principal</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione o formato" /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="video"><Video className="inline-block mr-2 h-4 w-4"/> Conteúdo em Vídeo</SelectItem>
-                                    <SelectItem value="pdf"><FileText className="inline-block mr-2 h-4 w-4"/> Conteúdo em PDF</SelectItem>
-                                </SelectContent>
-                                </Select>
-                            <FormMessage />
+                         <FormField control={form.control} name="category" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Categoria</FormLabel>
+                                <FormControl><Input {...field} placeholder="Ex: Desenvolvimento Web" /></FormControl>
+                                <FormDescription>Ajuda a organizar e filtrar cursos.</FormDescription>
+                                <FormMessage />
                             </FormItem>
                         )} />
-                         <FormField control={form.control} name="tag" render={({ field }) => (
+                        <FormField control={form.control} name="tag" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Etiqueta do Curso (Opcional)</FormLabel>
                                 <FormControl><Input {...field} placeholder="Ex: Mais Vendido, Lançamento" /></FormControl>
@@ -354,6 +367,19 @@ export default function AdminCoursesPage() {
                             </FormItem>
                         )} />
                     </div>
+
+                    <FormField control={form.control} name="contentType" render={({ field }) => (
+                        <FormItem><FormLabel>Tipo de Conteúdo Principal</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione o formato" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                                <SelectItem value="video"><Video className="inline-block mr-2 h-4 w-4"/> Conteúdo em Vídeo</SelectItem>
+                                <SelectItem value="pdf"><FileText className="inline-block mr-2 h-4 w-4"/> Conteúdo em PDF</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )} />
 
                     <FormField control={form.control} name="coverImageUrl" render={({ field }) => (
                     <FormItem>
@@ -399,7 +425,7 @@ export default function AdminCoursesPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Título</TableHead>
-                                <TableHead>Etiqueta</TableHead>
+                                <TableHead>Categoria</TableHead>
                                 <TableHead>Preço (R$)</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead><span className="sr-only">Ações</span></TableHead>
@@ -410,7 +436,7 @@ export default function AdminCoursesPage() {
                             <TableRow key={course.id}>
                                 <TableCell className="font-medium">{course.title}</TableCell>
                                 <TableCell>
-                                    {course.tag && <Badge variant="outline">{course.tag}</Badge>}
+                                    <Badge variant="outline">{course.category}</Badge>
                                 </TableCell>
                                 <TableCell>
                                    {course.promotionalPrice && course.promotionalPrice !== course.price ? (
@@ -504,3 +530,5 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
+
+    

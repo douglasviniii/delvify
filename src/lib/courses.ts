@@ -9,6 +9,7 @@ export type Course = {
   description: string;
   price: string;
   promotionalPrice?: string;
+  category: string;
   tag?: string;
   coverImageUrl: string;
   contentType: 'video' | 'pdf';
@@ -23,6 +24,11 @@ export type Module = {
     description?: string;
     contentUrl: string;
     order: number;
+}
+
+export type Category = {
+    id: string;
+    name: string;
 }
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
@@ -99,3 +105,22 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
     }
 }
 
+export async function getAllCategories(tenantId: string): Promise<Category[]> {
+    if (!tenantId) {
+        return [];
+    }
+    try {
+        const categories: Category[] = [];
+        const catQuery = adminDb.collection(`tenants/${tenantId}/categories`).orderBy('name');
+        const querySnapshot = await catQuery.get();
+        querySnapshot.forEach(doc => {
+            categories.push(serializeDoc(doc) as Category);
+        })
+        return categories;
+    } catch (error) {
+        console.error(`Error fetching categories for tenant ${tenantId}:`, error);
+        return [];
+    }
+}
+
+    
