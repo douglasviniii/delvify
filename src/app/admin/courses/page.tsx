@@ -30,6 +30,8 @@ const courseSchema = z.object({
   title: z.string().min(3, 'O título é obrigatório.'),
   description: z.string().min(10, 'A descrição é muito curta.'),
   price: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido. Use 123,45").min(1, 'O preço é obrigatório.'),
+  promotionalPrice: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido.").optional().or(z.literal('')),
+  tag: z.string().optional(),
   coverImageUrl: z.string().url('A URL da imagem de capa é obrigatória.'),
   contentType: z.enum(['video', 'pdf'], { required_error: 'Selecione o tipo de conteúdo.' }),
   status: z.enum(['draft', 'published']).default('draft'),
@@ -39,6 +41,8 @@ type Course = {
   id: string;
   title: string;
   price: string;
+  promotionalPrice?: string;
+  tag?: string;
   contentType: 'video' | 'pdf';
   status: 'draft' | 'published';
   createdAt: any;
@@ -60,6 +64,8 @@ export default function AdminCoursesPage() {
       title: '',
       description: '',
       price: '',
+      promotionalPrice: '',
+      tag: '',
       coverImageUrl: '',
       contentType: undefined,
       status: 'draft',
@@ -113,7 +119,11 @@ export default function AdminCoursesPage() {
             ...fullCourseData
         } as Course & { description: string, coverImageUrl: string };
         setEditingCourse(fullCourse);
-        form.reset(fullCourse);
+        form.reset({
+          ...fullCourse,
+          promotionalPrice: fullCourse.promotionalPrice || '',
+          tag: fullCourse.tag || ''
+        });
         setIsDialogOpen(true);
     } else {
         toast({ title: "Erro", description: "Não foi possível carregar os dados completos do curso.", variant: "destructive"});
@@ -169,7 +179,7 @@ export default function AdminCoursesPage() {
         <div className="flex items-center justify-between">
             <div>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Studio de Cursos</h1>
-                <p className="text-muted-foreground">Crie e gerencie seus cursos, módulos e lições.</p>
+                <p className="text-muted-foreground">Crie e gerencie seus cursos, episódios e provas.</p>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
                 if (!isOpen) {
@@ -201,6 +211,12 @@ export default function AdminCoursesPage() {
                         <FormField control={form.control} name="price" render={({ field }) => (
                             <FormItem><FormLabel>Preço (BRL)</FormLabel><FormControl><Input {...field} placeholder="Ex: 99,90" /></FormControl><FormMessage /></FormItem>
                         )} />
+                        <FormField control={form.control} name="promotionalPrice" render={({ field }) => (
+                            <FormItem><FormLabel>Preço Promocional (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ex: 49,90" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="contentType" render={({ field }) => (
                             <FormItem><FormLabel>Tipo de Conteúdo Principal</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -211,6 +227,14 @@ export default function AdminCoursesPage() {
                                 </SelectContent>
                                 </Select>
                             <FormMessage />
+                            </FormItem>
+                        )} />
+                         <FormField control={form.control} name="tag" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Etiqueta do Curso (Opcional)</FormLabel>
+                                <FormControl><Input {...field} placeholder="Ex: Mais Vendido, Lançamento" /></FormControl>
+                                <FormDescription>Uma etiqueta curta para destacar o curso.</FormDescription>
+                                <FormMessage />
                             </FormItem>
                         )} />
                     </div>
@@ -237,7 +261,7 @@ export default function AdminCoursesPage() {
                         <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={form.formState.isSubmitting}>
                             {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            {editingCourse ? 'Salvar Alterações' : 'Criar e Gerenciar Módulos'}
+                            {editingCourse ? 'Salvar Alterações' : 'Criar e Gerenciar Episódios'}
                         </Button>
                     </DialogFooter>
                 </form>
@@ -252,7 +276,7 @@ export default function AdminCoursesPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Título</TableHead>
-                        <TableHead>Tipo</TableHead>
+                        <TableHead>Etiqueta</TableHead>
                         <TableHead>Preço (R$)</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead><span className="sr-only">Ações</span></TableHead>
@@ -263,9 +287,15 @@ export default function AdminCoursesPage() {
                     <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.title}</TableCell>
                         <TableCell>
-                           {course.contentType === 'video' ? <Video className="h-4 w-4 text-muted-foreground" /> : <FileText className="h-4 w-4 text-muted-foreground" />}
+                            {course.tag && <Badge variant="outline">{course.tag}</Badge>}
                         </TableCell>
-                        <TableCell>R$ {course.price}</TableCell>
+                        <TableCell>
+                           {course.promotionalPrice && course.promotionalPrice !== course.price ? (
+                                <span>
+                                    <span className="line-through text-muted-foreground">R$ {course.price}</span> R$ {course.promotionalPrice}
+                                </span>
+                           ) : `R$ ${course.price}`}
+                        </TableCell>
                         <TableCell>
                             <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
                                 {course.status === 'draft' ? 'Rascunho' : 'Publicado'}
@@ -286,7 +316,7 @@ export default function AdminCoursesPage() {
                                    </DropdownMenuItem>
                                    <Link href={`/admin/courses/${course.id}`} passHref>
                                     <DropdownMenuItem>
-                                        Gerenciar Módulos
+                                        Gerenciar Episódios
                                     </DropdownMenuItem>
                                    </Link>
                                    <DropdownMenuSeparator />
@@ -327,3 +357,5 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
+
+    

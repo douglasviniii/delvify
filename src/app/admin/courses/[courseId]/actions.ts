@@ -7,6 +7,7 @@ import { collection, writeBatch, doc, getDocs, deleteDoc, addDoc, updateDoc } fr
 interface Module {
   id?: string;
   title: string;
+  description?: string;
   contentUrl: string;
   order: number;
 }
@@ -33,7 +34,12 @@ export async function saveCourseModules(tenantId: string, courseId: string, modu
 
     // Adicionar novos ou atualizar existentes
     modules.forEach((module, index) => {
-        const data = { ...module, order: index };
+        const data = { 
+            title: module.title,
+            description: module.description || '',
+            contentUrl: module.contentUrl,
+            order: index 
+        };
         if (module.id && existingModulesMap.has(module.id)) {
             // Módulo existente, atualiza
             const moduleRef = doc(modulesCollectionRef, module.id);
@@ -48,5 +54,7 @@ export async function saveCourseModules(tenantId: string, courseId: string, modu
 
     await batch.commit();
 
-    return { success: true, message: "Módulos salvos com sucesso." };
+    return { success: true, message: "Episódios salvos com sucesso." };
 }
+
+    

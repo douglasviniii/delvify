@@ -15,13 +15,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion } from 'lucide-react';
+import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload } from 'lucide-react';
 import { saveCourseModules } from './actions';
 
 const moduleSchema = z.object({
   id: z.string().optional(),
-  title: z.string().min(3, 'O título do módulo é obrigatório.'),
+  title: z.string().min(3, 'O título do episódio é obrigatório.'),
+  description: z.string().optional(),
   contentUrl: z.string().url('A URL do conteúdo é obrigatória.'),
 });
 
@@ -105,10 +107,10 @@ export default function CourseModulesPage() {
     try {
         const modulesToSave = values.modules.map((module, index) => ({...module, order: index}));
         await saveCourseModules(user.uid, courseId, modulesToSave);
-        toast({ title: 'Sucesso!', description: 'Módulos do curso salvos.' });
+        toast({ title: 'Sucesso!', description: 'Episódios do curso salvos.' });
     } catch (error) {
         console.error("Error saving modules:", error);
-        toast({ title: "Erro ao Salvar", description: "Não foi possível salvar os módulos.", variant: "destructive" });
+        toast({ title: "Erro ao Salvar", description: "Não foi possível salvar os episódios.", variant: "destructive" });
     } finally {
         setIsSaving(false);
     }
@@ -127,7 +129,7 @@ export default function CourseModulesPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">Gerenciar Módulos</h1>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">Gerenciar Episódios</h1>
             <p className="text-muted-foreground">Curso: {course?.title}</p>
           </div>
       </div>
@@ -136,25 +138,25 @@ export default function CourseModulesPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Módulos do Curso</CardTitle>
+              <CardTitle>Episódios do Curso</CardTitle>
               <CardDescription>
-                Adicione, remova e reordene os módulos. O tipo de conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'PDF'}) foi definido na criação do curso.
+                Adicione, remova e reordene os episódios. O tipo de conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'PDF'}) foi definido na criação do curso.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {fields.map((field, index) => (
-                <Card key={field.id} className="p-4 relative">
+                <Card key={field.id} className="p-4 relative bg-muted/30">
                   <div className="flex items-start gap-4">
-                     <Button type="button" variant="ghost" size="icon" className="cursor-grab">
+                     <Button type="button" variant="ghost" size="icon" className="cursor-grab mt-6">
                         <GripVertical className="h-5 w-5 text-muted-foreground" />
                      </Button>
-                     <div className="flex-1 space-y-2">
+                     <div className="flex-1 space-y-4">
                         <FormField
                           control={form.control}
                           name={`modules.${index}.title`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Título do Módulo</FormLabel>
+                              <FormLabel>Título do Episódio</FormLabel>
                               <FormControl>
                                 <Input placeholder="Ex: Introdução ao Curso" {...field} />
                               </FormControl>
@@ -164,24 +166,45 @@ export default function CourseModulesPage() {
                         />
                         <FormField
                           control={form.control}
-                          name={`modules.${index}.contentUrl`}
+                          name={`modules.${index}.description`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>URL do Conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'PDF'})</FormLabel>
+                              <FormLabel>Descrição do Episódio (Opcional)</FormLabel>
                               <FormControl>
-                                <Input placeholder="https://..." {...field} />
+                                <Textarea placeholder="Descreva o que será abordado neste episódio." {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name={`modules.${index}.contentUrl`}
+                          render={({ field: urlField }) => (
+                            <FormItem>
+                               <FormLabel>Arquivo de Conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'PDF'})</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center gap-4">
+                                      <Input placeholder="Cole uma URL ou carregue um arquivo" {...urlField} />
+                                      <Button type="button" variant="outline">
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Carregar
+                                      </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                           )}
+                        />
                      </div>
-                     <div className='flex flex-col gap-2'>
-                        <Button type="button" variant="outline" size="icon" onClick={() => { /* Prova logic here */ }}>
+                     <div className='flex flex-col gap-2 mt-6'>
+                        <Button type="button" variant="outline" size="icon" onClick={() => toast({title: "Em breve!", description: "A criação de provas será implementada em breve."})}>
                             <FileQuestion className="h-4 w-4" />
+                             <span className="sr-only">Adicionar Prova</span>
                         </Button>
                         <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                             <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Excluir Episódio</span>
                         </Button>
                      </div>
                   </div>
@@ -190,17 +213,17 @@ export default function CourseModulesPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
-                onClick={() => append({ title: '', contentUrl: '' })}
+                className="w-full border-dashed"
+                onClick={() => append({ title: '', description: '', contentUrl: '' })}
               >
-                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Módulo
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Episódio
               </Button>
             </CardContent>
           </Card>
           <div className="flex justify-end">
              <Button type="submit" disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                Salvar Módulos
+                Salvar Alterações
             </Button>
           </div>
         </form>
@@ -208,3 +231,5 @@ export default function CourseModulesPage() {
     </div>
   );
 }
+
+    
