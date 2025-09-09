@@ -57,7 +57,6 @@ export default async function BlogPage() {
             }
             
             const props: { [key: string]: any } = { 
-                key: section.id,
                 settings: section.settings 
             };
 
@@ -65,7 +64,7 @@ export default async function BlogPage() {
                 props.posts = posts;
             }
 
-            return <Component {...props} />;
+            return <Component key={section.id} {...props} />;
         })}
       </main>
       <MainFooter />
