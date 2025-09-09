@@ -1,6 +1,6 @@
 
 import { notFound } from 'next/navigation';
-import { getCourseById } from '@/lib/courses';
+import { getCourseById, getCourseReviews, type Review } from '@/lib/courses';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
@@ -18,9 +18,10 @@ const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 export default async function CourseLandingPage({ params }: { params: { courseId: string } }) {
     const courseId = params.courseId;
     
-    const [course, settings] = await Promise.all([
+    const [course, settings, reviews] = await Promise.all([
         getCourseById(TENANT_ID_WITH_COURSES, courseId),
-        getGlobalSettingsForTenant(TENANT_ID_WITH_COURSES)
+        getGlobalSettingsForTenant(TENANT_ID_WITH_COURSES),
+        getCourseReviews(TENANT_ID_WITH_COURSES, courseId)
     ]);
     
     if (!course || course.status !== 'published') {
@@ -47,7 +48,7 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                                     <Star className="w-5 h-5" />
                                     <Star className="w-5 h-5" />
                                     <Star className="w-5 h-5" />
-                                    <span className="text-sm text-muted-foreground ml-1">(0 avaliações)</span>
+                                    <span className="text-sm text-muted-foreground ml-1">({reviews.length} avaliações)</span>
                                 </div>
                                 <div className="text-3xl font-bold text-primary">
                                     {course.promotionalPrice && course.promotionalPrice !== course.price ? (
@@ -63,10 +64,13 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                        </div>
                     </div>
                 </div>
-                <CourseReviews />
+                <CourseReviews 
+                    courseId={courseId} 
+                    tenantId={TENANT_ID_WITH_COURSES}
+                    initialReviews={reviews} 
+                />
             </main>
             <MainFooter />
         </div>
     );
 }
-

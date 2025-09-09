@@ -31,6 +31,16 @@ export type Category = {
     name: string;
 }
 
+export type Review = {
+    id: string;
+    authorId: string;
+    authorName: string;
+    authorAvatarUrl?: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+}
+
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
     if (!data) {
@@ -123,4 +133,22 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
     }
 }
 
-    
+export async function getCourseReviews(tenantId: string, courseId: string): Promise<Review[]> {
+    if (!tenantId || !courseId) {
+        return [];
+    }
+    try {
+        const reviews: Review[] = [];
+        const reviewsQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/reviews`).orderBy('createdAt', 'desc');
+        const querySnapshot = await reviewsQuery.get();
+
+        querySnapshot.forEach(doc => {
+            reviews.push(serializeDoc(doc) as Review);
+        });
+
+        return reviews;
+    } catch(error) {
+        console.error(`Error fetching reviews for course ${courseId}:`, error);
+        return [];
+    }
+}
