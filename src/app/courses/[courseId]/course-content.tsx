@@ -67,6 +67,7 @@ export default function CourseContent({ course, modules }: { course: Course; mod
                 <video
                     src={activeModule.contentUrl}
                     controls
+                    controlsList="nodownload"
                     className="w-full h-full object-contain"
                 >
                     Seu navegador não suporta a tag de vídeo.
