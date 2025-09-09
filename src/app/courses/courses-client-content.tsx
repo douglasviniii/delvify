@@ -1,58 +1,64 @@
+
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Search, Star } from "lucide-react";
+import type { Course } from '@/lib/courses';
 
-interface Course {
-    id: number;
-    title: string;
-    category: string;
-    price: string;
-    imageUrl: string;
-    rating: number;
-    students: number;
-    dataAiHint: string;
-}
 
 interface CoursesClientContentProps {
   allCourses: Course[];
 }
 
 const CourseCard = ({ course }: { course: Course }) => (
-    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-        <CardHeader className="p-0">
-            <div className="relative aspect-video w-full">
-                <Image src={course.imageUrl} alt={course.title} layout="fill" objectFit="cover" data-ai-hint={course.dataAiHint} />
-            </div>
-        </CardHeader>
-        <CardContent className="p-4 flex-1 flex flex-col">
-            <div className="flex justify-between items-center mb-2">
-                <Badge variant="secondary">{course.category}</Badge>
-                <div className="flex items-center gap-1 text-sm font-semibold">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                    <span>{course.rating}</span>
+    <Link href={`/courses/${course.id}`} className="flex">
+        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col w-full group">
+            <CardHeader className="p-0">
+                <div className="relative aspect-video w-full">
+                    <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
+                     {course.tag && (
+                        <Badge variant="secondary" className="absolute top-2 right-2">{course.tag}</Badge>
+                    )}
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
                 </div>
-            </div>
-            <h3 className="font-headline text-lg font-semibold flex-1">{course.title}</h3>
-            <p className="text-sm text-muted-foreground mt-2">{course.students.toLocaleString('pt-BR')} alunos</p>
-        </CardContent>
-        <CardFooter className="p-4 bg-muted/50 flex justify-between items-center">
-            <span className="text-xl font-bold text-primary">{course.price}</span>
-            <Button size="sm">Ver Curso</Button>
-        </CardFooter>
-    </Card>
+            </CardHeader>
+            <CardContent className="p-4 flex-1 flex flex-col">
+                <h3 className="font-headline text-lg font-semibold flex-1 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
+                 <div className="flex items-center gap-1 text-yellow-500 mt-4">
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
+                    <span className="text-xs text-muted-foreground ml-1">(0)</span>
+                </div>
+            </CardContent>
+            <CardFooter className="p-4 bg-muted/20 flex justify-between items-center">
+                 <div className="text-lg font-bold text-primary">
+                    {course.promotionalPrice && course.promotionalPrice !== course.price ? (
+                        <span>
+                            <span className="text-sm line-through text-muted-foreground mr-2">R$ {course.price}</span> R$ {course.promotionalPrice}
+                        </span>
+                    ) : `R$ ${course.price}`}
+                </div>
+                <Button size="sm">Ver Curso</Button>
+            </CardFooter>
+        </Card>
+    </Link>
 );
 
 export default function CoursesClientContent({ allCourses }: CoursesClientContentProps) {
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredCourses = allCourses.filter(course => 
-        course.title.toLowerCase().includes(searchTerm.toLowerCase())
+        (course.title?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
     );
     
     return (
