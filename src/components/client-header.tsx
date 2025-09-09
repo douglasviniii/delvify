@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Instagram, Facebook, Linkedin, Youtube, MessageCircle, Menu } from 'lucide-react';
 import type { GlobalSettings } from '@/lib/settings';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Separator } from './ui/separator';
 
 const socialIcons: { [key: string]: React.ReactNode } = {
   instagram: <Instagram className="h-5 w-5" />,
@@ -89,29 +90,36 @@ export function ClientHeader({ settings }: { settings: GlobalSettings }) {
                     <span className="sr-only">Abrir menu</span>
                   </Button>
               </SheetTrigger>
-              <SheetContent side="left">
-                 <SheetHeader>
+              <SheetContent side="left" className="flex flex-col p-0">
+                 <SheetHeader className="p-4">
                     <SheetTitle className="sr-only">Menu</SheetTitle>
-                    <div className="p-4 -mt-6">
-                        <Logo logoUrl={settings.logoUrl} />
-                    </div>
+                    <Logo logoUrl={settings.logoUrl} />
                  </SheetHeader>
-                  <nav className="mt-4 flex flex-col gap-4 px-4">
+                 <nav className="flex-1 px-4 mt-4 space-y-2">
                     {visibleNavItems.map((item) => (
                         <SheetClose asChild key={item.label}>
-                            <Link href={item.href} className="text-lg font-medium hover:text-primary transition-colors">
-                            {item.label}
+                            <Link href={item.href} className="block rounded-lg py-2 px-3 text-lg font-medium hover:bg-accent transition-colors">
+                                {item.label}
                             </Link>
                         </SheetClose>
                     ))}
-                  </nav>
-                  <div className="mt-8 px-4">
-                     <SheetClose asChild>
+                 </nav>
+                 <div className="p-4 border-t mt-auto">
+                    <SheetClose asChild>
                         <Button asChild className="w-full">
                            <Link href="/login">Login</Link>
                         </Button>
-                     </SheetClose>
-                  </div>
+                    </SheetClose>
+                     {settings.socialsLocation.showInHeader && socialLinksToShow.length > 0 && (
+                        <div className="flex justify-center items-center gap-4 pt-4">
+                            {socialLinksToShow.map(social => (
+                            <Link key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                                {social.icon}
+                            </Link>
+                            ))}
+                        </div>
+                    )}
+                 </div>
               </SheetContent>
             </Sheet>
 
