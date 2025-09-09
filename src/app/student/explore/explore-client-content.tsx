@@ -19,7 +19,7 @@ interface ExploreClientContentProps {
 }
 
 const CourseCard = ({ course }: { course: Course }) => (
-    <Link href={`/courses/${course.id}`} className="flex">
+    <Link href={`/student/courses/${course.id}`} className="flex">
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col w-full group">
             <CardHeader className="p-0">
                 <div className="relative aspect-video w-full">
@@ -113,6 +113,3 @@ export default function ExploreClientContent({ allCourses, allCategories }: Expl
         </div>
     );
 }
-
-
-    
