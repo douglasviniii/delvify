@@ -138,7 +138,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                                 <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? ''} />
                                 <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
                             </Avatar>
-                            <span>Perfil</span>
+                            <span>{user.displayName ?? 'Meu Perfil'}</span>
                           </>
                         )}
                     </SidebarMenuButton>
