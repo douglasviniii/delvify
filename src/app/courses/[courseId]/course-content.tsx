@@ -24,9 +24,11 @@ export default function CourseContent({ course, modules }: { course: Course; mod
         }
 
         if (course.contentType === 'pdf') {
+            // Use Google Docs viewer to embed the PDF and avoid cross-origin issues
+            const pdfUrl = `https://docs.google.com/gview?url=${encodeURIComponent(activeModule.contentUrl)}&embedded=true`;
             return (
                 <iframe
-                    src={activeModule.contentUrl}
+                    src={pdfUrl}
                     className="w-full h-full border-0"
                     title={activeModule.title}
                     allowFullScreen
