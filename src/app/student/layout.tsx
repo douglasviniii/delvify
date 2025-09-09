@@ -26,6 +26,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UserNav } from '@/components/ui/user-nav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 
 const menuItems = [
@@ -68,25 +69,24 @@ const StudentSidebarMenu = () => {
 
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, loading, error] = useAuthState(auth);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+    if (!loading && !user) {
+        router.push('/login');
+    }
+  }, [user, loading, router]);
 
+
+  useEffect(() => {
     getGlobalSettingsForTenant(MAIN_TENANT_ID).then(settings => {
         if(settings) {
             setLogoUrl(settings.logoUrl);
         }
     })
-
-    return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
@@ -100,7 +100,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }
   
   if (!user) {
-      router.push('/login');
+      // O useEffect acima já vai redirecionar, mas isso evita renderizar o layout para um usuário nulo.
       return null;
   }
 
