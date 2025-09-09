@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
   { href: '/student/courses', label: 'Meus Cursos', icon: Book },
+  { href: '/student/profile', label: 'Meu Perfil', icon: User },
   { href: '/student/certificates', label: 'Certificados', icon: GraduationCap },
   { href: '/student/purchases', label: 'Minhas Compras', icon: ShoppingBag },
 ];
