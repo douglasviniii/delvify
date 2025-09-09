@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -26,7 +26,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { updateCourseStatus } from './actions';
+import { updateCourseStatus, createCategory, deleteCategory } from './actions';
+import type { Category } from '@/lib/courses';
+import { useFormStatus } from 'react-dom';
 
 
 const courseSchema = z.object({
@@ -34,11 +36,15 @@ const courseSchema = z.object({
   description: z.string().min(10, 'A descrição é muito curta.'),
   price: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido. Use 123,45").min(1, 'O preço é obrigatório.'),
   promotionalPrice: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido.").optional().or(z.literal('')),
-  category: z.string().min(2, 'A categoria é obrigatória.'),
+  category: z.string().min(1, 'A categoria é obrigatória.'),
   tag: z.string().optional(),
   coverImageUrl: z.string().url('A URL da imagem de capa é obrigatória.'),
   contentType: z.enum(['video', 'pdf'], { required_error: 'Selecione o tipo de conteúdo.' }),
   status: z.enum(['draft', 'published']).default('draft'),
+});
+
+const categorySchema = z.object({
+    name: z.string().min(2, "O nome da categoria é obrigatório."),
 });
 
 type Course = {
@@ -148,8 +154,112 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus, onEdit, onDelete
     )
 };
 
+
+function CategoryForm({ tenantId }: { tenantId: string }) {
+    const { pending } = useFormStatus();
+    const formRef = useRef<HTMLFormElement>(null);
+    const { toast } = useToast();
+
+    async function action(formData: FormData) {
+        const name = formData.get('name');
+        if (typeof name !== 'string' || !tenantId) return;
+
+        const result = await createCategory(tenantId, name);
+        if (result.success) {
+            toast({ title: 'Sucesso!', description: 'Categoria criada.' });
+            formRef.current?.reset();
+        } else {
+            toast({ title: 'Erro', description: result.message, variant: 'destructive' });
+        }
+    }
+
+    return (
+        <form ref={formRef} action={action} className="flex items-center gap-2">
+            <Input name="name" placeholder="Nova Categoria (Ex: Desenvolvimento)" required/>
+            <Button type="submit" disabled={pending}>
+                {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                Criar
+            </Button>
+        </form>
+    );
+}
+
+function CategoryManager({ user }: { user: User | null }) {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (!user) return;
+        const tenantCategoriesPath = `tenants/${user.uid}/categories`;
+        const catQuery = query(collection(db, tenantCategoriesPath), orderBy('name'));
+        const unsubscribe = onSnapshot(catQuery, (snapshot) => {
+            setCategories(snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name })));
+        });
+        return () => unsubscribe();
+    }, [user]);
+
+    const handleDeleteCategory = async (categoryId: string) => {
+        if (!user) return;
+        const result = await deleteCategory(user.uid, categoryId);
+        if(result.success) {
+            toast({ title: 'Sucesso!', description: 'Categoria removida.' });
+        } else {
+            toast({ title: 'Erro', description: result.message, variant: 'destructive' });
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Gerenciar Categorias</CardTitle>
+                <CardDescription>Crie e remova categorias para organizar seus cursos.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {user && <CategoryForm tenantId={user.uid} />}
+            </CardContent>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead className="text-right">Ação</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {categories.map(cat => (
+                            <TableRow key={cat.id}>
+                                <TableCell>{cat.name}</TableCell>
+                                <TableCell className="text-right">
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta ação não pode ser desfeita. Excluir uma categoria não afeta cursos já existentes.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteCategory(cat.id)}>Sim, excluir</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -189,7 +299,7 @@ export default function AdminCoursesPage() {
     const tenantCoursesCollectionPath = `tenants/${user.uid}/courses`;
     const coursesQuery = query(collection(db, tenantCoursesCollectionPath), orderBy('createdAt', 'desc'));
     
-    const unsubscribe = onSnapshot(coursesQuery, (snapshot) => {
+    const unsubscribeCourses = onSnapshot(coursesQuery, (snapshot) => {
       const courseData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
       setCourses(courseData);
     }, (error) => {
@@ -197,7 +307,17 @@ export default function AdminCoursesPage() {
         toast({ title: "Erro", description: "Não foi possível carregar os cursos.", variant: "destructive" });
     });
 
-    return () => unsubscribe();
+    const tenantCategoriesPath = `tenants/${user.uid}/categories`;
+    const catQuery = query(collection(db, tenantCategoriesPath), orderBy('name'));
+    const unsubscribeCategories = onSnapshot(catQuery, (snapshot) => {
+        setCategories(snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name })));
+    });
+
+
+    return () => {
+        unsubscribeCourses();
+        unsubscribeCategories();
+    };
   }, [user, toast]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -271,7 +391,6 @@ export default function AdminCoursesPage() {
     }
     
     const tenantCoursesCollectionPath = `tenants/${user.uid}/courses`;
-    const tenantCategoriesCollectionPath = `tenants/${user.uid}/categories`;
 
     try {
       if (editingCourse) {
@@ -288,11 +407,6 @@ export default function AdminCoursesPage() {
         router.push(`/admin/courses/${newCourseRef.id}`);
       }
       
-      // Add or update category
-      const categoryDocRef = doc(db, tenantCategoriesCollectionPath, values.category.toLowerCase());
-      await updateDoc(categoryDocRef, { name: values.category, updatedAt: serverTimestamp() }, { merge: true });
-
-
       form.reset();
       setEditingCourse(null);
     } catch (error) {
@@ -350,14 +464,29 @@ export default function AdminCoursesPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <FormField control={form.control} name="category" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Categoria</FormLabel>
-                                <FormControl><Input {...field} placeholder="Ex: Desenvolvimento Web" /></FormControl>
-                                <FormDescription>Ajuda a organizar e filtrar cursos.</FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
+                        <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Categoria</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione uma categoria..." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {categories.map(cat => (
+                                                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>Ajuda a organizar e filtrar cursos.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField control={form.control} name="tag" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Etiqueta do Curso (Opcional)</FormLabel>
@@ -413,9 +542,10 @@ export default function AdminCoursesPage() {
         </div>
         
         <Tabs defaultValue="manage" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="manage">Gerenciar Cursos</TabsTrigger>
                 <TabsTrigger value="preview">Visualizar como Aluno</TabsTrigger>
+                <TabsTrigger value="categories">Categorias</TabsTrigger>
             </TabsList>
             <TabsContent value="manage">
                 <Card>
@@ -524,6 +654,9 @@ export default function AdminCoursesPage() {
                         </CardContent>
                      </Card>
                  )}
+            </TabsContent>
+            <TabsContent value="categories">
+                <CategoryManager user={user} />
             </TabsContent>
         </Tabs>
 
