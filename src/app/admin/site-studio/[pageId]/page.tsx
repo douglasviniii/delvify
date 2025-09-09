@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFormStatus } from "react-dom";
 import { savePage, getPageDataForStudio, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection } from "@/components/page-sections";
+import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/page-sections";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, storage, db } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -32,6 +32,10 @@ const SectionComponents: Record<string, React.FC<any>> = {
     CoursesSection,
     LatestPostsSection,
     DefaultSection,
+    CtaSection,
+    BlogPageSection,
+    AboutPageSection,
+    FaqPageSection,
 };
 
 const PagePreview = ({ sections, previewMode, posts }: { sections: any[], previewMode: 'desktop' | 'mobile', posts: Post[] }) => {
@@ -47,7 +51,7 @@ const PagePreview = ({ sections, previewMode, posts }: { sections: any[], previe
                         if (!Component) return null;
 
                         const props: {[key: string]: any} = { settings: section.settings };
-                        if (section.component === 'LatestPostsSection') {
+                        if (section.component === 'LatestPostsSection' || section.component === 'BlogPageSection') {
                             props.posts = posts;
                         }
 
@@ -210,7 +214,7 @@ export default function EditSitePage() {
 };
 
   const hasLayout = (section: any) => {
-    return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection'
+    return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection' || section.component === 'AboutPageSection'
   }
 
   if (loadingAuth || isLoadingPage) {
@@ -305,7 +309,7 @@ export default function EditSitePage() {
                           </TabsList>
                           <TabsContent value="content" className="space-y-4 pt-4">
                               {Object.entries(section.settings).map(([key, value]) => {
-                                  const nonContentKeys = ['features', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'layout'];
+                                  const nonContentKeys = ['features', 'items', 'faqItems', 'backgroundColor', 'titleColor', 'descriptionColor', 'cardColor', 'layout'];
                                   if (nonContentKeys.includes(key) || typeof value !== 'string') return null;
                                   
                                   const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -336,7 +340,7 @@ export default function EditSitePage() {
                                   return (
                                   <div className="space-y-2" key={key}>
                                       <Label htmlFor={`${section.id}-${key}`}>{label}</Label>
-                                      {key.includes('description') ? (
+                                      {key.includes('description') || key.includes('story') ? (
                                           <Textarea id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
                                       ) : (
                                           <Input id={`${section.id}-${key}`} value={value as string} onChange={e => handleSettingChange(section.id, key, e.target.value)} />
@@ -405,6 +409,4 @@ export default function EditSitePage() {
     </form>
   );
 }
-    
-
     

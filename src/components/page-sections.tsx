@@ -4,7 +4,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck, Search, Star, Rocket, Calendar, UserCircle } from 'lucide-react';
+import { ArrowRight, Layers, Newspaper, Palette as PaletteIcon, ShieldCheck, Search, Star, Rocket, Calendar, UserCircle, Building, Target, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,9 @@ import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import type { Post } from '@/lib/blog-posts';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useState } from 'react';
+
 
 // Mock Data for Courses
 const mockCourses = [
@@ -365,3 +368,108 @@ export const CtaSection = ({ settings }: { settings: any }) => (
         </div>
     </section>
 );
+
+
+export const AboutPageSection = ({ settings }: { settings: any }) => (
+    <>
+        <section className="py-12 md:py-20" style={{ backgroundColor: settings.backgroundColor }}>
+          <div className="container px-4 md:px-6">
+            <div className="text-center max-w-3xl mx-auto">
+              <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl" style={{ color: settings.titleColor }}>{settings.title}</h1>
+              <p className="mt-4 text-lg text-muted-foreground" style={{ color: settings.descriptionColor }}>
+                {settings.description}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-12 md:py-20">
+            <div className="container px-4 md:px-6">
+                <div className={cn("grid md:grid-cols-2 gap-12 items-center", { "lg:grid-flow-col-dense": settings.layout === 'right' })}>
+                    <div className={cn("space-y-4", { "lg:col-start-2": settings.layout === 'right' })}>
+                        <h2 className="font-headline text-3xl font-bold">{settings.storyTitle}</h2>
+                        <p className="text-muted-foreground text-lg">
+                           {settings.storyContent}
+                        </p>
+                    </div>
+                     <div className={cn("relative w-full h-80 rounded-lg overflow-hidden shadow-lg", { "lg:col-start-1": settings.layout === 'right' })}>
+                        <Image
+                            src={settings.imageUrl}
+                            alt="Escritório da DelviFy"
+                            fill
+                            className="object-cover"
+                            data-ai-hint="office team"
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section className="py-12 md:py-20 bg-secondary/50">
+            <div className="container px-4 md:px-6">
+                <div className="grid md:grid-cols-3 gap-8 text-center">
+                    {settings.items.map((item: any, index: number) => (
+                        <div key={index} className="space-y-3">
+                            {item.icon === 'Target' && <Target className="h-12 w-12 mx-auto text-primary" />}
+                            {item.icon === 'Building' && <Building className="h-12 w-12 mx-auto text-primary" />}
+                            {item.icon === 'Users' && <Users className="h-12 w-12 mx-auto text-primary" />}
+                            <h3 className="font-headline text-2xl font-bold">{item.title}</h3>
+                            <p className="text-muted-foreground">
+                                {item.description}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    </>
+);
+
+export const FaqPageSection = ({ settings }: { settings: any }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredFaqs = settings.faqItems.filter((faq: any) => 
+    faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <section className="py-12 md:py-20">
+      <div className="container max-w-4xl px-4 md:px-6">
+        <div className="text-center mb-12">
+          <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl">{settings.title}</h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            {settings.description}
+          </p>
+          <div className="mt-8 relative max-w-2xl mx-auto">
+            <Input 
+              placeholder="O que você está procurando?" 
+              className="h-12 text-lg pl-12 pr-4 rounded-full shadow-md border-2 border-transparent focus:border-primary transition-colors"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
+          </div>
+        </div>
+
+        <Accordion type="single" collapsible className="w-full space-y-4">
+          {filteredFaqs.length > 0 ? filteredFaqs.map((faq: any, index: number) => (
+            <AccordionItem value={`item-${index}`} key={index} className="border rounded-lg bg-card overflow-hidden">
+              <AccordionTrigger className="p-6 text-lg font-semibold text-left hover:no-underline">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="p-6 pt-0 text-muted-foreground text-base">
+                <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: faq.answer.replace(/\n/g, '<br />') }} />
+              </AccordionContent>
+            </AccordionItem>
+          )) : (
+            <div className="text-center py-16 border rounded-lg">
+                <h2 className="text-xl font-semibold">Nenhum resultado encontrado.</h2>
+                <p className="text-muted-foreground mt-2">Tente uma busca diferente ou verifique todas as nossas perguntas.</p>
+            </div>
+          )}
+        </Accordion>
+      </div>
+    </section>
+  );
+}
