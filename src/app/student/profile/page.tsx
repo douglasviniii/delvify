@@ -134,6 +134,22 @@ export default function StudentProfilePage() {
           }
       });
   }
+  
+  const handleCancel = () => {
+      setIsEditing(false);
+      // Re-fetch profile data to discard changes
+      if(user) {
+        const fetchProfile = async () => {
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setProfile(docSnap.data() as UserProfile);
+            }
+        };
+        fetchProfile();
+      }
+  }
+
 
   if (isLoading || loadingAuth) {
     return (
@@ -185,11 +201,21 @@ export default function StudentProfilePage() {
                     <p className="text-muted-foreground">Visualize e gerencie suas informações pessoais.</p>
                 </div>
             </div>
-            {!isEditing && (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                  <Edit className="mr-2 h-4 w-4" /> Editar Perfil
-              </Button>
-            )}
+            <div className='flex items-center gap-2'>
+              {isEditing ? (
+                  <>
+                      <Button variant="ghost" onClick={handleCancel}>Cancelar</Button>
+                      <Button onClick={handleSave} disabled={isSaving}>
+                          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                          Salvar
+                      </Button>
+                  </>
+              ) : (
+                <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    <Edit className="mr-2 h-4 w-4" /> Editar Perfil
+                </Button>
+              )}
+            </div>
         </div>
 
         <Card>
@@ -258,18 +284,6 @@ export default function StudentProfilePage() {
                     </div>
                 </div>
             </CardContent>
-             {isEditing && (
-                <CardFooter className="justify-end gap-4">
-                    <Button variant="ghost" onClick={() => {
-                        setIsEditing(false);
-                        // TODO: reset state to original if needed
-                    }}>Cancelar</Button>
-                    <Button onClick={handleSave} disabled={isSaving}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                        Salvar Alterações
-                    </Button>
-                </CardFooter>
-            )}
         </Card>
     </div>
   );
