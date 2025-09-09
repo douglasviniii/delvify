@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Search, Star } from "lucide-react";
-import type { Course } from '@/lib/courses';
-
+import type { Course, Category } from '@/lib/courses';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CoursesClientContentProps {
   allCourses: Course[];
+  allCategories: Category[];
 }
 
 const CourseCard = ({ course }: { course: Course }) => (
@@ -55,29 +56,45 @@ const CourseCard = ({ course }: { course: Course }) => (
     </Link>
 );
 
-export default function CoursesClientContent({ allCourses }: CoursesClientContentProps) {
+export default function CoursesClientContent({ allCourses, allCategories }: CoursesClientContentProps) {
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("all");
 
-    const filteredCourses = allCourses.filter(course => 
-        (course.title?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
-    );
+    const filteredCourses = allCourses.filter(course => {
+        const matchesSearch = (course.title?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
     
     return (
          <section className="py-12 md:py-20">
             <div className="container px-4 md:px-6">
                 <div className="text-center max-w-3xl mx-auto mb-12">
-                    <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl">Nossos Cursos</h1>
-                    <p className="mt-4 text-lg text-muted-foreground">
+                    <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl hidden sm:block">Nossos Cursos</h1>
+                    <p className="mt-4 text-lg text-muted-foreground hidden sm:block">
                         Acelere sua carreira com nossos cursos desenvolvidos por especialistas do mercado.
                     </p>
-                    <div className="mt-8 relative max-w-2xl mx-auto">
-                        <Input 
-                            placeholder="O que você quer aprender hoje?" 
-                            className="h-14 text-lg pl-14 pr-4 rounded-full shadow-lg border-2 border-transparent focus:border-primary transition-colors"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
+                    <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <div className="relative w-full max-w-lg">
+                            <Input 
+                                placeholder="O que você quer aprender hoje?" 
+                                className="h-12 text-md pl-12 pr-4 rounded-full shadow-lg"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                            <SelectTrigger className="w-full sm:w-[280px] h-12 rounded-full shadow-lg text-md">
+                                <SelectValue placeholder="Filtrar por categoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas as Categorias</SelectItem>
+                                {allCategories.map(category => (
+                                    <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 

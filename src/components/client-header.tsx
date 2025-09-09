@@ -85,7 +85,7 @@ export function ClientHeader({ settings }: { settings: GlobalSettings }) {
 
            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="md:hidden">
+                  <Button variant="ghost" size="icon" className="md:hidden">
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Abrir menu</span>
                   </Button>
