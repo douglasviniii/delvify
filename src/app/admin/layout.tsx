@@ -205,15 +205,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <div className="flex h-screen flex-1 flex-col">
-            <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-                <SidebarTrigger className="md:hidden">
-                    <Menu />
-                </SidebarTrigger>
-                <div className="w-full flex-1">
-                    {/* Pode adicionar um search bar aqui no futuro */}
+        <div className="flex h-screen flex-1 flex-col overflow-hidden">
+            <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
+                <div className="flex items-center gap-2">
+                    <SidebarTrigger className="md:hidden">
+                        <Menu />
+                    </SidebarTrigger>
                 </div>
-                {user && <UserNav user={user} />}
+                <div className="flex flex-1 justify-center">
+                    <div className="hidden md:block">
+                        <Logo logoUrl={logoUrl} />
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    {user && <UserNav user={user} />}
+                </div>
             </header>
             <SidebarInset>
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
