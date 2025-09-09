@@ -9,14 +9,14 @@ import { db, storage, auth } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal, CheckCircle2, Eye } from 'lucide-react';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -25,6 +25,9 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { updateCourseStatus } from './actions';
+
 
 const courseSchema = z.object({
   title: z.string().min(3, 'O título é obrigatório.'),
@@ -46,13 +49,52 @@ type Course = {
   contentType: 'video' | 'pdf';
   status: 'draft' | 'published';
   createdAt: any;
+  coverImageUrl: string;
+  description: string;
 };
+
+const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean }) => (
+    <Card className="overflow-hidden shadow-lg flex flex-col group relative">
+        <CardHeader className="p-0">
+            <div className="relative aspect-video w-full">
+                <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
+                {course.tag && (
+                    <Badge variant="secondary" className="absolute top-2 right-2">{course.tag}</Badge>
+                )}
+                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+            </div>
+        </CardHeader>
+        <CardContent className="p-4 flex-1 flex flex-col">
+            <h3 className="font-headline text-lg font-semibold flex-1 leading-tight">{course.title}</h3>
+            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
+        </CardContent>
+        <CardFooter className="p-4 bg-muted/20 flex justify-between items-center">
+             <div className="text-lg font-bold text-primary">
+                {course.promotionalPrice && course.promotionalPrice !== course.price ? (
+                    <span>
+                        <span className="text-sm line-through text-muted-foreground mr-2">R$ {course.price}</span> R$ {course.promotionalPrice}
+                    </span>
+                ) : `R$ ${course.price}`}
+            </div>
+            <Button 
+              size="sm" 
+              variant={course.status === 'published' ? 'secondary' : 'default'}
+              onClick={() => onStatusChange(course.status === 'draft' ? 'published' : 'draft')}
+              disabled={isChangingStatus}
+            >
+                {isChangingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : (course.status === 'published' ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4"/>)}
+                {course.status === 'published' ? 'Publicado' : 'Publicar'}
+            </Button>
+        </CardFooter>
+    </Card>
+);
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<Course & { description: string, coverImageUrl: string } | null>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [statusChangingCourseId, setStatusChangingCourseId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [user] = useAuthState(auth);
@@ -117,7 +159,7 @@ export default function AdminCoursesPage() {
         const fullCourse = {
             id: course.id,
             ...fullCourseData
-        } as Course & { description: string, coverImageUrl: string };
+        } as Course;
         setEditingCourse(fullCourse);
         form.reset({
           ...fullCourse,
@@ -141,6 +183,18 @@ export default function AdminCoursesPage() {
       }
   }
 
+  const handleStatusChange = async (courseId: string, newStatus: 'draft' | 'published') => {
+    if (!user) return;
+    setStatusChangingCourseId(courseId);
+    const result = await updateCourseStatus(user.uid, courseId, newStatus);
+    if (result.success) {
+      toast({ title: "Sucesso!", description: `Curso ${newStatus === 'published' ? 'publicado' : 'movido para rascunho'}.`});
+    } else {
+      toast({ title: "Erro", description: result.message, variant: "destructive" });
+    }
+    setStatusChangingCourseId(null);
+  };
+
   const onSubmit = async (values: z.infer<typeof courseSchema>) => {
     if (!user) {
       toast({ title: 'Erro de autenticação', variant: 'destructive'});
@@ -154,13 +208,12 @@ export default function AdminCoursesPage() {
         await updateDoc(doc(db, tenantCoursesCollectionPath, editingCourse.id), { ...values, updatedAt: serverTimestamp() });
         toast({ title: 'Curso Atualizado' });
         setIsDialogOpen(false);
-        router.push(`/admin/courses/${editingCourse.id}`);
       } else {
         const newCourseRef = await addDoc(collection(db, tenantCoursesCollectionPath), {
             ...values,
             createdAt: serverTimestamp()
         });
-        toast({ title: 'Curso Criado como Rascunho', description: 'Agora adicione os módulos do curso.' });
+        toast({ title: 'Curso Criado como Rascunho', description: 'Agora adicione os episódios do curso.' });
         setIsDialogOpen(false);
         router.push(`/admin/courses/${newCourseRef.id}`);
       }
@@ -269,93 +322,120 @@ export default function AdminCoursesPage() {
             </DialogContent>
             </Dialog>
         </div>
-        <Card>
-            <CardHeader><CardTitle>Seus Cursos</CardTitle></CardHeader>
-            <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Título</TableHead>
-                        <TableHead>Etiqueta</TableHead>
-                        <TableHead>Preço (R$)</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead><span className="sr-only">Ações</span></TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                {courses.length > 0 ? courses.map(course => (
-                    <TableRow key={course.id}>
-                        <TableCell className="font-medium">{course.title}</TableCell>
-                        <TableCell>
-                            {course.tag && <Badge variant="outline">{course.tag}</Badge>}
-                        </TableCell>
-                        <TableCell>
-                           {course.promotionalPrice && course.promotionalPrice !== course.price ? (
-                                <span>
-                                    <span className="line-through text-muted-foreground">R$ {course.price}</span> R$ {course.promotionalPrice}
-                                </span>
-                           ) : `R$ ${course.price}`}
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
-                                {course.status === 'draft' ? 'Rascunho' : 'Publicado'}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                           <DropdownMenu>
-                               <DropdownMenuTrigger asChild>
-                                   <Button variant="ghost" className="h-8 w-8 p-0">
-                                       <span className="sr-only">Abrir menu</span>
-                                       <MoreHorizontal className="h-4 w-4" />
-                                   </Button>
-                               </DropdownMenuTrigger>
-                               <DropdownMenuContent align="end">
-                                   <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                   <DropdownMenuItem onClick={() => handleEdit(course)}>
-                                       <Edit className="mr-2 h-4 w-4" /> Editar Detalhes
-                                   </DropdownMenuItem>
-                                   <Link href={`/admin/courses/${course.id}`} passHref>
-                                    <DropdownMenuItem>
-                                        Gerenciar Episódios
-                                    </DropdownMenuItem>
-                                   </Link>
-                                   <DropdownMenuSeparator />
-                                   <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                                <Trash2 className="mr-2 h-4 w-4" /> Excluir
+        
+        <Tabs defaultValue="manage" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="manage">Gerenciar Cursos</TabsTrigger>
+                <TabsTrigger value="preview">Visualizar como Aluno</TabsTrigger>
+            </TabsList>
+            <TabsContent value="manage">
+                <Card>
+                    <CardHeader><CardTitle>Seus Cursos</CardTitle></CardHeader>
+                    <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Título</TableHead>
+                                <TableHead>Etiqueta</TableHead>
+                                <TableHead>Preço (R$)</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead><span className="sr-only">Ações</span></TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {courses.length > 0 ? courses.map(course => (
+                            <TableRow key={course.id}>
+                                <TableCell className="font-medium">{course.title}</TableCell>
+                                <TableCell>
+                                    {course.tag && <Badge variant="outline">{course.tag}</Badge>}
+                                </TableCell>
+                                <TableCell>
+                                   {course.promotionalPrice && course.promotionalPrice !== course.price ? (
+                                        <span>
+                                            <span className="line-through text-muted-foreground">R$ {course.price}</span> R$ {course.promotionalPrice}
+                                        </span>
+                                   ) : `R$ ${course.price}`}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
+                                        {course.status === 'draft' ? 'Rascunho' : 'Publicado'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                   <DropdownMenu>
+                                       <DropdownMenuTrigger asChild>
+                                           <Button variant="ghost" className="h-8 w-8 p-0">
+                                               <span className="sr-only">Abrir menu</span>
+                                               <MoreHorizontal className="h-4 w-4" />
+                                           </Button>
+                                       </DropdownMenuTrigger>
+                                       <DropdownMenuContent align="end">
+                                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                           <DropdownMenuItem onClick={() => handleEdit(course)}>
+                                               <Edit className="mr-2 h-4 w-4" /> Editar Detalhes
+                                           </DropdownMenuItem>
+                                           <Link href={`/admin/courses/${course.id}`} passHref>
+                                            <DropdownMenuItem>
+                                                Gerenciar Episódios
                                             </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Esta ação não pode ser desfeita. Isso excluirá permanentemente o curso.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(course.id)}>Sim, excluir</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                               </DropdownMenuContent>
-                           </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                )) : (
-                    <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
-                            Nenhum curso encontrado.
-                        </TableCell>
-                    </TableRow>
-                )}
-                </TableBody>
-            </Table>
-            </CardContent>
-        </Card>
+                                           </Link>
+                                           <DropdownMenuSeparator />
+                                           <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                                        <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Esta ação não pode ser desfeita. Isso excluirá permanentemente o curso.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(course.id)}>Sim, excluir</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                       </DropdownMenuContent>
+                                   </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        )) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center">
+                                    Nenhum curso encontrado.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        </TableBody>
+                    </Table>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="preview">
+                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {courses.map(course => (
+                        <CourseCard 
+                            key={course.id} 
+                            course={course}
+                            onStatusChange={(newStatus) => handleStatusChange(course.id, newStatus)}
+                            isChangingStatus={statusChangingCourseId === course.id}
+                        />
+                    ))}
+                 </div>
+                 {courses.length === 0 && (
+                     <Card>
+                        <CardContent className="h-48 flex items-center justify-center">
+                            <p className="text-muted-foreground">Nenhum curso encontrado para visualizar.</p>
+                        </CardContent>
+                     </Card>
+                 )}
+            </TabsContent>
+        </Tabs>
+
     </div>
   );
 }
-
-    
