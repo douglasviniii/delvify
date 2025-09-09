@@ -17,6 +17,23 @@ export type Post = {
   updatedAt?: string; // Serialized as ISO string
 };
 
+const serializePost = (doc: FirebaseFirestore.DocumentSnapshot): Post => {
+    const data = doc.data();
+    if (!data) {
+        throw new Error(`Document with id ${doc.id} has no data.`);
+    }
+    const docData: { [key: string]: any } = { id: doc.id, ...data };
+    
+    // Ensure all timestamp fields are converted to ISO strings
+    for (const key in docData) {
+      if (docData[key] && typeof docData[key].toDate === 'function') {
+        docData[key] = docData[key].toDate().toISOString();
+      }
+    }
+
+    return docData as Post;
+}
+
 // Function to get all posts from a specific tenant
 export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
   if (!tenantId) {
@@ -30,17 +47,7 @@ export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
     const querySnapshot = await postsQuery.get();
     
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const docData: { [key: string]: any } = { id: doc.id, ...data };
-      
-      // Ensure all timestamp fields are converted to ISO strings
-      for (const key in docData) {
-        if (docData[key] && typeof docData[key].toDate === 'function') {
-          docData[key] = docData[key].toDate().toISOString();
-        }
-      }
-
-      posts.push(docData as Post);
+      posts.push(serializePost(doc));
     });
 
     return posts;
@@ -58,22 +65,27 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
     }
     
     try {
-        // Firestore queries with 'where' clauses on different fields require a composite index.
-        // To avoid manual index creation, we fetch all posts and filter in memory.
-        // This is acceptable for a reasonable number of posts but might need optimization for very large blogs.
-        const allPosts = await getAllBlogPosts(tenantId);
-        const post = allPosts.find(p => p.slug === slug);
+        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
+        // Firestore queries with 'where' clauses on different fields might require a composite index.
+        // If this query fails due to a missing index, a fallback to fetching all and filtering is needed.
+        // For now, we assume the simple index on 'slug' is sufficient or will be auto-created.
+        const q = postsCollectionRef.where('slug', '==', slug).limit(1);
+        const querySnapshot = await q.get();
 
-        if (!post) {
+        if (querySnapshot.empty) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
             return null;
         }
         
-        // The post object from getAllBlogPosts already has serialized timestamps.
-        return post;
+        const postDoc = querySnapshot.docs[0];
+        return serializePost(postDoc);
 
     } catch (error) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
-        return null;
+        // Fallback for cases where the query fails (e.g., missing index)
+        console.log("Fallback: Fetching all posts and filtering by slug.");
+        const allPosts = await getAllBlogPosts(tenantId);
+        const post = allPosts.find(p => p.slug === slug);
+        return post || null;
     }
 }
