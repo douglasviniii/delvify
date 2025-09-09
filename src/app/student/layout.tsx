@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag } from 'lucide-react';
+import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag, User as UserIcon, Settings } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { auth } from '@/lib/firebase';
 import { signOut, type User } from 'firebase/auth';
@@ -25,8 +25,10 @@ import {
 } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UserNav } from '@/components/ui/user-nav';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const menuItems = [
@@ -72,6 +74,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const [user, loading, error] = useAuthState(auth);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -100,7 +103,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }
   
   if (!user) {
-      // O useEffect acima já vai redirecionar, mas isso evita renderizar o layout para um usuário nulo.
       return null;
   }
 
@@ -118,13 +120,36 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             <StudentSidebarMenu />
           </SidebarContent>
           <SidebarFooter>
+            <Separator className="my-2" />
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={handleLogout} className="w-full justify-start gap-3">
-                        <LogOut className="h-5 w-5" />
-                        <span>Sair</span>
+                 <Link href="/student/profile">
+                    <SidebarMenuButton isActive={pathname === '/student/profile'}>
+                       {loading ? (
+                          <>
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                            <div className="space-y-1">
+                              <Skeleton className="h-4 w-24" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? ''} />
+                                <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
+                            </Avatar>
+                            <span>Perfil</span>
+                          </>
+                        )}
                     </SidebarMenuButton>
-                </SidebarMenuItem>
+                  </Link>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                  <SidebarMenuButton onClick={handleLogout} className="w-full justify-start gap-3">
+                      <LogOut className="h-5 w-5" />
+                      <span>Sair</span>
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
@@ -141,7 +166,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    {user && <UserNav user={user} />}
+                    <UserNav />
                 </div>
             </header>
             <SidebarInset>

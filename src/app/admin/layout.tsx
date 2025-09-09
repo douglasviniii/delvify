@@ -11,6 +11,7 @@ import {
   PanelTop,
   File,
   Menu,
+  User as UserIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -159,35 +160,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarContent>
           <SidebarFooter>
             <Separator className="my-2" />
-            <div className="p-2">
-                <Button asChild variant="ghost" className="w-full h-auto justify-start gap-2 px-2">
-                  <Link href="/admin/profile">
-                    {isLoading ? (
-                      <>
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <div className="space-y-1">
-                          <Skeleton className="h-4 w-24" />
-                          <Skeleton className="h-3 w-32" />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={profileImage ?? undefined} alt={companyName} data-ai-hint="person face" />
-                          <AvatarFallback>{companyName ? companyName.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
-                        </Avatar>
-                        <div className="text-left overflow-hidden">
-                            <p className="text-sm font-medium truncate">{companyName}</p>
-                            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                        </div>
-                      </>
-                    )}
-                  </Link>
-                </Button>
-            </div>
-
-            <Separator className="my-2" />
             <SidebarMenu>
+               <SidebarMenuItem>
+                 <Link href="/admin/profile">
+                    <SidebarMenuButton isActive={pathname === '/admin/profile'}>
+                      {isLoading ? (
+                        <>
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={profileImage ?? undefined} alt={companyName} data-ai-hint="person face" />
+                            <AvatarFallback>{companyName ? companyName.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
+                          </Avatar>
+                          <span>Perfil</span>
+                        </>
+                      )}
+                    </SidebarMenuButton>
+                  </Link>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <Link href="/admin/settings">
                     <SidebarMenuButton isActive={pathname === '/admin/settings'}>
@@ -218,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    {user && <UserNav user={user} />}
+                    <UserNav />
                 </div>
             </header>
             <SidebarInset>
