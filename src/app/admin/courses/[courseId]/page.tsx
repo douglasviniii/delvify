@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db, auth } from '@/lib/firebase';
+import { db, auth, storage } from '@/lib/firebase';
 import { doc, getDoc, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -44,6 +45,8 @@ export default function CourseModulesPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState<number | null>(null); // Track which module index is uploading
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [user] = useAuthState(auth);
   const params = useParams();
   const router = useRouter();
@@ -115,6 +118,32 @@ export default function CourseModulesPage() {
         setIsSaving(false);
     }
   };
+
+  const handleFileSelectAndUpload = async (event: React.ChangeEvent<HTMLInputElement>, moduleIndex: number) => {
+    if (event.target.files && event.target.files[0] && user) {
+        const file = event.target.files[0];
+        setIsUploading(moduleIndex);
+        try {
+            const storageRef = ref(storage, `tenants/${user.uid}/course_content/${courseId}/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            
+            // Update the specific module's contentUrl field
+            form.setValue(`modules.${moduleIndex}.contentUrl`, downloadURL, { shouldValidate: true });
+
+            toast({ title: 'Sucesso', description: 'Arquivo do episódio carregado.' });
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast({ title: 'Erro de Upload', description: 'Não foi possível carregar o arquivo.', variant: 'destructive' });
+        } finally {
+            setIsUploading(null);
+            // Reset file input to allow uploading the same file again if needed
+            if(fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+        }
+    }
+  };
   
   if (isLoading) {
     return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
@@ -134,6 +163,15 @@ export default function CourseModulesPage() {
           </div>
       </div>
       
+      {/* Hidden file input that we can trigger programmatically */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        accept={course?.contentType === 'pdf' ? '.pdf' : 'video/*'}
+        // The onChange will be set when the button is clicked
+      />
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card>
@@ -186,8 +224,19 @@ export default function CourseModulesPage() {
                                 <FormControl>
                                   <div className="flex items-center gap-4">
                                       <Input placeholder="Cole uma URL ou carregue um arquivo" {...urlField} />
-                                      <Button type="button" variant="outline">
-                                        <Upload className="mr-2 h-4 w-4" />
+                                      <Button 
+                                        type="button" 
+                                        variant="outline"
+                                        disabled={isUploading === index}
+                                        onClick={() => {
+                                            if (fileInputRef.current) {
+                                                // Set the specific onChange handler for this module before clicking
+                                                fileInputRef.current.onchange = (e) => handleFileSelectAndUpload(e as any, index);
+                                                fileInputRef.current.click();
+                                            }
+                                        }}
+                                      >
+                                        {isUploading === index ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                                         Carregar
                                       </Button>
                                   </div>
