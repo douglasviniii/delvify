@@ -120,20 +120,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <SidebarFooter>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <Link href="/student/profile" className="block rounded-md p-2 hover:bg-muted">
-                        <div className="flex items-center gap-3">
-                            <Avatar>
-                                <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'Avatar'} />
-                                <AvatarFallback>{user.displayName?.charAt(0) ?? user.email?.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className='overflow-hidden'>
-                                <p className="text-sm font-medium truncate">{user.displayName ?? 'Aluno'}</p>
-                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                            </div>
-                        </div>
-                    </Link>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
                     <SidebarMenuButton onClick={handleLogout} className="w-full justify-start gap-3">
                         <LogOut className="h-5 w-5" />
                         <span>Sair</span>
