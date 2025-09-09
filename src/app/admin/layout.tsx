@@ -41,6 +41,8 @@ import { getTenantProfile } from './profile/actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { UserNav } from '@/components/ui/user-nav';
+
 
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -203,17 +205,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
-          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
-              <SidebarTrigger>
-                  <Menu />
-              </SidebarTrigger>
-              <div className="md:hidden">
-                  <Logo logoUrl={logoUrl} />
-              </div>
-          </header>
-          <main className="flex-1 p-4 sm:p-6">{children}</main>
-        </SidebarInset>
+        <div className="flex h-screen flex-1 flex-col">
+            <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+                <SidebarTrigger className="md:hidden">
+                    <Menu />
+                </SidebarTrigger>
+                <div className="w-full flex-1">
+                    {/* Pode adicionar um search bar aqui no futuro */}
+                </div>
+                {user && <UserNav user={user} />}
+            </header>
+            <SidebarInset>
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+            </SidebarInset>
+        </div>
       </TooltipProvider>
     </SidebarProvider>
   );

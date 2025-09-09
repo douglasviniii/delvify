@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag } from 'lucide-react';
 import { Logo } from '@/components/logo';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { auth } from '@/lib/firebase';
 import { signOut, type User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +24,9 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { UserNav } from '@/components/ui/user-nav';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
@@ -40,7 +42,9 @@ const StudentSidebarMenu = () => {
   const { setOpenMobile } = useSidebar();
   
   const handleLinkClick = () => {
-    setOpenMobile(false);
+    if(setOpenMobile) {
+        setOpenMobile(false);
+    }
   }
 
   return (
@@ -138,19 +142,22 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
-          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
-              <SidebarTrigger>
-                  <Menu />
-              </SidebarTrigger>
-              <div className="md:hidden">
-                  <Logo logoUrl={logoUrl} />
-              </div>
-          </header>
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-              {children}
-          </main>
-        </SidebarInset>
+        <div className="flex h-screen flex-1 flex-col">
+             <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+                <SidebarTrigger className="md:hidden">
+                    <Menu />
+                </SidebarTrigger>
+                <div className="w-full flex-1">
+                    {/* Pode adicionar um search bar aqui no futuro */}
+                </div>
+                 {user && <UserNav user={user} />}
+            </header>
+            <SidebarInset>
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                    {children}
+                </main>
+            </SidebarInset>
+        </div>
       </TooltipProvider>
     </SidebarProvider>
   );
