@@ -1,5 +1,4 @@
 
-
 'use client';
 import {
   BookCopy,
@@ -11,6 +10,7 @@ import {
   GraduationCap,
   PanelTop,
   File,
+  Menu,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -37,6 +37,7 @@ import {
   SidebarProvider,
   SidebarInset,
   SidebarFooter,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -205,6 +206,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:hidden">
+            <SidebarTrigger>
+                <Menu />
+            </SidebarTrigger>
+            <div className="md:hidden">
+                <Logo logoUrl={logoUrl} />
+            </div>
+        </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
