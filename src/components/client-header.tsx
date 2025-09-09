@@ -7,7 +7,7 @@ import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Instagram, Facebook, Linkedin, Youtube, MessageCircle, Menu } from 'lucide-react';
 import type { GlobalSettings } from '@/lib/settings';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const socialIcons: { [key: string]: React.ReactNode } = {
   instagram: <Instagram className="h-5 w-5" />,
@@ -90,9 +90,12 @@ export function ClientHeader({ settings }: { settings: GlobalSettings }) {
                   </Button>
               </SheetTrigger>
               <SheetContent side="left">
-                 <div className="p-4">
-                    <Logo logoUrl={settings.logoUrl} />
-                 </div>
+                 <SheetHeader>
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                    <div className="p-4 -mt-6">
+                        <Logo logoUrl={settings.logoUrl} />
+                    </div>
+                 </SheetHeader>
                   <nav className="mt-4 flex flex-col gap-4 px-4">
                     {visibleNavItems.map((item) => (
                         <SheetClose asChild key={item.label}>
