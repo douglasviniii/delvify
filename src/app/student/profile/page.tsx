@@ -201,27 +201,27 @@ export default function StudentProfilePage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Nome Completo (Legal)</Label>
-                        <Input id="name" value={profile.name} onChange={(e) => handleInputChange('name', e.target.value)} readOnly={!isEditing} />
+                        <Input id="name" value={profile.name || ''} onChange={(e) => handleInputChange('name', e.target.value)} readOnly={!isEditing} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="socialName">Nome Social / Apelido</Label>
-                        <Input id="socialName" value={profile.socialName} onChange={(e) => handleInputChange('socialName', e.target.value)} readOnly={!isEditing} />
+                        <Input id="socialName" value={profile.socialName || ''} onChange={(e) => handleInputChange('socialName', e.target.value)} readOnly={!isEditing} />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" value={profile.email} readOnly />
+                        <Input id="email" value={profile.email || ''} readOnly />
                     </div>
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="cpf">CPF</Label>
-                        <Input id="cpf" value={profile.cpf} onChange={(e) => handleInputChange('cpf', e.target.value)} readOnly={!isEditing} />
+                        <Input id="cpf" value={profile.cpf || ''} onChange={(e) => handleInputChange('cpf', e.target.value)} readOnly={!isEditing} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="birthDate">Data de Nascimento</Label>
-                        <Input id="birthDate" type="date" value={profile.birthDate} onChange={(e) => handleInputChange('birthDate', e.target.value)} readOnly={!isEditing} />
+                        <Input id="birthDate" type="date" value={profile.birthDate || ''} onChange={(e) => handleInputChange('birthDate', e.target.value)} readOnly={!isEditing} />
                     </div>
                 </div>
             </CardContent>
@@ -236,25 +236,25 @@ export default function StudentProfilePage() {
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="address">Endereço (Rua e Número)</Label>
-                        <Input id="address" value={profile.address} onChange={(e) => handleInputChange('address', e.target.value)} readOnly={!isEditing} />
+                        <Input id="address" value={profile.address || ''} onChange={(e) => handleInputChange('address', e.target.value)} readOnly={!isEditing} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="cep">CEP</Label>
-                        <Input id="cep" value={profile.cep} onChange={(e) => handleInputChange('cep', e.target.value)} readOnly={!isEditing} />
+                        <Input id="cep" value={profile.cep || ''} onChange={(e) => handleInputChange('cep', e.target.value)} readOnly={!isEditing} />
                     </div>
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div className="space-y-2">
                         <Label htmlFor="neighborhood">Bairro</Label>
-                        <Input id="neighborhood" value={profile.neighborhood} onChange={(e) => handleInputChange('neighborhood', e.target.value)} readOnly={!isEditing} />
+                        <Input id="neighborhood" value={profile.neighborhood || ''} onChange={(e) => handleInputChange('neighborhood', e.target.value)} readOnly={!isEditing} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="city">Cidade</Label>
-                        <Input id="city" value={profile.city} onChange={(e) => handleInputChange('city', e.target.value)} readOnly={!isEditing} />
+                        <Input id="city" value={profile.city || ''} onChange={(e) => handleInputChange('city', e.target.value)} readOnly={!isEditing} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="state">Estado</Label>
-                        <Input id="state" value={profile.state} onChange={(e) => handleInputChange('state', e.target.value)} readOnly={!isEditing} />
+                        <Input id="state" value={profile.state || ''} onChange={(e) => handleInputChange('state', e.target.value)} readOnly={!isEditing} />
                     </div>
                 </div>
             </CardContent>
