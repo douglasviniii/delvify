@@ -33,7 +33,8 @@ export async function updateStudentProfile(uid: string, data: any) {
         };
     }
     
-    const { socialName, photoURL, ...firestoreData } = validatedFields.data;
+    const { photoURL, ...firestoreData } = validatedFields.data;
+    const { socialName } = validatedFields.data;
 
     try {
         let finalPhotoURL = photoURL;
@@ -59,7 +60,6 @@ export async function updateStudentProfile(uid: string, data: any) {
         const userDocRef = adminDb.collection('users').doc(uid);
         await userDocRef.update({
             ...firestoreData,
-            socialName,
             photoURL: finalPhotoURL,
         });
 

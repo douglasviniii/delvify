@@ -58,14 +58,17 @@ export default function StudentSignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Update user profile with display name (social name)
-      await updateProfile(user, { displayName: socialName || name });
+      // Define o nome de exibição (saudação) como o nome social ou o primeiro nome do usuário.
+      const displayName = socialName || name.split(' ')[0];
+
+      // Atualiza o perfil do Firebase Auth
+      await updateProfile(user, { displayName });
       
-      // Save additional user data to Firestore
+      // Salva os dados completos no Firestore
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         name,
-        socialName: socialName || name,
+        socialName: socialName || name, // Salva o nome social ou o nome completo se o social estiver vazio
         email,
         cpf,
         birthDate,
@@ -75,6 +78,7 @@ export default function StudentSignupPage() {
         state,
         cep,
         createdAt: new Date(),
+        photoURL: null // Inicia com a foto nula
       });
 
       toast({
