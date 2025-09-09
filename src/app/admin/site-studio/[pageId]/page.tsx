@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, GripVertical, Upload } from "lucide-react";
@@ -21,6 +22,7 @@ import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, C
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, storage, db } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAllBlogPosts, type Post } from "@/lib/blog-posts";
 
 
 const SectionComponents: Record<string, React.FC<any>> = {
@@ -32,7 +34,7 @@ const SectionComponents: Record<string, React.FC<any>> = {
     DefaultSection,
 };
 
-const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 'desktop' | 'mobile' }) => {
+const PagePreview = ({ sections, previewMode, posts }: { sections: any[], previewMode: 'desktop' | 'mobile', posts: Post[] }) => {
     return (
         <div className={cn("bg-white shadow-lg overflow-hidden transition-all", {
             "w-full h-full rounded-lg border": previewMode === 'desktop',
@@ -42,7 +44,14 @@ const PagePreview = ({ sections, previewMode }: { sections: any[], previewMode: 
                 <main className="flex-1">
                     {sections.map(section => {
                         const Component = SectionComponents[section.component];
-                        return Component ? <Component key={section.id} settings={section.settings} /> : null;
+                        if (!Component) return null;
+
+                        const props: {[key: string]: any} = { settings: section.settings };
+                        if (section.component === 'LatestPostsSection') {
+                            props.posts = posts;
+                        }
+
+                        return <Component key={section.id} {...props} />;
                     })}
                 </main>
             </div>
@@ -74,6 +83,7 @@ export default function EditSitePage() {
   const pageId = typeof params.pageId === 'string' ? params.pageId : null;
   const [pageData, setPageData] = useState<{ title: string; sections: any[] } | null>(null);
   const [sections, setSections] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isUploading, setIsUploading] = useState<string | null>(null); // Track which section is uploading
@@ -86,16 +96,19 @@ export default function EditSitePage() {
   useEffect(() => {
     if (user && pageId) {
         setIsLoadingPage(true);
-        getPageDataForStudio(user.uid, pageId)
-            .then(data => {
-                setPageData(data);
-                setSections(data.sections);
-            })
-            .catch(err => {
-                console.error(err);
-                toast({ title: 'Erro ao Carregar Página', description: 'Não foi possível buscar os dados da página.', variant: 'destructive'});
-            })
-            .finally(() => setIsLoadingPage(false));
+        Promise.all([
+            getPageDataForStudio(user.uid, pageId),
+            getAllBlogPosts(user.uid)
+        ]).then(([pageData, blogPosts]) => {
+            setPageData(pageData);
+            setSections(pageData.sections);
+            setPosts(blogPosts);
+        }).catch(err => {
+            console.error(err);
+            toast({ title: 'Erro ao Carregar Dados', description: 'Não foi possível buscar os dados da página ou do blog.', variant: 'destructive'});
+        }).finally(() => {
+            setIsLoadingPage(false)
+        });
     }
   }, [pageId, user, toast]);
 
@@ -255,7 +268,7 @@ export default function EditSitePage() {
       <div className="flex-1 overflow-hidden">
         <div className="grid h-full grid-cols-1 md:grid-cols-[1fr_380px]">
             <div className="flex h-full items-center justify-center bg-muted/40 overflow-auto p-4 transition-all">
-                <PagePreview sections={sections} previewMode={previewMode} />
+                <PagePreview sections={sections} previewMode={previewMode} posts={posts} />
             </div>
             <aside className="flex flex-col h-full overflow-y-auto border-l bg-background">
               <div className="flex-1 overflow-y-auto">
@@ -392,5 +405,6 @@ export default function EditSitePage() {
     </form>
   );
 }
+    
 
     
