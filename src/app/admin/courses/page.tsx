@@ -53,7 +53,8 @@ type Course = {
   description: string;
 };
 
-const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean }) => (
+const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean }) => {
+    return (
     <Card className="overflow-hidden shadow-lg flex flex-col group relative">
         <Link href={`/admin/courses/${course.id}`} className="flex flex-col flex-1">
             <CardHeader className="p-0">
@@ -92,7 +93,8 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus }: { course: Cour
             </Button>
         </CardFooter>
     </Card>
-);
+    )
+};
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
