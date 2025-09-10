@@ -2,10 +2,12 @@
 'use server';
 
 import { adminDb } from './firebase-admin';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from './firebase'; // Client SDK
 
 export type Course = {
   id: string;
-  tenantId: string; // Added tenantId to course type
+  tenantId: string;
   title: string;
   description: string;
   price: string;
@@ -152,6 +154,45 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
         return reviews;
     } catch(error) {
         console.error(`Error fetching reviews for course ${courseId}:`, error);
+        return [];
+    }
+}
+
+export async function hasPurchasedCourse(userId: string, courseId: string): Promise<boolean> {
+    if (!userId || !courseId) return false;
+    try {
+        const userDocRef = doc(db, 'users', userId); // Use client SDK for this check
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            return data.purchasedCourses && data.purchasedCourses[courseId];
+        }
+        return false;
+    } catch (error) {
+        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, error);
+        return false;
+    }
+}
+
+export async function getPurchasedCourses(userId: string): Promise<Course[]> {
+    if (!userId) return [];
+    try {
+        const userDocRef = await adminDb.collection('users').doc(userId).get();
+        const userData = userDocRef.data();
+        if (!userData || !userData.purchasedCourses) {
+            return [];
+        }
+
+        const purchasedCoursesMap = userData.purchasedCourses;
+        const coursePromises: Promise<Course | null>[] = Object.keys(purchasedCoursesMap).map(courseId => {
+            const tenantId = purchasedCoursesMap[courseId].tenantId;
+            return getCourseById(tenantId, courseId);
+        });
+
+        const courses = await Promise.all(coursePromises);
+        return courses.filter((course): course is Course => course !== null);
+    } catch (error) {
+        console.error(`Error fetching purchased courses for user ${userId}:`, error);
         return [];
     }
 }
