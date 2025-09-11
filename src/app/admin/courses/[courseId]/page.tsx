@@ -18,7 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload } from 'lucide-react';
+import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload, Award } from 'lucide-react';
 import { saveCourseModules } from './actions';
 
 const moduleSchema = z.object({
@@ -158,16 +158,24 @@ export default function CourseModulesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-          <Button asChild variant="outline" size="icon">
-            <Link href="/admin/courses">
-                <ArrowLeft className="h-4 w-4" />
+      <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+              <Button asChild variant="outline" size="icon">
+                <Link href="/admin/courses">
+                    <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <div>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Gerenciar Episódios</h1>
+                <p className="text-muted-foreground">Curso: {course?.title}</p>
+              </div>
+          </div>
+          <Button asChild variant="secondary">
+            <Link href={`/admin/certificates/settings`} target="_blank">
+                <Award className="mr-2 h-4 w-4" />
+                Configurar Certificado
             </Link>
           </Button>
-          <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">Gerenciar Episódios</h1>
-            <p className="text-muted-foreground">Curso: {course?.title}</p>
-          </div>
       </div>
       
       {/* Hidden file input that we can trigger programmatically */}

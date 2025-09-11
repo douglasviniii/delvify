@@ -12,6 +12,7 @@ import {
   File,
   Menu,
   User as UserIcon,
+  Award,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -50,6 +51,7 @@ const menuItems = [
   { href: '/admin/blog', label: 'Studio de Blog', icon: Newspaper },
   { href: '/admin/courses', label: 'Studio de Cursos', icon: BookCopy },
   { href: '/admin/site-studio', label: 'Estudio de Site', icon: PanelTop },
+  { href: '/admin/certificates/settings', label: 'Certificados', icon: Award },
   { href: '#', label: 'Páginas', icon: File },
   { href: '#', label: 'Empresas', icon: Building },
   { href: '/admin/users', label: 'Alunos', icon: GraduationCap },
