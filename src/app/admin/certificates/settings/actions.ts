@@ -25,7 +25,7 @@ const CertificateSettingsSchema = z.object({
 const settingsRef = (tenantId: string) => 
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
 
-// Função para upload de imagem se for base64 (LÓGICA CORRIGIDA)
+// Função para upload de imagem se for base64
 async function uploadImageIfNecessary(tenantId: string, imagePath: string, imageData: string | null): Promise<string | null> {
     if (imageData && imageData.startsWith('data:image')) {
         try {
@@ -34,19 +34,17 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
             const imageBuffer = Buffer.from(base64Data, 'base64');
             
             const bucket = adminStorage.bucket();
-            // USANDO UM CAMINHO EXISTENTE E FUNCIONAL
-            const fileName = `tenants/${tenantId}/profile_images/${imagePath}_${Date.now()}.${mimeType.split('/')[1]}`;
+            const fileName = `tenants/${tenantId}/certificate_images/${imagePath}_${Date.now()}.${mimeType.split('/')[1]}`;
             const file = bucket.file(fileName);
 
             await file.save(imageBuffer, {
                 metadata: { contentType: mimeType },
+                public: true, // Garante que o arquivo seja público
             });
             
-            // Tornar o arquivo público para obter uma URL estável
-            await file.makePublic();
-
-            // Retorna a URL pública no formato correto
+            // Retorna a URL pública no formato correto e esperado
             return file.publicUrl();
+
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
