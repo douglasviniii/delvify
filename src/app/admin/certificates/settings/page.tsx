@@ -54,7 +54,7 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, isSaving
             <CardContent className="flex flex-col items-center justify-center gap-4">
                 <div className="w-48 h-24 relative border rounded-md flex items-center justify-center bg-muted/50">
                     {imageUrl ? (
-                        <Image src={imageUrl} alt={title} layout="fill" objectFit="contain" className="p-2" />
+                        <Image src={imageUrl} alt={title} layout="responsive" width={192} height={96} objectFit="contain" className="p-2" />
                     ) : (
                         <ImageIcon className="h-10 w-10 text-muted-foreground" />
                     )}
