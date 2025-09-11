@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useTransition } from 'react';
@@ -10,9 +11,9 @@ import { Loader2, Upload, Image as ImageIcon, Signature, Building } from "lucide
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
+import { auth, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { saveCertificateSettings, getCertificateSettings } from './actions';
-import { uploadCertificateAsset } from './upload-action';
 import type { CertificateSettings } from '@/lib/certificates';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -32,7 +33,7 @@ const initialSettings: CertificateSettings = {
 };
 
 
-const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId, imageKey }: { title: string; description: string; imageUrl: string | null; onImageChange: (url: string | null) => void; tenantId: string | undefined; imageKey: keyof CertificateSettings}) => {
+const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId, imageKey }: { title: string; description: string; imageUrl: string | null; onImageChange: (key: keyof CertificateSettings, url: string | null) => void; tenantId: string | undefined; imageKey: keyof CertificateSettings}) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const { toast } = useToast();
@@ -43,29 +44,20 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId
 
         setIsUploading(true);
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('tenantId', tenantId);
-            formData.append('assetType', imageKey);
-            
-            const result = await uploadCertificateAsset(formData);
+            const storageRef = ref(storage, `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
 
-            if (result.success && result.url) {
-                onImageChange(result.url);
-                toast({
-                    title: "Upload Concluído!",
-                    description: `A imagem "${title}" foi carregada com sucesso.`,
-                });
-            } else {
-                 throw new Error(result.message || 'Falha no upload da imagem.');
-            }
-
+            onImageChange(imageKey, downloadURL);
+            toast({
+                title: "Upload Concluído!",
+                description: `A imagem "${title}" foi carregada com sucesso.`,
+            });
         } catch (error) {
             console.error(`Erro no upload da imagem (${title}):`, error);
-            onImageChange(imageUrl); // Revert to old image on error
             toast({
                 title: "Erro de Upload",
-                description: error instanceof Error ? error.message : `Não foi possível carregar a imagem "${title}".`,
+                description: `Não foi possível carregar a imagem "${title}".`,
                 variant: "destructive",
             });
         } finally {
@@ -227,7 +219,7 @@ export default function CertificateSettingsPage() {
                             title="Logo Principal"
                             description="Aparece no topo do certificado. Use formato PNG com fundo transparente."
                             imageUrl={settings.mainLogoUrl}
-                            onImageChange={url => handleSettingChange('mainLogoUrl', url)}
+                            onImageChange={handleSettingChange}
                             tenantId={user?.uid}
                             imageKey="mainLogoUrl"
                         />
@@ -235,7 +227,7 @@ export default function CertificateSettingsPage() {
                             title="Logo (Marca d'água)"
                             description="Usada como fundo do certificado com opacidade."
                             imageUrl={settings.watermarkLogoUrl}
-                            onImageChange={url => handleSettingChange('watermarkLogoUrl', url)}
+                            onImageChange={handleSettingChange}
                             tenantId={user?.uid}
                             imageKey="watermarkLogoUrl"
                         />
@@ -243,7 +235,7 @@ export default function CertificateSettingsPage() {
                             title="Assinatura"
                             description="Assinatura digitalizada do responsável. Use PNG com fundo transparente."
                             imageUrl={settings.signatureUrl}
-                            onImageChange={url => handleSettingChange('signatureUrl', url)}
+                            onImageChange={handleSettingChange}
                             tenantId={user?.uid}
                             imageKey="signatureUrl"
                         />
@@ -289,4 +281,6 @@ export default function CertificateSettingsPage() {
         </div>
     );
 }
+    
+
     
