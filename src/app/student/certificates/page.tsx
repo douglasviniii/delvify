@@ -12,18 +12,10 @@ import { Card, CardContent, CardHeader, CardFooter, CardDescription, CardTitle }
 import { Loader2, Award, BookOpen, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// This logic now accepts a string date
-const isCertificateAvailable = (course: Course, purchaseDateStr: string | null): boolean => {
-    if (!purchaseDateStr) return false;
-    const purchaseDate = new Date(purchaseDateStr);
-
-    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
-    const hoursRequired = course.durationHours || 0;
-    const now = new Date();
-    const elapsedTimeInHours = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
-
-    // TODO: Add quiz completion logic here
-    return elapsedTimeInHours >= hoursRequired;
+// A certificate is available as soon as the course is purchased.
+// The completion date on the certificate will reflect the required hours, but generation is immediate.
+const isCertificateAvailable = (purchaseInfo: PurchasedCourseInfo | undefined): boolean => {
+    return !!purchaseInfo;
 };
 
 
@@ -66,7 +58,7 @@ export default function StudentCertificatesPage() {
                     
                     const eligibleCourses = purchasedCourses.filter(course => {
                         const purchaseInfo = purchasedDetails[course.id];
-                        return isCertificateAvailable(course, purchaseInfo?.purchasedAt || null);
+                        return isCertificateAvailable(purchaseInfo);
                     });
                     
                     setCourses(eligibleCourses);
