@@ -1,7 +1,9 @@
 "use server";
 
 import { z } from "zod";
-import { customizeTenantBranding, type CustomizeTenantBrandingOutput } from "@/ai/flows/tenant-branding-customization";
+import { customizeTenantBranding } from "@/ai/flows/tenant-branding-customization";
+import type { CustomizeTenantBrandingOutput } from '@/lib/types';
+
 
 const brandingSchema = z.object({
   instructions: z.string().min(10, "Forneça instruções mais detalhadas."),

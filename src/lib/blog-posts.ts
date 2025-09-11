@@ -7,7 +7,7 @@ import type { Post, Comment } from './types';
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
     if (!data) {
-        throw new Error(`Document with id ${doc.id} has no data.`);
+        return { id: doc.id };
     }
     // Explicitly include the slug which is part of the data object
     const docData: { [key: string]: any } = { id: doc.id, ...data };

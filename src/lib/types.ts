@@ -1,3 +1,4 @@
+import { z } from 'zod';
 
 export interface CertificateSettings {
   companyName: string;
@@ -122,3 +123,16 @@ export type Purchase = {
     stripeCheckoutSessionId?: string;
     createdAt: string;
 };
+
+
+export const CustomizeTenantBrandingInputSchema = z.object({
+  tenantId: z.string().describe('The ID of the tenant to customize.'),
+  brandingInstructions: z.string().describe('Natural language instructions for customizing the tenant branding (colors, logos, fonts).'),
+});
+export type CustomizeTenantBrandingInput = z.infer<typeof CustomizeTenantBrandingInputSchema>;
+
+export const CustomizeTenantBrandingOutputSchema = z.object({
+  suggestedThemeSettings: z.string().describe('A JSON string containing the suggested theme settings based on the instructions.'),
+  explanation: z.string().describe('An explanation of how the theme settings were derived from the instructions.'),
+});
+export type CustomizeTenantBrandingOutput = z.infer<typeof CustomizeTenantBrandingOutputSchema>;

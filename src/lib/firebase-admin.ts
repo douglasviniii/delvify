@@ -23,7 +23,7 @@ function initializeFirebaseAdmin() {
 
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
-            storageBucket: "venda-fcil-pdv.firebasestorage.app",
+            storageBucket: "venda-fcil-pdv.appspot.com",
         });
     } catch (error: any) {
         console.error('Falha ao inicializar o Firebase Admin SDK:', error.message);

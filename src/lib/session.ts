@@ -1,8 +1,8 @@
 
-import { auth, adminAuth } from '@/lib/firebase-admin';
-import { onAuthStateChanged, type User } from 'firebase/auth';
+'use server';
+
+import { adminAuth } from '@/lib/firebase-admin';
 import { headers } from 'next/headers';
-import { adminDb } from './firebase-admin';
 
 // This is a simplified session management for server components.
 // In a production app, you might use a library like NextAuth.js for more robust session handling.
