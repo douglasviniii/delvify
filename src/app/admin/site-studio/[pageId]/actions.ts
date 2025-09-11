@@ -4,13 +4,19 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
-import { auth } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
+
+const sectionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  component: z.string(),
+  settings: z.record(z.any()),
+});
 
 const savePageSchema = z.object({
   pageId: z.string(),
   tenantId: z.string(),
-  sections: z.string(), // JSON string of sections array
+  sections: z.array(sectionSchema),
 });
 
 export type SavePageState = {
@@ -19,25 +25,27 @@ export type SavePageState = {
 };
 
 export async function savePage(
-  prevState: SavePageState,
-  formData: FormData
+  tenantId: string,
+  pageId: string,
+  sections: any[]
 ): Promise<SavePageState> {
   const validatedFields = savePageSchema.safeParse({
-    pageId: formData.get('pageId'),
-    tenantId: formData.get('tenantId'),
-    sections: formData.get('sections'),
+    pageId,
+    tenantId,
+    sections,
   });
 
   if (!validatedFields.success) {
+    console.error('Validation failed:', validatedFields.error.errors);
     return {
       message: 'Dados inválidos.',
       success: false,
     };
   }
 
-  const { pageId, tenantId, sections } = validatedFields.data;
+  const { pageId: validatedPageId, tenantId: validatedTenantId, sections: validatedSections } = validatedFields.data;
 
-  if (!tenantId) {
+  if (!validatedTenantId) {
     return {
       message: 'ID do inquilino não encontrado. Você precisa estar logado.',
       success: false
@@ -46,19 +54,17 @@ export async function savePage(
 
 
   try {
-    const pageRef = adminDb.collection('tenants').doc(tenantId).collection('pages').doc(pageId);
+    const pageRef = adminDb.collection('tenants').doc(validatedTenantId).collection('pages').doc(validatedPageId);
     
-    const sectionsObject = JSON.parse(sections);
-
     await pageRef.set({
-        sections: sectionsObject,
+        sections: validatedSections,
         updatedAt: new Date(),
     }, { merge: true });
     
     // Revalidate all relevant paths
     revalidatePath('/'); // Revalidates the home page
-    revalidatePath(`/${pageId}`); // Revalidates a potential dynamic page
-    revalidatePath(`/admin/site-studio/${pageId}`); // Revalidates the editor page
+    revalidatePath(`/${validatedPageId}`); // Revalidates a potential dynamic page
+    revalidatePath(`/admin/site-studio/${validatedPageId}`); // Revalidates the editor page
 
     return {
       message: 'Página salva com sucesso!',

@@ -9,12 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState, useEffect, useActionState, useRef } from "react";
+import { useState, useEffect, useTransition, useRef } from "react";
 import Image from 'next/image';
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useFormStatus } from "react-dom";
 import { savePage, getPageDataForStudio, type SavePageState } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/page-sections";
@@ -62,11 +61,10 @@ const PagePreview = ({ sections, previewMode, posts }: { sections: any[], previe
     )
 }
 
-function SaveButton() {
-    const { pending } = useFormStatus();
+function SaveButton({ onClick, isSaving }: { onClick: () => void; isSaving: boolean }) {
     return (
-        <Button type="submit" disabled={pending}>
-            {pending ? (
+        <Button onClick={onClick} disabled={isSaving}>
+            {isSaving ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Salvando...
@@ -93,9 +91,7 @@ export default function EditSitePage() {
   const [isUploading, setIsUploading] = useState<string | null>(null); // Track which section is uploading
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentSectionIdForUpload, setCurrentSectionIdForUpload] = useState<string | null>(null);
-
-  const initialState: SavePageState = { message: '', success: false };
-  const [state, formAction] = useActionState(savePage, initialState);
+  const [isSaving, startTransition] = useTransition();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -123,16 +119,19 @@ export default function EditSitePage() {
         });
     }
   }, [pageId, user, toast]);
+  
+  const handleSave = () => {
+    if (!user || !pageId) return;
 
-  useEffect(() => {
-    if (state.message) {
-        toast({
-            title: state.success ? 'Sucesso!' : 'Erro!',
-            description: state.message,
-            variant: state.success ? 'default' : 'destructive',
-        })
-    }
-  }, [state, toast]);
+    startTransition(async () => {
+      const result = await savePage(user.uid, pageId, sections);
+      toast({
+        title: result.success ? 'Sucesso!' : 'Erro!',
+        description: result.message,
+        variant: result.success ? 'default' : 'destructive',
+      });
+    });
+  };
 
   const handleSettingChange = (sectionId: string, key: string, value: string | string[]) => {
     setSections(prevSections => {
@@ -238,10 +237,7 @@ export default function EditSitePage() {
   }
 
   return (
-    <form action={formAction} className="flex h-full flex-col">
-       <input type="hidden" name="pageId" value={pageId} />
-       <input type="hidden" name="tenantId" value={user.uid} />
-       <input type="hidden" name="sections" value={JSON.stringify(sections)} />
+    <div className="flex h-full flex-col">
        {/* Hidden file input */}
        <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
 
@@ -273,7 +269,7 @@ export default function EditSitePage() {
                 <Eye className="mr-2 h-4 w-4" />
                 Visualizar
             </Button>
-            <SaveButton />
+            <SaveButton onClick={handleSave} isSaving={isSaving} />
         </div>
       </header>
 
@@ -414,6 +410,6 @@ export default function EditSitePage() {
             </aside>
         </div>
       </div>
-    </form>
+    </div>
   );
 }
