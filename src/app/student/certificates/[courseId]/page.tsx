@@ -1,4 +1,5 @@
 
+
 import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { getCurrentUser } from '@/lib/session'; 
@@ -107,7 +108,7 @@ export default async function CertificatePage({ params }: { params: { courseId: 
                         studentName={studentProfile.name}
                         studentCpf={studentProfile.cpf}
                         courseName={course.title}
-                        completionDate={completionDate} // Placeholder
+                        completionDate={completionDate}
                         courseModules={modules}
                         settings={settings}
                     />
@@ -124,4 +125,6 @@ export default async function CertificatePage({ params }: { params: { courseId: 
 
 // Adicionando um fallback de suspense para a página
 export const dynamic = 'force-dynamic';
+
+
 
