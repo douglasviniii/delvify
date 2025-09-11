@@ -1,13 +1,12 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Post } from '@/lib/blog-posts';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, UserCircle, MessageSquare, ThumbsUp, Share2 } from 'lucide-react';
+import { ArrowRight, Calendar, UserCircle, MessageSquare, ThumbsUp, Share2, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { getAllBlogPosts } from '@/lib/blog-posts';
@@ -106,10 +105,23 @@ const PostCard = ({ post }: { post: Post }) => {
 
 export default function StudentBlogPage() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useState(() => {
-    getAllBlogPosts(TENANT_ID_WITH_POSTS).then(setPosts);
-  });
+  useEffect(() => {
+    getAllBlogPosts(TENANT_ID_WITH_POSTS)
+      .then(setPosts)
+      .catch(err => console.error("Failed to load blog posts", err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    )
+  }
+
 
   return (
     <div className="space-y-8">
