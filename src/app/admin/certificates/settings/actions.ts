@@ -32,21 +32,22 @@ async function uploadImageIfNecessary(tenantId: string, imageKey: keyof Certific
     }
 
     try {
-        const mimeType = imageData.split(';')[0].split(':')[1];
+        const mimeType = imageData.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)?.[1] || 'image/png';
         const extension = mimeType.split('/')[1];
         const base64Data = imageData.split(',')[1];
         const imageBuffer = Buffer.from(base64Data, 'base64');
         
         const bucket = adminStorage.bucket();
-        const fileName = `tenants/${tenantId}/certificate_images/${imageKey}_${Date.now()}.${extension}`;
+        const fileName = `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}.${extension}`;
         const file = bucket.file(fileName);
 
         await file.save(imageBuffer, {
             metadata: { contentType: mimeType },
-            public: true, // Garante que o arquivo seja público
         });
+
+        // Torna o arquivo público e retorna a URL pública
+        await file.makePublic();
         
-        // Retorna a URL pública no formato correto e esperado
         return file.publicUrl();
 
     } catch(uploadError) {
@@ -114,4 +115,3 @@ export async function getCertificateSettings(tenantId: string): Promise<Certific
     throw new Error('Não foi possível buscar as configurações do certificado.');
   }
 }
-

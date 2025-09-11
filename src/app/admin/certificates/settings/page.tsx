@@ -154,7 +154,7 @@ export default function CertificateSettingsPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24">
             <div>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Configurações do Certificado</h1>
                 <p className="text-muted-foreground">Personalize a aparência e as informações dos certificados emitidos.</p>
@@ -259,7 +259,7 @@ export default function CertificateSettingsPage() {
                 </CardContent>
             </Card>
             
-            <div className="flex justify-end pt-4 pb-4">
+            <div className="flex justify-end pt-4">
                 <Button size="lg" onClick={handleSaveChanges} disabled={isSaving || isLoading}>
                     {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Configurações"}
                 </Button>
