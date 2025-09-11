@@ -81,7 +81,7 @@ export async function createCheckoutSession(
         throw new Error('Informações do curso ou do usuário estão ausentes.');
     }
     
-    // Convert price like "99,90" to cents (9990)
+    // Convert price like "99,90" or "99.90" to cents (9990)
     const priceInCents = Math.round(parseFloat(course.price.replace(',', '.')) * 100);
     
     const checkoutSession = await stripe.checkout.sessions.create({
