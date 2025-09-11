@@ -20,6 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload, Award } from 'lucide-react';
 import { saveCourseModules } from './actions';
+import type { Course, Module } from '@/lib/types';
+
 
 const moduleSchema = z.object({
   id: z.string().optional(),
@@ -31,14 +33,6 @@ const moduleSchema = z.object({
 const courseModulesSchema = z.object({
   modules: z.array(moduleSchema),
 });
-
-type Course = {
-  id: string;
-  title: string;
-  contentType: 'video' | 'pdf';
-};
-
-type Module = z.infer<typeof moduleSchema>;
 
 
 export default function CourseModulesPage() {

@@ -1,8 +1,8 @@
 
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { getAllBlogPosts, type Post } from '@/lib/blog-posts';
+import { getAllBlogPosts } from '@/lib/blog-posts';
+import type { Post } from '@/lib/types';
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { adminDb } from '@/lib/firebase-admin';

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Instagram, Facebook, Linkedin, Youtube, MessageCircle, Menu } from 'lucide-react';
-import type { GlobalSettings } from '@/lib/settings';
+import type { GlobalSettings } from '@/lib/types';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from './ui/separator';
 

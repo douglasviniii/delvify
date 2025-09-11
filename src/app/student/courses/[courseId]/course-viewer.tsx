@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useActionState } from 'react';
-import type { Course, Module } from '@/lib/courses';
+import type { Course, Module } from '@/lib/types';
 import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight, Star as StarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { submitReview } from '@/app/courses/[courseId]/actions'; // Re-using the same server action
+import { submitReview } from './actions';
 import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 

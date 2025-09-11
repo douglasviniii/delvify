@@ -2,39 +2,7 @@
 'use server';
 
 import { adminDb } from './firebase-admin';
-
-// Definir a forma dos dados, mantendo consistência com o que está em 'actions.ts'
-export interface GlobalSettings {
-  logoUrl: string | null;
-  primaryColor: string;
-  footerInfo: {
-    email: string;
-    phone: string;
-    cnpj: string;
-    cnpjLink: string;
-    copyrightText: string;
-  };
-  socialLinks: {
-    instagram: { enabled: boolean; url: string };
-    facebook: { enabled: boolean; url: string };
-    linkedin: { enabled: boolean; url: string };
-    youtube: { enabled: boolean; url: string };
-    whatsapp: { enabled: boolean; url: string };
-  };
-  socialsLocation: {
-    showInHeader: boolean;
-    showInFooter: boolean;
-  };
-  pageVisibility: {
-    [key: string]: boolean;
-  };
-  colors: {
-    navbarLinkColor: string;
-    navbarLinkHoverColor: string;
-    footerLinkColor: string;
-    footerLinkHoverColor: string;
-  }
-}
+import type { GlobalSettings } from './types';
 
 
 const defaultSettings: GlobalSettings = {
@@ -122,8 +90,8 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
     }
     // Se não houver configurações salvas, retorna o padrão
     return defaultSettings;
-  } catch (error) {
-    console.error('Erro ao buscar as configurações globais, retornando padrão:', error);
+  } catch (error: any) {
+    console.error('Erro ao buscar as configurações globais, retornando padrão:', error.message);
     return defaultSettings;
   }
 }

@@ -2,21 +2,7 @@
 'use server';
 
 import { adminDb } from './firebase-admin';
-
-export interface CertificateSettings {
-  companyName: string;
-  companyAddress: string;
-  companyPhone: string;
-  companyEmail: string;
-  companyWebsite: string;
-  companyCnpj: string;
-  additionalInfo?: string;
-  mainLogoUrl: string | null;
-  watermarkLogoUrl: string | null;
-  signatureUrl: string | null;
-  accentColor: string;
-  signatureText: string;
-}
+import type { CertificateSettings } from './types';
 
 const settingsRef = (tenantId: string) => 
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
@@ -34,7 +20,8 @@ export async function getCertificateSettings(tenantId: string): Promise<Certific
     }
     return null; // Retorna null se não houver configurações salvas
   } catch (error) {
-    console.error('Erro ao buscar as configurações do certificado:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+    console.error('Erro ao buscar as configurações do certificado:', errorMessage);
     throw new Error('Não foi possível buscar as configurações do certificado.');
   }
 }

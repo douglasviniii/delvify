@@ -27,7 +27,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { updateCourseStatus, createCategory, deleteCategory } from './actions';
-import type { Category } from '@/lib/courses';
+import type { Category } from '@/lib/types';
 import { useFormStatus } from 'react-dom';
 
 
@@ -208,7 +208,7 @@ function CategoryManager({ user }: { user: User | null }) {
         const tenantCategoriesPath = `tenants/${user.uid}/categories`;
         const catQuery = query(collection(db, tenantCategoriesPath), orderBy('name'));
         const unsubscribe = onSnapshot(catQuery, (snapshot) => {
-            setCategories(snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name })));
+            setCategories(snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Category)));
         });
         return () => unsubscribe();
     }, [user]);
@@ -326,7 +326,7 @@ export default function AdminCoursesPage() {
     const tenantCategoriesPath = `tenants/${user.uid}/categories`;
     const catQuery = query(collection(db, tenantCategoriesPath), orderBy('name'));
     const unsubscribeCategories = onSnapshot(catQuery, (snapshot) => {
-        setCategories(snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name })));
+        setCategories(snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name } as Category)));
     });
 
 

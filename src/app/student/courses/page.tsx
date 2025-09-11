@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { getPurchasedCourses } from '@/lib/courses';
-import type { Course } from '@/lib/courses';
+import type { Course } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { Loader2, BookOpen, CheckCircle, Award } from 'lucide-react';

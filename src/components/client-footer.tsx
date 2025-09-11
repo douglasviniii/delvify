@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { Logo } from '@/components/logo';
 import { Instagram, Facebook, Linkedin, Youtube, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import type { GlobalSettings } from '@/lib/settings';
+import type { GlobalSettings } from '@/lib/types';
 
 const socialIcons: { [key: string]: React.ReactNode } = {
   instagram: <Instagram className="h-5 w-5" />,

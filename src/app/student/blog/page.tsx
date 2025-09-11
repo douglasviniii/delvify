@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Post } from '@/lib/blog-posts';
+import type { Post } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, UserCircle, MessageSquare, ThumbsUp, Share2, Loader2 } from 'lucide-react';

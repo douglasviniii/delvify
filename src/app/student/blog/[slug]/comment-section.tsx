@@ -6,7 +6,7 @@ import { useFormStatus } from 'react-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { submitComment } from './actions';
-import type { Comment } from '@/lib/blog-posts';
+import type { Comment } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';

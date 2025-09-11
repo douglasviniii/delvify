@@ -1,9 +1,9 @@
 
-
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import CoursesClientContent from "./courses-client-content";
-import { getAllCourses, getAllCategories, type Course, type Category } from "@/lib/courses";
+import { getAllCourses, getAllCategories } from "@/lib/courses";
+import type { Course, Category } from '@/lib/types';
 
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 

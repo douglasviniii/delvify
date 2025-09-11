@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -11,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
-import type { Post } from '@/lib/blog-posts';
+import type { Post } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState } from 'react';
 

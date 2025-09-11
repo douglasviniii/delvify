@@ -1,7 +1,8 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { getCourseById, getCourseModules } from '@/lib/courses';
-import { getCertificateSettings, type CertificateSettings } from '@/lib/certificates';
+import { getCertificateSettings } from '@/lib/certificates';
+import type { CertificateSettings, Module } from '@/lib/types';
 import Certificate from '@/components/certificate';
 import { adminDb } from '@/lib/firebase-admin';
 import type { User } from 'firebase-admin/auth';

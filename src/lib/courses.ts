@@ -1,50 +1,10 @@
 
-
 'use server';
 
 import { adminDb } from './firebase-admin';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from './firebase'; // Client SDK
-
-export type Course = {
-  id: string;
-  tenantId: string;
-  title: string;
-  description: string;
-  price: string;
-  promotionalPrice?: string;
-  category: string;
-  tag?: string;
-  coverImageUrl: string;
-  contentType: 'video' | 'pdf';
-  durationHours: number;
-  status: 'draft' | 'published';
-  createdAt: string; 
-  updatedAt?: string;
-};
-
-export type Module = {
-    id: string;
-    title: string;
-    description?: string;
-    contentUrl: string;
-    order: number;
-}
-
-export type Category = {
-    id: string;
-    name: string;
-}
-
-export type Review = {
-    id: string;
-    authorId: string;
-    authorName: string;
-    authorAvatarUrl?: string;
-    rating: number;
-    comment: string;
-    createdAt: string;
-}
+import type { Course, Module, Category, Review } from './types';
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
@@ -78,9 +38,8 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
     });
 
     return courses;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error fetching courses for tenant ${tenantId}:`, errorMessage);
+  } catch (error: any) {
+    console.error(`Error fetching courses for tenant ${tenantId}:`, error.message);
     return [];
   }
 }
@@ -97,9 +56,8 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
             return { ...courseData, tenantId };
         }
         return null;
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching course ${courseId} for tenant ${tenantId}:`, errorMessage);
+    } catch (error: any) {
+        console.error(`Error fetching course ${courseId} for tenant ${tenantId}:`, error.message);
         return null;
     }
 }
@@ -118,9 +76,8 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
         });
 
         return modules;
-    } catch(error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching modules for course ${courseId}:`, errorMessage);
+    } catch(error: any) {
+        console.error(`Error fetching modules for course ${courseId}:`, error.message);
         return [];
     }
 }
@@ -137,9 +94,8 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
             categories.push(serializeDoc(doc) as Category);
         })
         return categories;
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching categories for tenant ${tenantId}:`, errorMessage);
+    } catch (error: any) {
+        console.error(`Error fetching categories for tenant ${tenantId}:`, error.message);
         return [];
     }
 }
@@ -158,9 +114,8 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
         });
 
         return reviews;
-    } catch(error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching reviews for course ${courseId}:`, errorMessage);
+    } catch(error: any) {
+        console.error(`Error fetching reviews for course ${courseId}:`, error.message);
         return [];
     }
 }
@@ -175,9 +130,8 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
             return !!(data.purchasedCourses && data.purchasedCourses[courseId]);
         }
         return false;
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, errorMessage);
+    } catch (error: any) {
+        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, error.message);
         return false;
     }
 }
@@ -199,9 +153,8 @@ export async function getPurchasedCourses(userId: string): Promise<Course[]> {
 
         const courses = await Promise.all(coursePromises);
         return courses.filter((course): course is Course => course !== null);
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching purchased courses for user ${userId}:`, errorMessage);
+    } catch (error: any) {
+        console.error(`Error fetching purchased courses for user ${userId}:`, error.message);
         return [];
     }
 }

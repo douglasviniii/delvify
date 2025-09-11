@@ -5,8 +5,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { Printer, Download } from 'lucide-react';
-import type { CertificateSettings } from '@/lib/certificates';
-import type { Module } from '@/lib/courses';
+import type { CertificateSettings, Module } from '@/lib/types';
 import { Separator } from './ui/separator';
 
 interface CertificateProps {
@@ -164,4 +163,3 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, courseName, comp
 };
 
 export default Certificate;
-

@@ -1,5 +1,6 @@
 
-import { getPostBySlug, getPostComments, type Post, type Comment } from '@/lib/blog-posts';
+import { getPostBySlug, getPostComments } from '@/lib/blog-posts';
+import type { Post, Comment } from '@/lib/types';
 import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { Calendar, UserCircle, ArrowLeft } from 'lucide-react';

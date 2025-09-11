@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, storage } from '@/lib/firebase';
 import { saveCertificateSettings, getCertificateSettings } from './actions';
-import type { CertificateSettings } from '@/lib/certificates';
+import type { CertificateSettings } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -269,7 +269,7 @@ export default function CertificateSettingsPage() {
                         </div>
                         <div className="space-y-2">
                              <Label htmlFor="additionalInfo">Informações Adicionais (Verso)</Label>
-                            <Textarea id="additionalInfo" value={settings.additionalInfo} onChange={e => handleSettingChange('additionalInfo', e.target.value)} placeholder="Ex: Certificado válido em todo território nacional..." />
+                            <Textarea id="additionalInfo" value={settings.additionalInfo ?? ''} onChange={e => handleSettingChange('additionalInfo', e.target.value)} placeholder="Ex: Certificado válido em todo território nacional..." />
                              <p className="text-xs text-muted-foreground">Texto que aparece no verso do certificado.</p>
                         </div>
                     </div>
@@ -284,6 +284,3 @@ export default function CertificateSettingsPage() {
         </div>
     );
 }
-    
-
-    

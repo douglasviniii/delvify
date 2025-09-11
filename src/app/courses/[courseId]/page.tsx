@@ -1,7 +1,7 @@
 
-
 import { notFound } from 'next/navigation';
-import { getCourseById, getCourseReviews, type Review } from '@/lib/courses';
+import { getCourseById, getCourseReviews } from '@/lib/courses';
+import type { Review } from '@/lib/types';
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import Image from 'next/image';

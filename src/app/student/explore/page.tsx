@@ -1,8 +1,8 @@
 
-
 import { MainHeader } from "@/components/main-header";
 import { getGlobalSettingsForTenant } from '@/lib/settings';
-import { getAllCourses, getAllCategories, type Course, type Category } from "@/lib/courses";
+import { getAllCourses, getAllCategories } from "@/lib/courses";
+import type { Course, Category } from '@/lib/types';
 import ExploreClientContent from "./explore-client-content";
 
 
@@ -17,6 +17,3 @@ export default async function ExplorePage() {
         <ExploreClientContent allCourses={courses} allCategories={categories} />
     );
 }
-
-
-    

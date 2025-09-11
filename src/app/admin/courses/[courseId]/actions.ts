@@ -3,14 +3,8 @@
 
 import { db } from '@/lib/firebase';
 import { collection, writeBatch, doc, getDocs, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
+import type { Module } from '@/lib/types';
 
-interface Module {
-  id?: string;
-  title: string;
-  description?: string;
-  contentUrl: string;
-  order: number;
-}
 
 export async function saveCourseModules(tenantId: string, courseId: string, modules: Module[]) {
     if (!tenantId || !courseId) {
@@ -55,5 +49,3 @@ export async function saveCourseModules(tenantId: string, courseId: string, modu
 
     return { success: true, message: "Episódios salvos com sucesso." };
 }
-
-    

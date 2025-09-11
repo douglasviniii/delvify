@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, storage } from '@/lib/firebase';
 import { saveGlobalSettings, getGlobalSettings } from './actions';
-import type { GlobalSettings } from '@/lib/settings';
+import type { GlobalSettings } from '@/lib/types';
 import Link from 'next/link';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 

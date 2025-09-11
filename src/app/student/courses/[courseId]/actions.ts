@@ -6,7 +6,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
-import type { Course } from '@/lib/courses';
+import type { Course } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);

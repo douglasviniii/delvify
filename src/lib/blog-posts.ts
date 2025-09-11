@@ -1,36 +1,8 @@
 
-
 'use server';
 
 import { adminDb } from './firebase-admin';
-import { getAuth } from 'firebase-admin/auth';
-
-// This type definition needs to be maintained in sync with the one in admin/blog/page.tsx
-export type Post = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  imageUrl: string;
-  author: string;
-  authorId: string;
-  createdAt: string; // Serialized as ISO string
-  updatedAt?: string; // Serialized as ISO string
-  commentCount?: number; 
-  likeCount?: number;
-  isLikedByUser?: boolean;
-};
-
-export type Comment = {
-    id: string;
-    authorId: string;
-    authorName: string;
-    authorAvatarUrl?: string;
-    text: string;
-    createdAt: string;
-    likes: number;
-}
+import type { Post, Comment } from './types';
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
@@ -82,9 +54,8 @@ export async function getAllBlogPosts(tenantId: string, userId?: string): Promis
     }
 
     return posts;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error fetching blog posts for tenant ${tenantId}:`, errorMessage);
+  } catch (error: any) {
+    console.error(`Error fetching blog posts for tenant ${tenantId}:`, error.message);
     return [];
   }
 }
@@ -108,9 +79,8 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
         const postDoc = snapshot.docs[0];
         return serializeDoc(postDoc) as Post;
 
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, errorMessage);
+    } catch (error: any) {
+        console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error.message);
         // Fallback for environments where indexes might not be configured.
         // This is less efficient but more robust.
         try {
@@ -118,9 +88,8 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
             const allPosts = await getAllBlogPosts(tenantId);
             const post = allPosts.find(p => p.slug === slug);
             return post || null;
-        } catch (fallbackError) {
-            const fallbackErrorMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-            console.error(`Fallback search also failed for slug ${slug}:`, fallbackErrorMessage);
+        } catch (fallbackError: any) {
+            console.error(`Fallback search also failed for slug ${slug}:`, fallbackError.message);
             return null;
         }
     }
@@ -140,9 +109,8 @@ export async function getPostComments(tenantId: string, postId: string): Promise
         });
         
         return comments;
-    } catch(error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error fetching comments for post ${postId}:`, errorMessage);
+    } catch(error: any) {
+        console.error(`Error fetching comments for post ${postId}:`, error.message);
         return [];
     }
 }

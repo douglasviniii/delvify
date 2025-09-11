@@ -4,7 +4,7 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import type { GlobalSettings } from '@/lib/settings';
+import type { GlobalSettings } from '@/lib/types';
 
 // Define o schema para validação dos dados
 const SocialLinksSchema = z.object({
@@ -84,7 +84,8 @@ export async function getGlobalSettings(tenantId: string): Promise<GlobalSetting
     }
     return null; // Retorna null se não houver configurações salvas
   } catch (error) {
-    console.error('Erro ao buscar as configurações globais:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+    console.error('Erro ao buscar as configurações globais:', errorMessage);
     throw new Error('Não foi possível buscar as configurações do site.');
   }
 }

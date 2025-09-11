@@ -4,7 +4,7 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import type { CertificateSettings } from '@/lib/certificates';
+import type { CertificateSettings } from '@/lib/types';
 
 // Define o schema para validação dos dados
 const CertificateSettingsSchema = z.object({
@@ -67,10 +67,8 @@ export async function getCertificateSettings(tenantId: string): Promise<Certific
     }
     return null; // Retorna null se não houver configurações salvas
   } catch (error) {
-    console.error('Erro ao buscar as configurações do certificado:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+    console.error('Erro ao buscar as configurações do certificado:', errorMessage);
     throw new Error('Não foi possível buscar as configurações do certificado.');
   }
 }
-    
-
-    

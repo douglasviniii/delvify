@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { useEffect, useState, useTransition } from 'react';
-import type { Course, Review } from '@/lib/courses';
+import type { Course, Review } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { createCheckoutSession, enrollInFreeCourse } from './actions';
 

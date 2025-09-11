@@ -7,7 +7,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import { getDoc, doc } from 'firebase/firestore';
 import { getPurchasedCourses } from '@/lib/courses';
-import type { Course } from '@/lib/courses';
+import type { Course } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardDescription, CardTitle } from '@/components/ui/card';
 import { Loader2, Award, BookOpen, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';

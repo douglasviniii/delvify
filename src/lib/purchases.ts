@@ -1,17 +1,8 @@
+
 'use server';
 
 import { adminDb } from './firebase-admin';
-
-export type Purchase = {
-    id: string;
-    userId: string;
-    courseId: string;
-    courseTitle?: string; // Will be added by combining data
-    amount: number;
-    currency?: string;
-    stripeCheckoutSessionId?: string;
-    createdAt: string;
-};
+import type { Purchase } from './types';
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
@@ -56,7 +47,8 @@ export async function getPurchaseHistory(tenantId: string, userId: string): Prom
                     purchaseData.courseTitle = 'Curso não encontrado';
                 }
             } catch (courseError) {
-                console.error(`Could not fetch course title for courseId ${purchaseData.courseId}`, courseError);
+                const errorMessage = courseError instanceof Error ? courseError.message : 'Um erro desconhecido ocorreu.';
+                console.error(`Could not fetch course title for courseId ${purchaseData.courseId}`, errorMessage);
                 purchaseData.courseTitle = 'Detalhes do curso indisponíveis';
             }
 
@@ -69,7 +61,8 @@ export async function getPurchaseHistory(tenantId: string, userId: string): Prom
         return purchases;
 
     } catch (error) {
-        console.error(`Error fetching purchase history for tenant ${tenantId} and user ${userId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+        console.error(`Error fetching purchase history for tenant ${tenantId} and user ${userId}:`, errorMessage);
         return [];
     }
 }
