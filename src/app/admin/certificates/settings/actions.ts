@@ -41,11 +41,13 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
                 metadata: { contentType: mimeType },
             });
             
-            // Tornar o arquivo público explicitamente após o upload
-            await file.makePublic();
+            // Gera uma URL assinada com longa duração (expira em 2100)
+            const [url] = await file.getSignedUrl({
+                action: 'read',
+                expires: '01-01-2100' 
+            });
 
-            // Retorna a URL pública no formato compatível com o Next.js Image
-            return file.publicUrl();
+            return url;
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
