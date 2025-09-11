@@ -1,48 +1,53 @@
 
-import { notFound, redirect } from 'next/navigation';
-import { getCourseById, getCourseModules } from '@/lib/courses';
+import { notFound } from 'next/navigation';
+import { getCourseById, getCourseModules, hasPurchasedCourse } from '@/lib/courses';
 import { getCertificateSettings } from '@/lib/certificates';
 import type { CertificateSettings, Module } from '@/lib/types';
 import Certificate from '@/components/certificate';
-import { adminDb } from '@/lib/firebase-admin';
-import type { User } from 'firebase-admin/auth';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
 
-
-// Placeholder for getting the real logged-in user on the server.
-// This would be replaced by a proper session management system.
-const getAuthenticatedUser = async () => {
-    // In a real app, this would involve validating a session cookie or token.
-    // For this example, we'll simulate fetching a user.
-    // This UID corresponds to the student user created in the signup flow.
-    // Replace with a real user UID from your Firebase project to test.
-    const studentUID = "A2e8sD4fG6hJkLpQ7wE9xYz2vN1o"; 
-
-     try {
-        const userDoc = await adminDb.collection('users').doc(studentUID).get();
-        if (userDoc.exists) {
-            return userDoc.data() as User;
-        }
-        return null;
-    } catch(e) {
-        return null;
-    }
-}
 
 // Este é o ID do inquilino para o qual os cursos estão sendo criados no admin.
 const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
+async function getAuthenticatedUser() {
+    const sessionCookie = cookies().get('session')?.value;
+    if (!sessionCookie) {
+        return null;
+    }
+    try {
+        const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+        const userDoc = await adminDb.collection('users').doc(decodedClaims.uid).get();
+        if (userDoc.exists) {
+            return userDoc.data();
+        }
+        return null;
+    } catch (error) {
+        console.error("Failed to verify session cookie or fetch user", error);
+        return null;
+    }
+}
+
+
 export default async function CertificatePage({ params }: { params: { courseId: string } }) {
     const courseId = params.courseId;
+    
+    const student = await getAuthenticatedUser();
 
+    if (!student || !student.uid) {
+         notFound();
+    }
+    
     // Fetch all data in parallel for better performance
-    const [course, modules, certificateSettings, student] = await Promise.all([
+    const [course, modules, certificateSettings, isPurchased] = await Promise.all([
         getCourseById(TENANT_ID_WITH_COURSES, courseId),
         getCourseModules(TENANT_ID_WITH_COURSES, courseId),
         getCertificateSettings(TENANT_ID_WITH_COURSES),
-        getAuthenticatedUser()
+        hasPurchasedCourse(student.uid, courseId)
     ]);
     
-    if (!course || !student) {
+    if (!course || !isPurchased) {
         notFound();
     }
 
@@ -52,7 +57,7 @@ export default async function CertificatePage({ params }: { params: { courseId: 
     return (
         <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
             <Certificate
-                studentName={student.displayName || 'Aluno Sem Nome'}
+                studentName={student.name || 'Aluno Sem Nome'}
                 courseName={course.title}
                 completionDate={new Date()} // Using current date as placeholder
                 courseModules={modules}
