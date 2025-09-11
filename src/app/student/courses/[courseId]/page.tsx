@@ -7,7 +7,7 @@ import CourseReviews from '@/app/courses/[courseId]/course-reviews';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, PlayCircle, Loader2 } from 'lucide-react';
+import { Star, PlayCircle, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
@@ -131,6 +131,12 @@ export default function StudentCourseDetailsPage() {
 
     return (
         <div className="flex-1 space-y-8">
+            <Button asChild variant="outline">
+                <Link href="/student/courses">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Voltar para Meus Cursos
+                </Link>
+            </Button>
             <div className="bg-muted/30 -m-8 p-8">
                 <div className="container mx-auto max-w-7xl">
                    <div className="grid md:grid-cols-2 gap-12 items-start">
