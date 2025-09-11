@@ -4,7 +4,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, Award } from 'lucide-react';
 import type { CertificateSettings, Module } from '@/lib/types';
 
 interface CertificateProps {
@@ -71,9 +71,12 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     )}
                     <div className="relative z-10 flex flex-col h-full">
                         <header className="flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
-                            {mainLogoUrl ? (
-                                <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
-                            ) : <span>{companyName}</span>}
+                           <div className="flex items-center gap-4">
+                                {mainLogoUrl ? (
+                                    <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
+                                ) : <span>{companyName}</span>}
+                                <Award className="h-12 w-12" style={{ color: accentColor }} />
+                            </div>
                              <div className="text-right text-xs text-gray-600">
                                 <p className="font-bold">{companyName}</p>
                                 <p>{companyAddress}</p>
