@@ -17,7 +17,7 @@ const clientId = process.env.FIREBASE_CLIENT_ID;
 const clientX509CertUrl = process.env.FIREBASE_CLIENT_X509_CERT_URL;
 
 if (!projectId || !privateKeyId || !privateKey || !clientEmail || !clientId || !clientX509CertUrl) {
-    throw new Error("Uma ou mais variáveis de ambiente do Firebase não estão definidas. O Firebase Admin SDK não pode ser inicializado.");
+    throw new Error("Uma ou mais variáveis de ambiente do Firebase Admin não estão definidas. O Firebase Admin SDK não pode ser inicializado.");
 }
 
 const serviceAccount: ServiceAccount = {
