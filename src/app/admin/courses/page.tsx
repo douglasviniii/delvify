@@ -34,7 +34,7 @@ import { useFormStatus } from 'react-dom';
 const courseSchema = z.object({
   title: z.string().min(3, 'O título é obrigatório.'),
   description: z.string().min(10, 'A descrição é muito curta.'),
-  price: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido. Use 123,45").min(1, 'O preço é obrigatório.'),
+  price: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido. Use 123,45 ou 0 para gratuito."),
   promotionalPrice: z.string().regex(/^\d+(,\d{2})?$/, "Formato de preço inválido.").optional().or(z.literal('')),
   category: z.string().min(1, 'A categoria é obrigatória.'),
   tag: z.string().optional(),
@@ -62,6 +62,25 @@ type Course = {
 };
 
 const CourseCard = ({ course, onStatusChange, isChangingStatus, onEdit, onDelete }: { course: Course, onStatusChange: (newStatus: 'draft' | 'published') => void, isChangingStatus: boolean, onEdit: () => void, onDelete: () => void }) => {
+    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
+
+    const displayPrice = () => {
+        if (isFree) return <span className="text-xl font-bold text-green-600">Gratuito</span>;
+        
+        const effectivePrice = course.promotionalPrice || course.price;
+        const originalPrice = course.price;
+
+        return (
+             <div className="text-lg font-bold text-primary">
+                {course.promotionalPrice && course.promotionalPrice !== course.price ? (
+                    <span>
+                        <span className="text-sm line-through text-muted-foreground mr-2">R$ {originalPrice}</span> R$ {effectivePrice}
+                    </span>
+                ) : `R$ ${originalPrice}`}
+            </div>
+        )
+    }
+
     return (
     <Card className="overflow-hidden shadow-lg flex flex-col group relative">
         <Link href={`/courses/${course.id}`} className="flex flex-col flex-1" target="_blank">
@@ -89,13 +108,7 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus, onEdit, onDelete
             </CardContent>
         </Link>
         <CardFooter className="p-4 bg-muted/20 flex justify-between items-center z-10">
-             <div className="text-lg font-bold text-primary">
-                {course.promotionalPrice && course.promotionalPrice !== course.price ? (
-                    <span>
-                        <span className="text-sm line-through text-muted-foreground mr-2">R$ {course.price}</span> R$ {course.promotionalPrice}
-                    </span>
-                ) : `R$ ${course.price}`}
-            </div>
+             {displayPrice()}
             <div className='flex items-center gap-2'>
                 <Button 
                 size="sm" 
@@ -456,7 +469,7 @@ export default function AdminCoursesPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="price" render={({ field }) => (
-                            <FormItem><FormLabel>Preço (BRL)</FormLabel><FormControl><Input {...field} placeholder="Ex: 99,90" /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Preço (BRL)</FormLabel><FormControl><Input {...field} placeholder="Ex: 99,90 ou 0 para gratuito" /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="promotionalPrice" render={({ field }) => (
                             <FormItem><FormLabel>Preço Promocional (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ex: 49,90" /></FormControl><FormMessage /></FormItem>

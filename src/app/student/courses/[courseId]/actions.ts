@@ -7,6 +7,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
 import type { Course } from '@/lib/courses';
+import { revalidatePath } from 'next/cache';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -70,12 +71,10 @@ export async function submitReview(
     }
 }
 
-
 export async function createCheckoutSession(
     course: Course,
     userId: string,
     userEmail: string,
-    userDisplayName: string
 ): Promise<{ url?: string; error?: string }> {
     if (!course || !userId || !userEmail) {
         return { error: 'Informações do curso ou do usuário estão ausentes.' };
@@ -83,6 +82,9 @@ export async function createCheckoutSession(
     
     // Convert price like "99,90" or "99.90" to cents (9990)
     const priceInCents = Math.round(parseFloat(course.price.replace(',', '.')) * 100);
+    if (priceInCents <= 0) {
+        return { error: "Este curso não pode ser comprado com preço zero ou negativo."}
+    }
     
     try {
         const checkoutSession = await stripe.checkout.sessions.create({
@@ -121,5 +123,42 @@ export async function createCheckoutSession(
     } catch(error) {
         console.error("Stripe checkout session creation failed:", error);
         return { error: 'Falha ao comunicar com o sistema de pagamento.' };
+    }
+}
+
+
+export async function enrollInFreeCourse(userId: string, course: Course): Promise<{ success: boolean; message: string }> {
+    if (!userId || !course) {
+        return { success: false, message: "ID do usuário ou dados do curso ausentes." };
+    }
+
+    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
+    if (!isFree) {
+        return { success: false, message: "Este curso não é gratuito." };
+    }
+
+    try {
+        const userDocRef = adminDb.collection('users').doc(userId);
+        
+        await userDocRef.set({
+            purchasedCourses: {
+                [course.id]: {
+                    tenantId: course.tenantId,
+                    purchasedAt: FieldValue.serverTimestamp(),
+                    price: 0,
+                }
+            }
+        }, { merge: true });
+
+        console.log(`Granted free access to course ${course.id} for user ${userId}`);
+
+        // Revalidate the path to reflect the new course in "My Courses"
+        revalidatePath('/student/courses');
+
+        return { success: true, message: "Inscrição realizada com sucesso!" };
+        
+    } catch (dbError) {
+        console.error('Database error during free enrollment:', dbError);
+        return { success: false, message: "Falha ao registrar inscrição. Tente novamente." };
     }
 }

@@ -14,7 +14,7 @@ import { auth } from '@/lib/firebase';
 import { useEffect, useState, useTransition } from 'react';
 import type { Course, Review } from '@/lib/courses';
 import { useToast } from '@/hooks/use-toast';
-import { createCheckoutSession } from './actions';
+import { createCheckoutSession, enrollInFreeCourse } from './actions';
 
 
 const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
@@ -72,20 +72,34 @@ export default function StudentCourseDetailsPage() {
         }
     }, [user, authLoading, courseId, toast, router]);
 
-    const handlePurchase = () => {
+    const handlePurchaseOrEnroll = () => {
         if (!course || !user) return;
         
         startTransition(async () => {
-            const response = await createCheckoutSession(course, user.uid, user.email!, user.displayName!);
+            const isFree = parseFloat(course.price.replace(',', '.')) === 0;
 
-            if (response.url) {
-                router.push(response.url);
+            if (isFree) {
+                // Free course enrollment
+                const response = await enrollInFreeCourse(user.uid, course);
+                if(response.success) {
+                    toast({ title: "Inscrição Realizada!", description: "Você já pode começar a assistir." });
+                    setIsPurchased(true); // Update state to show "Assistir" button
+                } else {
+                    toast({ title: "Erro na Inscrição", description: response.message, variant: "destructive" });
+                }
             } else {
-                toast({
-                    title: "Erro no Checkout",
-                    description: response.error || "Não foi possível iniciar o processo de pagamento. Tente novamente.",
-                    variant: "destructive"
-                });
+                // Paid course checkout
+                const response = await createCheckoutSession(course, user.uid, user.email!);
+
+                if (response.url) {
+                    router.push(response.url);
+                } else {
+                    toast({
+                        title: "Erro no Checkout",
+                        description: response.error || "Não foi possível iniciar o processo de pagamento. Tente novamente.",
+                        variant: "destructive"
+                    });
+                }
             }
         });
     }
@@ -98,6 +112,23 @@ export default function StudentCourseDetailsPage() {
         return notFound();
     }
     
+    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
+
+    const displayPrice = () => {
+        if (isFree) return <span className="text-3xl font-bold text-green-600">Gratuito</span>;
+
+        if (course.promotionalPrice && course.promotionalPrice !== course.price) {
+            return (
+                <div className="flex items-baseline gap-4">
+                    <span className="text-3xl font-bold text-primary">R$ {course.promotionalPrice}</span>
+                    <span className="text-xl line-through text-muted-foreground">R$ {course.price}</span>
+                </div>
+            )
+        }
+        
+        return <span className="text-3xl font-bold text-primary">R$ {course.price}</span>
+    }
+
     return (
         <div className="flex-1 space-y-8">
             <div className="bg-muted/30 -m-8 p-8">
@@ -118,13 +149,7 @@ export default function StudentCourseDetailsPage() {
                                 <Star className="w-5 h-5" />
                                 <span className="text-sm text-muted-foreground ml-1">({reviews.length} avaliações)</span>
                             </div>
-                            <div className="text-3xl font-bold text-primary">
-                                {course.promotionalPrice && course.promotionalPrice !== course.price ? (
-                                    <span className='flex items-center gap-4'>
-                                        <span className="text-lg line-through text-muted-foreground">R$ {course.price}</span> R$ {course.promotionalPrice}
-                                    </span>
-                                ) : `R$ ${course.price}`}
-                            </div>
+                            {displayPrice()}
                             
                             {isPurchased ? (
                                  <Button size="lg" className="w-full text-lg h-12" asChild>
@@ -134,9 +159,9 @@ export default function StudentCourseDetailsPage() {
                                     </Link>
                                 </Button>
                             ) : (
-                                <Button size="lg" className="w-full text-lg h-12" onClick={handlePurchase} disabled={isPending}>
+                                <Button size="lg" className="w-full text-lg h-12" onClick={handlePurchaseOrEnroll} disabled={isPending}>
                                      {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PlayCircle className='mr-2 h-5 w-5' />}
-                                     {isPending ? "Processando..." : "Comprar Agora"}
+                                     {isPending ? "Processando..." : (isFree ? 'Inscrever-se Gratuitamente' : 'Comprar Agora')}
                                 </Button>
                             )}
 

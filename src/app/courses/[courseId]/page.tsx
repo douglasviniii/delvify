@@ -28,6 +28,23 @@ export default async function CourseLandingPage({ params }: { params: { courseId
     if (!course || course.status !== 'published') {
         notFound();
     }
+
+    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
+
+    const displayPrice = () => {
+        if (isFree) return <span className="text-3xl font-bold text-green-600">Gratuito</span>;
+
+        if (course.promotionalPrice && course.promotionalPrice !== course.price) {
+            return (
+                <div className="flex items-baseline gap-4">
+                    <span className="text-3xl font-bold text-primary">R$ {course.promotionalPrice}</span>
+                    <span className="text-xl line-through text-muted-foreground">R$ {course.price}</span>
+                </div>
+            )
+        }
+        
+        return <span className="text-3xl font-bold text-primary">R$ {course.price}</span>
+    }
     
     return (
         <div className="flex min-h-screen flex-col bg-background">
@@ -51,15 +68,9 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                                     <Star className="w-5 h-5" />
                                     <span className="text-sm text-muted-foreground ml-1">({reviews.length} avaliações)</span>
                                 </div>
-                                <div className="text-3xl font-bold text-primary">
-                                    {course.promotionalPrice && course.promotionalPrice !== course.price ? (
-                                        <span className='flex items-center gap-4'>
-                                            <span className="text-lg line-through text-muted-foreground">R$ {course.price}</span> R$ {course.promotionalPrice}
-                                        </span>
-                                    ) : `R$ ${course.price}`}
-                                </div>
+                                {displayPrice()}
                                 <Button size="lg" className="w-full text-lg h-12" asChild>
-                                    <Link href="/login">Comprar Agora</Link>
+                                    <Link href="/login">{isFree ? 'Acessar Gratuitamente' : 'Comprar Agora'}</Link>
                                 </Button>
                             </div>
                        </div>
@@ -67,6 +78,8 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                 </div>
                 <CourseReviews 
                     initialReviews={reviews} 
+                    courseId={course.id}
+                    tenantId={TENANT_ID_WITH_COURSES}
                 />
             </main>
             <MainFooter />

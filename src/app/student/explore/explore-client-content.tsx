@@ -18,44 +18,59 @@ interface ExploreClientContentProps {
   allCategories: Category[];
 }
 
-const CourseCard = ({ course }: { course: Course }) => (
-    <Link href={`/student/courses/${course.id}`} className="flex">
-        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col w-full group">
-            <CardHeader className="p-0">
-                <div className="relative aspect-video w-full">
-                    <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
-                     {course.tag && (
-                        <Badge variant="secondary" className="absolute top-2 right-2">{course.tag}</Badge>
-                    )}
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-                </div>
-            </CardHeader>
-            <CardContent className="p-4 flex-1 flex flex-col">
-                <Badge variant="outline" className="mb-2 w-fit">{course.category}</Badge>
-                <h3 className="font-headline text-lg font-semibold flex-1 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
-                 <div className="flex items-center gap-1 text-yellow-500 mt-4">
-                    <Star className="w-4 h-4" />
-                    <Star className="w-4 h-4" />
-                    <Star className="w-4 h-4" />
-                    <Star className="w-4 h-4" />
-                    <Star className="w-4 h-4" />
-                    <span className="text-xs text-muted-foreground ml-1">(0)</span>
-                </div>
-            </CardContent>
-            <CardFooter className="p-4 bg-muted/20 flex justify-between items-center">
-                 <div className="text-lg font-bold text-primary">
-                    {course.promotionalPrice && course.promotionalPrice !== course.price ? (
-                        <span>
-                            <span className="text-sm line-through text-muted-foreground mr-2">R$ {course.price}</span> R$ {course.promotionalPrice}
-                        </span>
-                    ) : `R$ ${course.price}`}
-                </div>
-                <Button size="sm">Ver Curso</Button>
-            </CardFooter>
-        </Card>
-    </Link>
-);
+const CourseCard = ({ course }: { course: Course }) => {
+    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
+
+    const displayPrice = () => {
+        if (isFree) return <span className="text-xl font-bold text-green-600">Gratuito</span>;
+        
+        const effectivePrice = course.promotionalPrice || course.price;
+        const originalPrice = course.price;
+
+        return (
+             <div className="text-lg font-bold text-primary">
+                {course.promotionalPrice && course.promotionalPrice !== course.price ? (
+                    <span>
+                        <span className="text-sm line-through text-muted-foreground mr-2">R$ {originalPrice}</span> R$ {effectivePrice}
+                    </span>
+                ) : `R$ ${originalPrice}`}
+            </div>
+        )
+    }
+
+    return (
+        <Link href={`/student/courses/${course.id}`} className="flex">
+            <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col w-full group">
+                <CardHeader className="p-0">
+                    <div className="relative aspect-video w-full">
+                        <Image src={course.coverImageUrl} alt={course.title} layout="fill" objectFit="cover" />
+                        {course.tag && (
+                            <Badge variant="secondary" className="absolute top-2 right-2">{course.tag}</Badge>
+                        )}
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                    </div>
+                </CardHeader>
+                <CardContent className="p-4 flex-1 flex flex-col">
+                    <Badge variant="outline" className="mb-2 w-fit">{course.category}</Badge>
+                    <h3 className="font-headline text-lg font-semibold flex-1 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{course.description}</p>
+                    <div className="flex items-center gap-1 text-yellow-500 mt-4">
+                        <Star className="w-4 h-4" />
+                        <Star className="w-4 h-4" />
+                        <Star className="w-4 h-4" />
+                        <Star className="w-4 h-4" />
+                        <Star className="w-4 h-4" />
+                        <span className="text-xs text-muted-foreground ml-1">(0)</span>
+                    </div>
+                </CardContent>
+                <CardFooter className="p-4 bg-muted/20 flex justify-between items-center">
+                    {displayPrice()}
+                    <Button size="sm">Ver Curso</Button>
+                </CardFooter>
+            </Card>
+        </Link>
+    )
+};
 
 export default function ExploreClientContent({ allCourses, allCategories }: ExploreClientContentProps) {
     const [searchTerm, setSearchTerm] = useState("");
