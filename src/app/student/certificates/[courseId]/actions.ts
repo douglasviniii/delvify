@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getCourseById, getCourseModules } from '@/lib/courses';
@@ -50,7 +49,7 @@ export async function getCertificatePageData(tenantId: string, courseId: string,
         }
 
         // Primeiro, serializa o documento do usuário INTEIRO, incluindo os objetos aninhados como purchasedCourses.
-        const studentProfile = serializeData({ uid: userDoc.id, ...userDoc.data() }) as UserProfile & { purchasedCourses?: Record<string, PurchasedCourseInfo> };
+        const studentProfile = serializeData(userDoc.data()) as UserProfile & { purchasedCourses?: Record<string, PurchasedCourseInfo> };
         
         if (!studentProfile) {
              throw new Error("Não foi possível processar o perfil do aluno.");
@@ -84,7 +83,7 @@ export async function getCertificatePageData(tenantId: string, courseId: string,
               course,
               modules,
               settings,
-              studentProfile
+              studentProfile: { ...studentProfile, uid: userDoc.id } // Adiciona o uid ao perfil retornado
             }
         };
 
