@@ -2,11 +2,11 @@
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
-import { getCourseForCertificate, getSettingsForCertificate } from './actions';
+import { getCourseForCertificate, getSettingsForCertificate, getStudentProfile } from './actions';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
-import type { CertificateSettings, Module, Course } from '@/lib/types';
+import type { CertificateSettings, Module, Course, UserProfile } from '@/lib/types';
 import Certificate from '@/components/certificate';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +23,7 @@ export default function CertificatePage() {
     const [course, setCourse] = useState<Course | null>(null);
     const [modules, setModules] = useState<Module[]>([]);
     const [settings, setSettings] = useState<CertificateSettings | null>(null);
+    const [studentProfile, setStudentProfile] = useState<UserProfile | null>(null);
 
     useEffect(() => {
         if (!courseId) {
@@ -43,25 +44,36 @@ export default function CertificatePage() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const data = await getCourseForCertificate(TENANT_ID_WITH_COURSES, courseId, user.uid);
+                const [courseDataResult, certSettings, profileData] = await Promise.all([
+                    getCourseForCertificate(TENANT_ID_WITH_COURSES, courseId, user.uid),
+                    getSettingsForCertificate(TENANT_ID_WITH_COURSES),
+                    getStudentProfile(user.uid)
+                ]);
 
-                if (!data.success || !data.course || !data.modules) {
+                if (!courseDataResult.success || !courseDataResult.course || !courseDataResult.modules) {
                     toast({
                         title: "Erro ao Carregar Certificado",
-                        description: data.message || "Você não tem permissão para ver este certificado ou o curso não existe.",
+                        description: courseDataResult.message || "Você não tem permissão para ver este certificado ou o curso não existe.",
                         variant: "destructive",
                     });
-                    // maybe redirect instead of 404
                     notFound();
                     return;
                 }
                 
-                const certSettings = await getSettingsForCertificate(TENANT_ID_WITH_COURSES);
+                if (!profileData) {
+                     toast({
+                        title: "Erro ao Carregar Perfil",
+                        description: "Não foi possível encontrar os dados do aluno.",
+                        variant: "destructive",
+                    });
+                    notFound();
+                    return;
+                }
 
-
-                setCourse(data.course);
-                setModules(data.modules);
+                setCourse(courseDataResult.course);
+                setModules(courseDataResult.modules);
                 setSettings(certSettings);
+                setStudentProfile(profileData);
 
             } catch (error) {
                 console.error("Failed to load certificate data", error);
@@ -84,7 +96,7 @@ export default function CertificatePage() {
         )
     }
 
-    if (!course || !user) {
+    if (!course || !studentProfile) {
         // This will be caught by the notFound in useEffect, but as a safeguard.
         return null;
     }
@@ -92,7 +104,8 @@ export default function CertificatePage() {
     return (
         <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
             <Certificate
-                studentName={user.displayName || 'Aluno Sem Nome'}
+                studentName={studentProfile.name}
+                studentCpf={studentProfile.cpf}
                 courseName={course.title}
                 completionDate={new Date()} // Placeholder, logic for actual completion date can be added later
                 courseModules={modules}

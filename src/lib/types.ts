@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export interface CertificateSettings {
@@ -123,6 +124,21 @@ export type Purchase = {
     stripeCheckoutSessionId?: string;
     createdAt: string;
 };
+
+export type UserProfile = {
+  uid: string;
+  name: string;
+  socialName: string;
+  email: string;
+  cpf: string;
+  birthDate: string;
+  address: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  cep: string;
+  photoURL: string | null;
+}
 
 
 export const CustomizeTenantBrandingInputSchema = z.object({

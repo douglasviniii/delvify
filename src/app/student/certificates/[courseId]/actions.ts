@@ -3,7 +3,8 @@
 
 import { getCourseById, getCourseModules, hasPurchasedCourse } from '@/lib/courses';
 import { getCertificateSettings } from '@/lib/certificates';
-import type { CertificateSettings } from '@/lib/types';
+import type { CertificateSettings, UserProfile } from '@/lib/types';
+import { adminDb } from '@/lib/firebase-admin';
 
 
 export async function getCourseForCertificate(tenantId: string, courseId: string, userId: string) {
@@ -40,6 +41,22 @@ export async function getSettingsForCertificate(tenantId: string): Promise<Certi
         return settings;
     } catch (error) {
         console.error("Error fetching certificate settings in action", error);
+        return null;
+    }
+}
+
+export async function getStudentProfile(userId: string): Promise<UserProfile | null> {
+    if (!userId) {
+        return null;
+    }
+    try {
+        const userDoc = await adminDb.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+            return userDoc.data() as UserProfile;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching student profile:", error);
         return null;
     }
 }

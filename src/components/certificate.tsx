@@ -4,12 +4,12 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Printer, Download } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import type { CertificateSettings, Module } from '@/lib/types';
-import { Separator } from './ui/separator';
 
 interface CertificateProps {
     studentName: string;
+    studentCpf: string;
     courseName: string;
     completionDate: Date;
     courseModules: Module[];
@@ -32,7 +32,7 @@ const defaultSettings: CertificateSettings = {
 };
 
 
-const Certificate: React.FC<CertificateProps> = ({ studentName, courseName, completionDate, courseModules, settings }) => {
+const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, courseName, completionDate, courseModules, settings }) => {
     const effectiveSettings = settings || defaultSettings;
     const {
         mainLogoUrl,
@@ -53,7 +53,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, courseName, comp
     return (
         <>
             <div className="w-full max-w-5xl flex justify-end gap-2 mb-4 print:hidden">
-                 <Button onClick={handlePrint} variant="outline"><Printer className="mr-2 h-4 w-4" /> Imprimir</Button>
+                 <Button onClick={handlePrint} variant="outline"><Printer className="mr-2 h-4 w-4" /> Imprimir / Salvar PDF</Button>
             </div>
             
             <div className="w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-0 flex flex-col page-break-container">
@@ -85,6 +85,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, courseName, comp
                             <h1 className="text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
                             <p className="mt-8 text-xl">Certificamos que</p>
                             <p className="mt-2 text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
+                             <p className="mt-2 text-lg">portador(a) do CPF nº {studentCpf}</p>
                             <p className="mt-6 text-xl max-w-3xl">
                                 concluiu com sucesso o curso de <strong style={{ color: accentColor }}>{courseName}</strong>,
                                 em {completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
