@@ -69,7 +69,7 @@ export default function StudentCoursesPage() {
         if (user) {
             setIsLoading(true);
             getPurchasedCourses(user.uid)
-                .then(setCourses)
+                .then(({ courses }) => setCourses(courses))
                 .catch(err => console.error("Failed to load purchased courses", err))
                 .finally(() => setIsLoading(false));
         } else if (!authLoading) {
