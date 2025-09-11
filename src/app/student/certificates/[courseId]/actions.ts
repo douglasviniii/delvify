@@ -12,7 +12,8 @@ const serializeData = (data: any): any => {
     if (Array.isArray(data)) {
         return data.map(serializeData);
     }
-    if (typeof data.toDate === 'function') {
+    // Verifica se o objeto é um Timestamp do Firebase Admin SDK
+    if (typeof data === 'object' && data !== null && typeof data.toDate === 'function') {
         return data.toDate().toISOString();
     }
     if (typeof data === 'object' && data !== null) {
@@ -28,7 +29,9 @@ const serializeData = (data: any): any => {
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     if (!doc.exists) return null;
     const data = doc.data();
-    return serializeData({ id: doc.id, ...data });
+    // Passa o objeto de dados inteiro para a serialização recursiva
+    const serializedContent = serializeData(data);
+    return { id: doc.id, ...serializedContent };
 };
 
 
