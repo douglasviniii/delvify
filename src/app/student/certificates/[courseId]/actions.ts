@@ -6,18 +6,21 @@ import { getCertificateSettings } from '@/lib/certificates';
 import type { CertificateSettings, UserProfile, Course, Module, PurchasedCourseInfo } from '@/lib/types';
 import { adminDb } from '@/lib/firebase-admin';
 
-// Função de serialização robusta para garantir que Timestamps sejam convertidos em strings, incluindo objetos aninhados.
+// Função de serialização robusta para garantir que Timestamps sejam convertidos em strings, incluindo objetos aninhados e arrays.
 const serializeData = (data: any): any => {
-    if (!data) return data;
+    if (!data) {
+        return data;
+    }
+    // Trata Timestamps do Firebase Admin SDK
+    if (typeof data.toDate === 'function') {
+        return data.toDate().toISOString();
+    }
+    // Trata arrays recursivamente
     if (Array.isArray(data)) {
         return data.map(serializeData);
     }
-    // Verifica se o objeto é um Timestamp do Firebase Admin SDK
-    if (typeof data === 'object' && data !== null && typeof data.toDate === 'function') {
-        return data.toDate().toISOString();
-    }
-    // Percorre recursivamente as propriedades do objeto
-    if (typeof data === 'object' && data !== null) {
+    // Trata objetos recursivamente
+    if (typeof data === 'object') {
         const res: { [key: string]: any } = {};
         for (const key in data) {
             if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -26,6 +29,7 @@ const serializeData = (data: any): any => {
         }
         return res;
     }
+    // Retorna o valor primitivo
     return data;
 };
 
