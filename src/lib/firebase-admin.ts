@@ -1,26 +1,37 @@
 
-
 import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 let adminApp: App;
 
-const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+const formatPrivateKey = (key: string) => {
+  return key.replace(/\\n/g, '\n');
+};
 
-if (!serviceAccountBase64) {
-    throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY não está definida. O Firebase Admin SDK não pode ser inicializado.");
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const privateKeyId = process.env.FIREBASE_PRIVATE_KEY_ID;
+const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+const clientId = process.env.FIREBASE_CLIENT_ID;
+const clientX509CertUrl = process.env.FIREBASE_CLIENT_X509_CERT_URL;
+
+if (!projectId || !privateKeyId || !privateKey || !clientEmail || !clientId || !clientX509CertUrl) {
+    throw new Error("Uma ou mais variáveis de ambiente do Firebase não estão definidas. O Firebase Admin SDK não pode ser inicializado.");
 }
 
-let serviceAccount: ServiceAccount;
-try {
-    const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
-    serviceAccount = JSON.parse(serviceAccountJson);
-} catch(e: any) {
-    console.error("Falha ao analisar as credenciais da conta de serviço do Firebase a partir do Base64. Verifique se a variável de ambiente está correta.", e);
-    throw new Error(`Formato inválido para as credenciais da conta de serviço do Firebase: ${e.message}`);
-}
-
+const serviceAccount: ServiceAccount = {
+  projectId,
+  privateKeyId,
+  privateKey: formatPrivateKey(privateKey),
+  clientEmail,
+  clientId,
+  authUri: "https://accounts.google.com/o/oauth2/auth",
+  tokenUri: "https://oauth2.googleapis.com/token",
+  authProviderX509CertUrl: "https://www.googleapis.com/oauth2/v1/certs",
+  clientX509CertUrl,
+  universeDomain: "googleapis.com"
+};
 
 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 if (!storageBucket) {
