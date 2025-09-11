@@ -4,8 +4,8 @@ import { getCourseById, getCourseModules } from '@/lib/courses';
 import { getCertificateSettings, type CertificateSettings } from '@/lib/certificates';
 import Certificate from '@/components/certificate';
 import { adminDb } from '@/lib/firebase-admin';
-import { auth } from '@/lib/firebase';
-import { User, getAuth } from 'firebase/auth';
+import type { User } from 'firebase-admin/auth';
+
 
 // Placeholder for getting the real logged-in user on the server.
 // This would be replaced by a proper session management system.

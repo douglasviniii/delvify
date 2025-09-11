@@ -1,58 +1,28 @@
+import admin from 'firebase-admin';
+import { getApps } from 'firebase-admin/app';
 
-import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
+// As variáveis de ambiente do lado do servidor não precisam do prefixo NEXT_PUBLIC_
+const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-let adminApp: App;
-
-const formatPrivateKey = (key: string) => {
-  return key.replace(/\\n/g, '\n');
-};
-
-const projectId = process.env.FIREBASE_PROJECT_ID;
-const privateKeyId = process.env.FIREBASE_PRIVATE_KEY_ID;
-const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-const clientId = process.env.FIREBASE_CLIENT_ID;
-const clientX509CertUrl = process.env.FIREBASE_CLIENT_X509_CERT_URL;
-
-if (!projectId || !privateKeyId || !privateKey || !clientEmail || !clientId || !clientX509CertUrl) {
-    throw new Error("Uma ou mais variáveis de ambiente do Firebase Admin não estão definidas. O Firebase Admin SDK não pode ser inicializado.");
+if (!serviceAccountKey) {
+    throw new Error('A variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY não está definida.');
 }
 
-const serviceAccount: ServiceAccount = {
-  projectId,
-  privateKeyId,
-  privateKey: formatPrivateKey(privateKey),
-  clientEmail,
-  clientId,
-  authUri: "https://accounts.google.com/o/oauth2/auth",
-  tokenUri: "https://oauth2.googleapis.com/token",
-  authProviderX509CertUrl: "https://www.googleapis.com/oauth2/v1/certs",
-  clientX509CertUrl,
-  universeDomain: "googleapis.com"
-};
-
-const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-if (!storageBucket) {
-    throw new Error("A variável de ambiente NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET é necessária.");
-}
-
+// Inicializa o Firebase Admin SDK somente se ainda não foi inicializado
 if (!getApps().length) {
-  try {
-    adminApp = initializeApp({
-      credential: cert(serviceAccount),
-      storageBucket: storageBucket,
-    });
-  } catch (error: any) {
-    console.error('Erro detalhado na inicialização do Firebase Admin:', error);
-    throw new Error('Falha na inicialização do Firebase Admin. Verifique as credenciais. Erro original: ' + error.message);
-  }
-} else {
-  adminApp = getApps()[0];
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert(JSON.parse(serviceAccountKey)),
+            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+        });
+    } catch (error) {
+        console.error('Falha ao inicializar o Firebase Admin SDK:', error);
+        throw new Error('Não foi possível inicializar o Firebase Admin. Verifique suas credenciais de serviço.');
+    }
 }
 
-const adminDb = getFirestore(adminApp);
-const adminStorage = getStorage(adminApp);
+const adminDb = admin.firestore();
+const adminAuth = admin.auth();
+const adminStorage = admin.storage();
 
-export { adminApp, adminDb, adminStorage };
+export { adminDb, adminAuth, adminStorage };

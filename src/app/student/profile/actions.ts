@@ -2,8 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb, adminStorage } from '@/lib/firebase-admin';
-import { getAuth } from 'firebase-admin/auth';
+import { adminDb, adminStorage, adminAuth } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 
 const profileSchema = z.object({
@@ -64,7 +63,7 @@ export async function updateStudentProfile(uid: string, data: any) {
         });
 
         // Update Firebase Auth profile
-        await getAuth().updateUser(uid, {
+        await adminAuth.updateUser(uid, {
             displayName: socialName,
             photoURL: finalPhotoURL,
         });

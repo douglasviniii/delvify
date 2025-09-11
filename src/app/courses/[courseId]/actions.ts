@@ -2,8 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb } from '@/lib/firebase-admin';
-import { getAuth } from 'firebase-admin/auth';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const reviewSchema = z.object({

@@ -1,5 +1,5 @@
 
-import { auth } from '@/lib/firebase';
+import { auth, adminAuth } from '@/lib/firebase-admin';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { headers } from 'next/headers';
 import { adminDb } from './firebase-admin';
@@ -7,15 +7,15 @@ import { adminDb } from './firebase-admin';
 // This is a simplified session management for server components.
 // In a production app, you might use a library like NextAuth.js for more robust session handling.
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(): Promise<any | null> {
   const authorization = headers().get('Authorization');
   if (!authorization?.startsWith('Bearer ')) {
     return null;
   }
   const idToken = authorization.split('Bearer ')[1];
   try {
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const user = await auth.getUser(decodedToken.uid);
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const user = await adminAuth.getUser(decodedToken.uid);
     return user;
   } catch (error) {
     console.error('Error verifying auth token:', error);
