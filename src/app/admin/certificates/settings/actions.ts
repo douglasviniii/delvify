@@ -1,4 +1,3 @@
-
 'use server';
 
 import { adminDb } from '@/lib/firebase-admin';
@@ -32,7 +31,6 @@ export async function saveCertificateSettings(tenantId: string, data: Certificat
     return { success: false, message: 'ID do inquilino é obrigatório.' };
   }
   
-  // A validação agora espera URLs válidas ou nulas, que é o que o estado terá.
   const validation = CertificateSettingsSchema.safeParse(data);
   if (!validation.success) {
       console.error("Erros de validação:", validation.error.errors);
@@ -40,7 +38,6 @@ export async function saveCertificateSettings(tenantId: string, data: Certificat
   }
 
   try {
-    // Não há mais necessidade de fazer upload aqui, apenas salvar os dados do formulário.
     await settingsRef(tenantId).set(validation.data, { merge: true });
     
     revalidatePath('/admin/certificates/settings');
@@ -73,3 +70,4 @@ export async function getCertificateSettings(tenantId: string): Promise<Certific
     throw new Error('Não foi possível buscar as configurações do certificado.');
   }
 }
+    

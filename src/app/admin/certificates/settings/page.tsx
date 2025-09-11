@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, useTransition } from 'react';
@@ -11,9 +10,9 @@ import { Loader2, Upload, Image as ImageIcon, Signature, Building } from "lucide
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth } from '@/lib/firebase';
 import { saveCertificateSettings, getCertificateSettings } from './actions';
+import { uploadCertificateAsset } from './upload-action';
 import type { CertificateSettings } from '@/lib/certificates';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -44,23 +43,29 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId
 
         setIsUploading(true);
         try {
-            const storageRef = ref(storage, `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            onImageChange(downloadURL); // Update parent state
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('tenantId', tenantId);
+            formData.append('assetType', imageKey);
             
-            toast({
-                title: "Upload Concluído!",
-                description: `A imagem "${title}" foi carregada com sucesso.`,
-            });
+            const result = await uploadCertificateAsset(formData);
+
+            if (result.success && result.url) {
+                onImageChange(result.url);
+                toast({
+                    title: "Upload Concluído!",
+                    description: `A imagem "${title}" foi carregada com sucesso.`,
+                });
+            } else {
+                 throw new Error(result.message || 'Falha no upload da imagem.');
+            }
 
         } catch (error) {
             console.error(`Erro no upload da imagem (${title}):`, error);
             onImageChange(imageUrl); // Revert to old image on error
             toast({
                 title: "Erro de Upload",
-                description: `Não foi possível carregar a imagem "${title}". Tente novamente.`,
+                description: error instanceof Error ? error.message : `Não foi possível carregar a imagem "${title}".`,
                 variant: "destructive",
             });
         } finally {
@@ -123,7 +128,6 @@ export default function CertificateSettingsPage() {
     const handleSaveChanges = () => {
         if (!user) return;
         startTransition(async () => {
-            // The image URLs are already in the state, so we just save the settings object.
             const result = await saveCertificateSettings(user.uid, settings);
 
             toast({
@@ -285,4 +289,4 @@ export default function CertificateSettingsPage() {
         </div>
     );
 }
-
+    
