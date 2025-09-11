@@ -39,11 +39,13 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
 
             await file.save(imageBuffer, {
                 metadata: { contentType: mimeType },
-                public: true, 
             });
             
-            // Retorna a URL no formato compatível com o Next.js Image
-            return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
+            // Tornar o arquivo público explicitamente após o upload
+            await file.makePublic();
+
+            // Retorna a URL pública no formato compatível com o Next.js Image
+            return file.publicUrl();
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);

@@ -111,9 +111,9 @@ export default function CertificateSettingsPage() {
             if (result.success && result.updatedUrls) {
                 setSettings(prev => ({
                     ...prev,
-                    mainLogoUrl: result.updatedUrls.mainLogoUrl,
-                    watermarkLogoUrl: result.updatedUrls.watermarkLogoUrl,
-                    signatureUrl: result.updatedUrls.signatureUrl,
+                    mainLogoUrl: result.updatedUrls.mainLogoUrl ?? prev.mainLogoUrl,
+                    watermarkLogoUrl: result.updatedUrls.watermarkLogoUrl ?? prev.watermarkLogoUrl,
+                    signatureUrl: result.updatedUrls.signatureUrl ?? prev.signatureUrl,
                 }));
             }
         });
@@ -259,7 +259,7 @@ export default function CertificateSettingsPage() {
                 </CardContent>
             </Card>
             
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-4 pb-4">
                 <Button size="lg" onClick={handleSaveChanges} disabled={isSaving || isLoading}>
                     {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Configurações"}
                 </Button>
