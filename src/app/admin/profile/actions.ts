@@ -61,7 +61,8 @@ export async function getTenantProfile(tenantId: string): Promise<TenantProfile 
 
     if (docSnap.exists) {
       const data = docSnap.data() as any; 
-      if (data.updatedAt) {
+      // Serializa o campo de timestamp para uma string ISO para evitar erros de "plain object"
+      if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
           data.updatedAt = data.updatedAt.toDate().toISOString();
       }
       return data as TenantProfile;
