@@ -1,3 +1,4 @@
+
 'use server';
 
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
@@ -24,7 +25,7 @@ const CertificateSettingsSchema = z.object({
 const settingsRef = (tenantId: string) => 
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
 
-// Função para upload de imagem se for base64
+// Função para upload de imagem se for base64 (LÓGICA CORRIGIDA)
 async function uploadImageIfNecessary(tenantId: string, imagePath: string, imageData: string | null): Promise<string | null> {
     if (imageData && imageData.startsWith('data:image')) {
         try {
@@ -33,15 +34,16 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
             const imageBuffer = Buffer.from(base64Data, 'base64');
             
             const bucket = adminStorage.bucket();
-            const fileName = `tenants/${tenantId}/certificate_assets/${imagePath}.${mimeType.split('/')[1]}`;
+            const fileName = `tenants/${tenantId}/certificate_assets/${imagePath}_${Date.now()}.${mimeType.split('/')[1]}`;
             const file = bucket.file(fileName);
 
             await file.save(imageBuffer, {
                 metadata: { contentType: mimeType },
-                public: true, 
+                public: true, // Garante que o objeto seja público
             });
             
-            return file.publicUrl();
+            // Retorna a URL pública no formato correto
+            return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
