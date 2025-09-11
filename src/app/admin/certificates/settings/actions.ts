@@ -26,31 +26,33 @@ const settingsRef = (tenantId: string) =>
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
 
 // Função para upload de imagem se for base64
-async function uploadImageIfNecessary(tenantId: string, imagePath: string, imageData: string | null): Promise<string | null> {
-    if (imageData && imageData.startsWith('data:image')) {
-        try {
-            const mimeType = imageData.split(';')[0].split(':')[1];
-            const base64Data = imageData.split(',')[1];
-            const imageBuffer = Buffer.from(base64Data, 'base64');
-            
-            const bucket = adminStorage.bucket();
-            const fileName = `tenants/${tenantId}/certificate_images/${imagePath}_${Date.now()}.${mimeType.split('/')[1]}`;
-            const file = bucket.file(fileName);
-
-            await file.save(imageBuffer, {
-                metadata: { contentType: mimeType },
-                public: true, // Garante que o arquivo seja público
-            });
-            
-            // Retorna a URL pública no formato correto e esperado
-            return file.publicUrl();
-
-        } catch(uploadError) {
-            console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
-            throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
-        }
+async function uploadImageIfNecessary(tenantId: string, imageKey: keyof CertificateSettings, imageData: string | null): Promise<string | null> {
+    if (!imageData || !imageData.startsWith('data:image')) {
+        return imageData; // Retorna a URL existente se não for uma nova imagem base64
     }
-    return imageData; // Retorna a URL existente se não for uma nova imagem base64
+
+    try {
+        const mimeType = imageData.split(';')[0].split(':')[1];
+        const extension = mimeType.split('/')[1];
+        const base64Data = imageData.split(',')[1];
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        
+        const bucket = adminStorage.bucket();
+        const fileName = `tenants/${tenantId}/certificate_images/${imageKey}_${Date.now()}.${extension}`;
+        const file = bucket.file(fileName);
+
+        await file.save(imageBuffer, {
+            metadata: { contentType: mimeType },
+            public: true, // Garante que o arquivo seja público
+        });
+        
+        // Retorna a URL pública no formato correto e esperado
+        return file.publicUrl();
+
+    } catch(uploadError) {
+        console.error(`Erro ao fazer upload da imagem ${imageKey}:`, uploadError);
+        throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imageKey}.`);
+    }
 }
 
 
@@ -69,9 +71,10 @@ export async function saveCertificateSettings(tenantId: string, data: Certificat
   try {
     const finalData = { ...validation.data };
 
-    finalData.mainLogoUrl = await uploadImageIfNecessary(tenantId, 'main_logo', finalData.mainLogoUrl);
-    finalData.watermarkLogoUrl = await uploadImageIfNecessary(tenantId, 'watermark_logo', finalData.watermarkLogoUrl);
-    finalData.signatureUrl = await uploadImageIfNecessary(tenantId, 'signature', finalData.signatureUrl);
+    // Processa o upload para cada imagem
+    finalData.mainLogoUrl = await uploadImageIfNecessary(tenantId, 'mainLogoUrl', finalData.mainLogoUrl);
+    finalData.watermarkLogoUrl = await uploadImageIfNecessary(tenantId, 'watermarkLogoUrl', finalData.watermarkLogoUrl);
+    finalData.signatureUrl = await uploadImageIfNecessary(tenantId, 'signatureUrl', finalData.signatureUrl);
 
     await settingsRef(tenantId).set(finalData, { merge: true });
     
