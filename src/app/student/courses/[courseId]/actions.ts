@@ -85,7 +85,7 @@ export async function createCheckoutSession(
     const priceInCents = Math.round(parseFloat(course.price.replace(',', '.')) * 100);
     
     const checkoutSession = await stripe.checkout.sessions.create({
-        payment_method_types: ['card', 'boleto', 'pix'],
+        payment_method_types: ['card', 'boleto'],
         mode: 'payment',
         line_items: [
             {
