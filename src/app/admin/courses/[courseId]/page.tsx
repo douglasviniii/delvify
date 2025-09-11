@@ -5,8 +5,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db, auth } from '@/lib/firebase';
+import { db, auth, storage } from '@/lib/firebase';
 import { doc, getDoc, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { User } from 'firebase/auth';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -19,7 +20,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload, Award } from 'lucide-react';
 import { saveCourseModules } from './actions';
-import { uploadFile } from '../../upload-action';
 
 const moduleSchema = z.object({
   id: z.string().optional(),
@@ -132,17 +132,13 @@ export default function CourseModulesPage() {
 
     setIsUploading(moduleIndex);
     try {
-      const fileBuffer = await file.arrayBuffer();
       const filePath = `tenants/${user.uid}/course_content/${courseId}/${Date.now()}_${file.name}`;
-      
-      const result = await uploadFile(filePath, file.type, fileBuffer);
+      const storageRef = ref(storage, filePath);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
 
-      if (result.success && result.url) {
-        form.setValue(`modules.${moduleIndex}.contentUrl`, result.url, { shouldValidate: true });
-        toast({ title: 'Sucesso', description: 'Arquivo do episódio carregado.' });
-      } else {
-        throw new Error(result.message || 'Falha no upload do arquivo.');
-      }
+      form.setValue(`modules.${moduleIndex}.contentUrl`, downloadURL, { shouldValidate: true });
+      toast({ title: 'Sucesso', description: 'Arquivo do episódio carregado.' });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
       console.error("Upload error:", error);

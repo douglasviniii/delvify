@@ -13,9 +13,15 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
+// Se o app já estiver inicializado, use-o. Senão, inicialize.
+// Isso evita erros de "app já existe" em ambientes de desenvolvimento.
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
+
+// Inicializa o storage com a URL do bucket para garantir que ele seja encontrado.
+const storage = getStorage(app, process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ? `gs://${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}` : undefined);
+
 
 export { app, auth, db, storage };

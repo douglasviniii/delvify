@@ -5,8 +5,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db, auth } from '@/lib/firebase';
+import { db, auth, storage } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -28,7 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { updateCourseStatus, createCategory, deleteCategory } from './actions';
 import type { Category } from '@/lib/courses';
 import { useFormStatus } from 'react-dom';
-import { uploadFile } from '../upload-action';
 
 
 const courseSchema = z.object({
@@ -339,17 +339,13 @@ export default function AdminCoursesPage() {
 
     setIsUploading(true);
     try {
-      const fileBuffer = await file.arrayBuffer();
       const filePath = `tenants/${user.uid}/course_covers/${Date.now()}_${file.name}`;
-      
-      const result = await uploadFile(filePath, file.type, fileBuffer);
+      const storageRef = ref(storage, filePath);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
 
-      if (result.success && result.url) {
-        form.setValue('coverImageUrl', result.url, { shouldValidate: true });
-        toast({ title: 'Sucesso', description: 'Imagem de capa carregada.' });
-      } else {
-        throw new Error(result.message || 'Falha no upload do arquivo.');
-      }
+      form.setValue('coverImageUrl', downloadURL, { shouldValidate: true });
+      toast({ title: 'Sucesso', description: 'Imagem de capa carregada.' });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
       console.error("Upload error:", error);
@@ -683,5 +679,3 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
-
-    
