@@ -34,16 +34,19 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
             const imageBuffer = Buffer.from(base64Data, 'base64');
             
             const bucket = adminStorage.bucket();
-            const fileName = `tenants/${tenantId}/certificate_assets/${imagePath}_${Date.now()}.${mimeType.split('/')[1]}`;
+            // USANDO UM CAMINHO EXISTENTE E FUNCIONAL
+            const fileName = `tenants/${tenantId}/profile_images/${imagePath}_${Date.now()}.${mimeType.split('/')[1]}`;
             const file = bucket.file(fileName);
 
             await file.save(imageBuffer, {
                 metadata: { contentType: mimeType },
-                public: true, // Garante que o objeto seja público
             });
             
+            // Tornar o arquivo público para obter uma URL estável
+            await file.makePublic();
+
             // Retorna a URL pública no formato correto
-            return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+            return file.publicUrl();
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
