@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'darkgreen-lark-741030.hostingersite.com',
         port: '',
         pathname: '/**',

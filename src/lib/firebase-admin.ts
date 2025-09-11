@@ -1,12 +1,11 @@
 
+
 import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 let adminApp: App;
 
-// As credenciais de serviço devem ser tratadas com segurança.
-// Em um ambiente de produção, use variáveis de ambiente.
 const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
 if (!serviceAccountString) {
@@ -16,16 +15,16 @@ if (!serviceAccountString) {
 let serviceAccount: ServiceAccount;
 try {
     serviceAccount = JSON.parse(serviceAccountString);
-} catch(e) {
-    console.error("Falha ao analisar as credenciais da conta de serviço do Firebase. Verifique se a variável de ambiente está corretamente formatada como JSON.", e);
-    throw new Error("Formato inválido para as credenciais da conta de serviço do Firebase.");
+} catch(e: any) {
+    console.error("Falha ao analisar as credenciais da conta de serviço do Firebase. Verifique se a variável de ambiente está corretamente formatada como um JSON de linha única.", e);
+    throw new Error(`Formato inválido para as credenciais da conta de serviço do Firebase: ${e.message}`);
 }
+
 
 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 if (!storageBucket) {
     throw new Error("A variável de ambiente NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET é necessária.");
 }
-
 
 if (!getApps().length) {
   try {
