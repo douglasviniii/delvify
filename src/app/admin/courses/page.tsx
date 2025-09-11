@@ -1,13 +1,12 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useActionState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db, storage, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, doc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -29,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { updateCourseStatus, createCategory, deleteCategory } from './actions';
 import type { Category } from '@/lib/courses';
 import { useFormStatus } from 'react-dom';
+import { uploadFile } from '../upload-action';
 
 
 const courseSchema = z.object({
@@ -334,21 +334,28 @@ export default function AdminCoursesPage() {
   }, [user, toast]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0] && user) {
-      const file = event.target.files[0];
-      setIsUploading(true);
-      try {
-        const storageRef = ref(storage, `tenants/${user.uid}/course_covers/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        form.setValue('coverImageUrl', downloadURL, { shouldValidate: true });
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    try {
+      const fileBuffer = await file.arrayBuffer();
+      const filePath = `tenants/${user.uid}/course_covers/${Date.now()}_${file.name}`;
+      
+      const result = await uploadFile(filePath, file.type, fileBuffer);
+
+      if (result.success && result.url) {
+        form.setValue('coverImageUrl', result.url, { shouldValidate: true });
         toast({ title: 'Sucesso', description: 'Imagem de capa carregada.' });
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast({ title: 'Erro de Upload', description: 'Não foi possível carregar a imagem.', variant: 'destructive' });
-      } finally {
-        setIsUploading(false);
+      } else {
+        throw new Error(result.message || 'Falha no upload do arquivo.');
       }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
+      console.error("Upload error:", error);
+      toast({ title: 'Erro de Upload', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setIsUploading(false);
     }
   };
 

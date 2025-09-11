@@ -11,11 +11,11 @@ import { Loader2, Upload, Image as ImageIcon, Signature, Building } from "lucide
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth } from '@/lib/firebase';
 import { saveCertificateSettings, getCertificateSettings } from './actions';
 import type { CertificateSettings } from '@/lib/certificates';
 import { Skeleton } from '@/components/ui/skeleton';
+import { uploadFile } from '../upload-action';
 
 const initialSettings: CertificateSettings = {
     companyName: '',
@@ -44,20 +44,25 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId
 
         setIsUploading(true);
         try {
-            const storageRef = ref(storage, `tenants/${tenantId}/course_covers/${imageKey}_${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            onImageChange(imageKey, downloadURL);
-            toast({
-                title: "Upload Concluído!",
-                description: `A imagem "${title}" foi carregada com sucesso.`,
-            });
+            const fileBuffer = await file.arrayBuffer();
+            const filePath = `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}_${file.name}`;
+            const result = await uploadFile(filePath, file.type, fileBuffer);
+            
+            if (result.success && result.url) {
+                onImageChange(imageKey, result.url);
+                toast({
+                    title: "Upload Concluído!",
+                    description: `A imagem "${title}" foi carregada com sucesso.`,
+                });
+            } else {
+                 throw new Error(result.message || 'Falha no upload do arquivo.');
+            }
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
             console.error(`Erro no upload da imagem (${title}):`, error);
             toast({
                 title: "Erro de Upload",
-                description: `Não foi possível carregar a imagem "${title}". Verifique as regras de segurança do Firebase Storage.`,
+                description: errorMessage,
                 variant: "destructive",
             });
         } finally {

@@ -5,9 +5,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db, storage, auth } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, doc, serverTimestamp, getDoc, where } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/ui/dialog';
@@ -22,6 +21,7 @@ import TiptapEditor from '../../../components/ui/tiptap-editor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/ui/alert-dialog';
 import type { User } from 'firebase/auth';
+import { uploadFile } from '../upload-action';
 
 
 const slugify = (text: string) =>
@@ -100,8 +100,6 @@ export default function BlogManagementPage() {
         setCollaborators(collabsData);
     }, (error) => {
         console.error("Error fetching collaborators: ", error);
-        // Optional: Add a toast to inform the admin if the collection doesn't exist or there's an error.
-        // toast({ title: "Aviso", description: "Não foi possível carregar colaboradores. Crie a equipe primeiro.", variant: "default" });
     });
 
 
@@ -112,21 +110,28 @@ export default function BlogManagementPage() {
   }, [user]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0] && user) {
-      const file = event.target.files[0];
-      setIsUploading(true);
-      try {
-        const storageRef = ref(storage, `tenants/${user.uid}/blog_covers/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        form.setValue('imageUrl', downloadURL, { shouldValidate: true });
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    try {
+      const fileBuffer = await file.arrayBuffer();
+      const filePath = `tenants/${user.uid}/blog_covers/${Date.now()}_${file.name}`;
+      
+      const result = await uploadFile(filePath, file.type, fileBuffer);
+
+      if (result.success && result.url) {
+        form.setValue('imageUrl', result.url, { shouldValidate: true });
         toast({ title: 'Sucesso', description: 'Imagem de capa carregada.' });
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast({ title: 'Erro de Upload', description: 'Não foi possível carregar a imagem. Verifique as permissões do Firebase Storage.', variant: 'destructive' });
-      } finally {
-        setIsUploading(false);
+      } else {
+        throw new Error(result.message || 'Falha no upload do arquivo.');
       }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
+      console.error("Upload error:", error);
+      toast({ title: 'Erro de Upload', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setIsUploading(false);
     }
   };
 

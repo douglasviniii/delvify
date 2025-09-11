@@ -5,9 +5,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db, auth, storage } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { User } from 'firebase/auth';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -20,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload, Award } from 'lucide-react';
 import { saveCourseModules } from './actions';
+import { uploadFile } from '../../upload-action';
 
 const moduleSchema = z.object({
   id: z.string().optional(),
@@ -127,28 +127,31 @@ export default function CourseModulesPage() {
   };
 
   const handleFileSelectAndUpload = async (event: React.ChangeEvent<HTMLInputElement>, moduleIndex: number) => {
-    if (event.target.files && event.target.files[0] && user) {
-        const file = event.target.files[0];
-        setIsUploading(moduleIndex);
-        try {
-            const storageRef = ref(storage, `tenants/${user.uid}/course_content/${courseId}/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-            
-            // Update the specific module's contentUrl field
-            form.setValue(`modules.${moduleIndex}.contentUrl`, downloadURL, { shouldValidate: true });
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
 
-            toast({ title: 'Sucesso', description: 'Arquivo do episódio carregado.' });
-        } catch (error) {
-            console.error("Upload error:", error);
-            toast({ title: 'Erro de Upload', description: 'Não foi possível carregar o arquivo.', variant: 'destructive' });
-        } finally {
-            setIsUploading(null);
-            // Reset file input to allow uploading the same file again if needed
-            if(fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-        }
+    setIsUploading(moduleIndex);
+    try {
+      const fileBuffer = await file.arrayBuffer();
+      const filePath = `tenants/${user.uid}/course_content/${courseId}/${Date.now()}_${file.name}`;
+      
+      const result = await uploadFile(filePath, file.type, fileBuffer);
+
+      if (result.success && result.url) {
+        form.setValue(`modules.${moduleIndex}.contentUrl`, result.url, { shouldValidate: true });
+        toast({ title: 'Sucesso', description: 'Arquivo do episódio carregado.' });
+      } else {
+        throw new Error(result.message || 'Falha no upload do arquivo.');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
+      console.error("Upload error:", error);
+      toast({ title: 'Erro de Upload', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setIsUploading(null);
+      if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
   
@@ -178,13 +181,11 @@ export default function CourseModulesPage() {
           </Button>
       </div>
       
-      {/* Hidden file input that we can trigger programmatically */}
       <input 
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
         accept={course?.contentType === 'pdf' ? '.pdf' : 'video/*'}
-        // The onChange will be set when the button is clicked
       />
 
       <Form {...form}>
@@ -245,7 +246,6 @@ export default function CourseModulesPage() {
                                         disabled={isUploading === index}
                                         onClick={() => {
                                             if (fileInputRef.current) {
-                                                // Set the specific onChange handler for this module before clicking
                                                 fileInputRef.current.onchange = (e) => handleFileSelectAndUpload(e as any, index);
                                                 fileInputRef.current.click();
                                             }
