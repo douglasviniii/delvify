@@ -165,7 +165,7 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
             const data = userDocSnap.data();
-            return data.purchasedCourses && data.purchasedCourses[courseId];
+            return !!(data.purchasedCourses && data.purchasedCourses[courseId]);
         }
         return false;
     } catch (error) {
