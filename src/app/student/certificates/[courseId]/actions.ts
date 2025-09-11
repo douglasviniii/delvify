@@ -11,16 +11,20 @@ const serializeData = (data: any): any => {
     if (!data) {
         return data;
     }
-    // Trata Timestamps do Firebase Admin SDK
+    // Trata Timestamps do Firebase Admin SDK que possuem o método toDate()
     if (typeof data.toDate === 'function') {
         return data.toDate().toISOString();
+    }
+    // Trata Timestamps que podem já ter sido parcialmente serializados para _seconds
+    if (data._seconds && typeof data._seconds === 'number' && data._nanoseconds !== undefined) {
+      return new Date(data._seconds * 1000 + data._nanoseconds / 1000000).toISOString();
     }
     // Trata arrays recursivamente
     if (Array.isArray(data)) {
         return data.map(serializeData);
     }
     // Trata objetos recursivamente
-    if (typeof data === 'object') {
+    if (typeof data === 'object' && Object.prototype.toString.call(data) === '[object Object]') {
         const res: { [key: string]: any } = {};
         for (const key in data) {
             if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -36,7 +40,7 @@ const serializeData = (data: any): any => {
 // Ação combinada para buscar todos os dados necessários para o certificado
 export async function getCertificatePageData(tenantId: string, courseId: string, userId: string) {
     try {
-        if (!tenantId || !courseId) {
+        if (!tenantId || !courseId || !userId) {
             throw new Error("Informações insuficientes para buscar os dados do certificado.");
         }
 
@@ -46,7 +50,7 @@ export async function getCertificatePageData(tenantId: string, courseId: string,
         }
 
         // Primeiro, serializa o documento do usuário INTEIRO, incluindo os objetos aninhados como purchasedCourses.
-        const studentProfile = serializeData({ id: userDoc.id, ...userDoc.data() }) as UserProfile & { purchasedCourses?: Record<string, PurchasedCourseInfo> };
+        const studentProfile = serializeData({ uid: userDoc.id, ...userDoc.data() }) as UserProfile & { purchasedCourses?: Record<string, PurchasedCourseInfo> };
         
         if (!studentProfile) {
              throw new Error("Não foi possível processar o perfil do aluno.");

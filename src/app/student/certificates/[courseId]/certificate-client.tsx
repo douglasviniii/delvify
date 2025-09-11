@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import type { CertificateSettings, Module, Course, UserProfile } from '@/lib/types';
 import Certificate from '@/components/certificate';
-import { Loader2, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CertificateClientProps {

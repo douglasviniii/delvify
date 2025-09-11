@@ -41,7 +41,7 @@ async function CertificateDataFetcher({ courseId }: { courseId: string }) {
 }
 
 
-export default async function CertificatePage({ params }: { params: { courseId: string } }) {
+export default function CertificatePage({ params }: { params: { courseId: string } }) {
     const courseId = params.courseId;
 
     if (!courseId) {
