@@ -6,32 +6,27 @@ import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import { getDoc, doc } from 'firebase/firestore';
-import { getPurchasedCourses } from '@/lib/courses';
-import type { Course } from '@/lib/types';
+import { getPurchasedCourses, getPurchasedCourseDetails } from '@/lib/courses';
+import type { Course, PurchasedCourseInfo } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardDescription, CardTitle } from '@/components/ui/card';
 import { Loader2, Award, BookOpen, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Mock logic: a course is considered "completed" for certificate purposes if enough time has passed.
-// This will be expanded with quiz completion logic.
-const isCertificateAvailable = (course: Course, purchaseDate: Date | null): boolean => {
-    if (!purchaseDate) return false;
+// This logic now accepts a string date
+const isCertificateAvailable = (course: Course, purchaseDateStr: string | null): boolean => {
+    if (!purchaseDateStr) return false;
+    const purchaseDate = new Date(purchaseDateStr);
 
-    // Check if the course is free. If so, only time matters.
     const isFree = parseFloat(course.price.replace(',', '.')) === 0;
-    if (isFree) {
-        const hoursRequired = course.durationHours || 0;
-        const now = new Date();
-        const elapsedTimeInHours = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
-        return elapsedTimeInHours >= hoursRequired;
-    }
-
-    // For paid courses, we'll need to check for quiz completion in the future.
-    // For now, we'll use the same time-based logic.
-    // TODO: Add logic to check quiz submissions.
     const hoursRequired = course.durationHours || 0;
     const now = new Date();
     const elapsedTimeInHours = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
+
+    if (isFree) {
+        return elapsedTimeInHours >= hoursRequired;
+    }
+
+    // TODO: Add quiz completion logic here
     return elapsedTimeInHours >= hoursRequired;
 };
 
@@ -68,17 +63,14 @@ export default function StudentCertificatesPage() {
             setIsLoading(true);
             const fetchCoursesAndCheckEligibility = async () => {
                 try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-                    const userData = userDocSnap.data();
-                    const purchasedCoursesData = userData?.purchasedCourses || {};
-
-                    const purchasedCourses = await getPurchasedCourses(user.uid);
+                    const [purchasedCourses, purchasedDetails] = await Promise.all([
+                        getPurchasedCourses(user.uid),
+                        getPurchasedCourseDetails(user.uid)
+                    ]);
                     
                     const eligibleCourses = purchasedCourses.filter(course => {
-                        const purchaseInfo = purchasedCoursesData[course.id];
-                        const purchaseDate = purchaseInfo?.purchasedAt?.toDate();
-                        return isCertificateAvailable(course, purchaseDate);
+                        const purchaseInfo = purchasedDetails[course.id];
+                        return isCertificateAvailable(course, purchaseInfo?.purchasedAt || null);
                     });
                     
                     setCourses(eligibleCourses);

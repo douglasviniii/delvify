@@ -140,6 +140,12 @@ export type UserProfile = {
   photoURL: string | null;
 }
 
+export type PurchasedCourseInfo = {
+  tenantId: string;
+  price: number;
+  purchasedAt: string; // ISO String format
+}
+
 
 export const CustomizeTenantBrandingInputSchema = z.object({
   tenantId: z.string().describe('The ID of the tenant to customize.'),

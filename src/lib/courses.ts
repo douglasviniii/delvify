@@ -5,7 +5,7 @@
 import { adminDb } from './firebase-admin';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from './firebase'; // Client SDK
-import type { Course, Module, Category, Review } from './types';
+import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
@@ -39,8 +39,9 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
     });
 
     return courses;
-  } catch (error: any) {
-    console.error(`Error fetching courses for tenant ${tenantId}:`, error.message);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+    console.error(`Error fetching courses for tenant ${tenantId}:`, errorMessage);
     return [];
   }
 }
@@ -57,9 +58,10 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
             return { ...courseData, tenantId };
         }
         return null;
-    } catch (error: any) {
-        console.error(`Error fetching course ${courseId} for tenant ${tenantId}:`, error.message);
-        return null;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+      console.error(`Error fetching course ${courseId} for tenant ${tenantId}:`, errorMessage);
+      return null;
     }
 }
 
@@ -77,8 +79,9 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
         });
 
         return modules;
-    } catch(error: any) {
-        console.error(`Error fetching modules for course ${courseId}:`, error.message);
+    } catch(error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error(`Error fetching modules for course ${courseId}:`, errorMessage);
         return [];
     }
 }
@@ -95,9 +98,10 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
             categories.push(serializeDoc(doc) as Category);
         })
         return categories;
-    } catch (error: any) {
-        console.error(`Error fetching categories for tenant ${tenantId}:`, error.message);
-        return [];
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+      console.error(`Error fetching categories for tenant ${tenantId}:`, errorMessage);
+      return [];
     }
 }
 
@@ -115,9 +119,10 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
         });
 
         return reviews;
-    } catch(error: any) {
-        console.error(`Error fetching reviews for course ${courseId}:`, error.message);
-        return [];
+    } catch(error) {
+      const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+      console.error(`Error fetching reviews for course ${courseId}:`, errorMessage);
+      return [];
     }
 }
 
@@ -131,11 +136,13 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
             return !!(data.purchasedCourses && data.purchasedCourses[courseId]);
         }
         return false;
-    } catch (error: any) {
-        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, error.message);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, errorMessage);
         return false;
     }
 }
+
 
 export async function getPurchasedCourses(userId: string): Promise<Course[]> {
     if (!userId) return [];
@@ -154,8 +161,38 @@ export async function getPurchasedCourses(userId: string): Promise<Course[]> {
 
         const courses = await Promise.all(coursePromises);
         return courses.filter((course): course is Course => course !== null);
-    } catch (error: any) {
-        console.error(`Error fetching purchased courses for user ${userId}:`, error.message);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error(`Error fetching purchased courses for user ${userId}:`, errorMessage);
         return [];
+    }
+}
+
+export async function getPurchasedCourseDetails(userId: string): Promise<Record<string, PurchasedCourseInfo>> {
+    if (!userId) return {};
+    try {
+        const userDocRef = await adminDb.collection('users').doc(userId).get();
+        const userData = userDocRef.data();
+        if (!userData || !userData.purchasedCourses) {
+            return {};
+        }
+
+        const purchasedCoursesMap = userData.purchasedCourses;
+        const serializedCourses: Record<string, PurchasedCourseInfo> = {};
+
+        for (const courseId in purchasedCoursesMap) {
+            const courseInfo = purchasedCoursesMap[courseId];
+            serializedCourses[courseId] = {
+                tenantId: courseInfo.tenantId,
+                price: courseInfo.price,
+                purchasedAt: courseInfo.purchasedAt.toDate().toISOString(),
+            };
+        }
+
+        return serializedCourses;
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error(`Error fetching purchased course details for user ${userId}:`, errorMessage);
+        return {};
     }
 }
