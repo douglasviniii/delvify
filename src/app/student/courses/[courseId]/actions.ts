@@ -139,8 +139,11 @@ export async function enrollInFreeCourse(userId: string, course: Course): Promis
 
     try {
         const userDocRef = adminDb.collection('users').doc(userId);
-        
-        await userDocRef.set({
+        const purchaseRef = adminDb.collection(`tenants/${course.tenantId}/purchases`).doc();
+        const batch = adminDb.batch();
+
+        // Grant course access to the user
+        batch.set(userDocRef, {
             purchasedCourses: {
                 [course.id]: {
                     tenantId: course.tenantId,
@@ -150,10 +153,23 @@ export async function enrollInFreeCourse(userId: string, course: Course): Promis
             }
         }, { merge: true });
 
+        // Add to tenant's purchase history for invoicing
+        batch.set(purchaseRef, {
+             userId: userId,
+             courseId: course.id,
+             amount: 0,
+             currency: 'brl',
+             stripeCheckoutSessionId: `free_${course.id}_${Date.now()}`,
+             createdAt: FieldValue.serverTimestamp(),
+        });
+        
+        await batch.commit();
+
         console.log(`Granted free access to course ${course.id} for user ${userId}`);
 
-        // Revalidate the path to reflect the new course in "My Courses"
+        // Revalidate paths to reflect the new course in "My Courses" and "My Purchases"
         revalidatePath('/student/courses');
+        revalidatePath('/student/purchases');
 
         return { success: true, message: "Inscrição realizada com sucesso!" };
         
