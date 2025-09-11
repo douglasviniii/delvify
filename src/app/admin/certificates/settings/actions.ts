@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb, adminStorage } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { CertificateSettings } from '@/lib/certificates';
@@ -12,49 +12,18 @@ const CertificateSettingsSchema = z.object({
   companyAddress: z.string().min(1, "O endereço é obrigatório."),
   companyPhone: z.string().min(1, "O telefone é obrigatório."),
   companyEmail: z.string().email("Email inválido."),
-  companyWebsite: z.string().url("URL do site inválida."),
+  companyWebsite: z.string().url("URL do site inválida.").or(z.literal('')),
   companyCnpj: z.string().min(1, "O CNPJ é obrigatório."),
   additionalInfo: z.string().optional(),
-  mainLogoUrl: z.string().nullable(),
-  watermarkLogoUrl: z.string().nullable(),
-  signatureUrl: z.string().nullable(),
+  mainLogoUrl: z.string().url("URL da logo principal inválida.").nullable(),
+  watermarkLogoUrl: z.string().url("URL da marca d'água inválida.").nullable(),
+  signatureUrl: z.string().url("URL da assinatura inválida.").nullable(),
   accentColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Cor inválida."),
   signatureText: z.string().min(1, "O texto da assinatura é obrigatório."),
 });
 
 const settingsRef = (tenantId: string) => 
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
-
-// Função para upload de imagem se for base64
-async function uploadImageIfNecessary(tenantId: string, imageKey: keyof CertificateSettings, imageData: string | null): Promise<string | null> {
-    if (!imageData || !imageData.startsWith('data:image')) {
-        return imageData; // Retorna a URL existente se não for uma nova imagem base64
-    }
-
-    try {
-        const mimeType = imageData.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)?.[1] || 'image/png';
-        const extension = mimeType.split('/')[1];
-        const base64Data = imageData.split(',')[1];
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-        
-        const bucket = adminStorage.bucket();
-        const fileName = `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}.${extension}`;
-        const file = bucket.file(fileName);
-
-        await file.save(imageBuffer, {
-            metadata: { contentType: mimeType },
-        });
-
-        // Torna o arquivo público e retorna a URL pública
-        await file.makePublic();
-        
-        return file.publicUrl();
-
-    } catch(uploadError) {
-        console.error(`Erro ao fazer upload da imagem ${imageKey}:`, uploadError);
-        throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imageKey}.`);
-    }
-}
 
 
 // Ação para salvar as configurações
@@ -63,6 +32,7 @@ export async function saveCertificateSettings(tenantId: string, data: Certificat
     return { success: false, message: 'ID do inquilino é obrigatório.' };
   }
   
+  // A validação agora espera URLs válidas ou nulas, que é o que o estado terá.
   const validation = CertificateSettingsSchema.safeParse(data);
   if (!validation.success) {
       console.error("Erros de validação:", validation.error.errors);
@@ -70,26 +40,14 @@ export async function saveCertificateSettings(tenantId: string, data: Certificat
   }
 
   try {
-    const finalData = { ...validation.data };
-
-    // Processa o upload para cada imagem
-    finalData.mainLogoUrl = await uploadImageIfNecessary(tenantId, 'mainLogoUrl', finalData.mainLogoUrl);
-    finalData.watermarkLogoUrl = await uploadImageIfNecessary(tenantId, 'watermarkLogoUrl', finalData.watermarkLogoUrl);
-    finalData.signatureUrl = await uploadImageIfNecessary(tenantId, 'signatureUrl', finalData.signatureUrl);
-
-    await settingsRef(tenantId).set(finalData, { merge: true });
+    // Não há mais necessidade de fazer upload aqui, apenas salvar os dados do formulário.
+    await settingsRef(tenantId).set(validation.data, { merge: true });
     
-    // Revalida o cache das páginas afetadas
     revalidatePath('/admin/certificates/settings');
 
     return { 
         success: true, 
         message: 'Configurações do certificado salvas com sucesso!', 
-        updatedUrls: {
-            mainLogoUrl: finalData.mainLogoUrl,
-            watermarkLogoUrl: finalData.watermarkLogoUrl,
-            signatureUrl: finalData.signatureUrl,
-        }
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';

@@ -11,7 +11,8 @@ import { Loader2, Upload, Image as ImageIcon, Signature, Building } from "lucide
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
+import { auth, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { saveCertificateSettings, getCertificateSettings } from './actions';
 import type { CertificateSettings } from '@/lib/certificates';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,17 +32,39 @@ const initialSettings: CertificateSettings = {
     signatureText: 'Diretor(a) Responsável',
 };
 
-const ImageUploadCard = ({ title, description, imageUrl, onImageChange, isSaving }: { title: string; description: string; imageUrl: string | null; onImageChange: (dataUrl: string) => void; isSaving: boolean; }) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId, imageKey }: { title: string; description: string; imageUrl: string | null; onImageChange: (url: string | null) => void; tenantId: string | undefined; imageKey: keyof CertificateSettings}) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const { toast } = useToast();
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                onImageChange(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        if (!file || !tenantId) return;
+
+        setIsUploading(true);
+        try {
+            const storageRef = ref(storage, `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+
+            onImageChange(downloadURL); // Update parent state
+            
+            toast({
+                title: "Upload Concluído!",
+                description: `A imagem "${title}" foi carregada com sucesso.`,
+            });
+
+        } catch (error) {
+            console.error(`Erro no upload da imagem (${title}):`, error);
+            onImageChange(imageUrl); // Revert to old image on error
+            toast({
+                title: "Erro de Upload",
+                description: `Não foi possível carregar a imagem "${title}". Tente novamente.`,
+                variant: "destructive",
+            });
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -54,15 +77,15 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, isSaving
             <CardContent className="flex flex-col items-center justify-center gap-4">
                 <div className="w-48 h-24 relative border rounded-md flex items-center justify-center bg-muted/50">
                     {imageUrl ? (
-                        <Image src={imageUrl} alt={title} layout="responsive" width={192} height={96} objectFit="contain" className="p-2" />
+                        <Image src={imageUrl} alt={title} layout="fill" objectFit="contain" className="p-2" />
                     ) : (
                         <ImageIcon className="h-10 w-10 text-muted-foreground" />
                     )}
                 </div>
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/png, image/jpeg, image/svg+xml" />
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isSaving}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Carregar Imagem
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                    {isUploading ? 'Enviando...' : 'Carregar Imagem'}
                 </Button>
             </CardContent>
         </Card>
@@ -100,6 +123,7 @@ export default function CertificateSettingsPage() {
     const handleSaveChanges = () => {
         if (!user) return;
         startTransition(async () => {
+            // The image URLs are already in the state, so we just save the settings object.
             const result = await saveCertificateSettings(user.uid, settings);
 
             toast({
@@ -107,15 +131,6 @@ export default function CertificateSettingsPage() {
                 description: result.message,
                 variant: result.success ? "default" : "destructive",
             });
-
-            if (result.success && result.updatedUrls) {
-                setSettings(prev => ({
-                    ...prev,
-                    mainLogoUrl: result.updatedUrls.mainLogoUrl ?? prev.mainLogoUrl,
-                    watermarkLogoUrl: result.updatedUrls.watermarkLogoUrl ?? prev.watermarkLogoUrl,
-                    signatureUrl: result.updatedUrls.signatureUrl ?? prev.signatureUrl,
-                }));
-            }
         });
     };
     
@@ -208,22 +223,25 @@ export default function CertificateSettingsPage() {
                             title="Logo Principal"
                             description="Aparece no topo do certificado. Use formato PNG com fundo transparente."
                             imageUrl={settings.mainLogoUrl}
-                            onImageChange={dataUrl => handleSettingChange('mainLogoUrl', dataUrl)}
-                            isSaving={isSaving}
+                            onImageChange={url => handleSettingChange('mainLogoUrl', url)}
+                            tenantId={user?.uid}
+                            imageKey="mainLogoUrl"
                         />
                         <ImageUploadCard
                             title="Logo (Marca d'água)"
                             description="Usada como fundo do certificado com opacidade."
                             imageUrl={settings.watermarkLogoUrl}
-                            onImageChange={dataUrl => handleSettingChange('watermarkLogoUrl', dataUrl)}
-                            isSaving={isSaving}
+                            onImageChange={url => handleSettingChange('watermarkLogoUrl', url)}
+                            tenantId={user?.uid}
+                            imageKey="watermarkLogoUrl"
                         />
                          <ImageUploadCard
                             title="Assinatura"
                             description="Assinatura digitalizada do responsável. Use PNG com fundo transparente."
                             imageUrl={settings.signatureUrl}
-                            onImageChange={dataUrl => handleSettingChange('signatureUrl', dataUrl)}
-                            isSaving={isSaving}
+                            onImageChange={url => handleSettingChange('signatureUrl', url)}
+                            tenantId={user?.uid}
+                            imageKey="signatureUrl"
                         />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
