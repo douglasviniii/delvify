@@ -44,7 +44,7 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId
 
         setIsUploading(true);
         try {
-            const storageRef = ref(storage, `tenants/${tenantId}/certificate_assets/${imageKey}_${Date.now()}_${file.name}`);
+            const storageRef = ref(storage, `tenants/${tenantId}/course_covers/${imageKey}_${Date.now()}_${file.name}`);
             const snapshot = await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(snapshot.ref);
 
@@ -57,7 +57,7 @@ const ImageUploadCard = ({ title, description, imageUrl, onImageChange, tenantId
             console.error(`Erro no upload da imagem (${title}):`, error);
             toast({
                 title: "Erro de Upload",
-                description: `Não foi possível carregar a imagem "${title}".`,
+                description: `Não foi possível carregar a imagem "${title}". Verifique as regras de segurança do Firebase Storage.`,
                 variant: "destructive",
             });
         } finally {
