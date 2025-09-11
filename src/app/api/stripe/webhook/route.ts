@@ -4,6 +4,9 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { config } from 'dotenv';
+
+config({ path: '.env' });
 
 // Initialize Stripe with the secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
