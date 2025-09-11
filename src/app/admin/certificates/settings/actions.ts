@@ -38,12 +38,9 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
 
             await file.save(imageBuffer, {
                 metadata: { contentType: mimeType },
+                public: true, 
             });
             
-            // Tornar o arquivo público
-            await file.makePublic();
-
-            // Retornar a URL pública
             return file.publicUrl();
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
