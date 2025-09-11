@@ -22,10 +22,6 @@ const isCertificateAvailable = (course: Course, purchaseDateStr: string | null):
     const now = new Date();
     const elapsedTimeInHours = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
 
-    if (isFree) {
-        return elapsedTimeInHours >= hoursRequired;
-    }
-
     // TODO: Add quiz completion logic here
     return elapsedTimeInHours >= hoursRequired;
 };

@@ -148,7 +148,9 @@ export async function getPurchasedCourses(userId: string): Promise<Course[]> {
     if (!userId) return [];
     try {
         const userDocRef = await adminDb.collection('users').doc(userId).get();
-        const userData = userDocRef.data();
+        if (!userDocRef.exists) return [];
+
+        const userData = serializeDoc(userDocRef);
         if (!userData || !userData.purchasedCourses) {
             return [];
         }
@@ -172,24 +174,15 @@ export async function getPurchasedCourseDetails(userId: string): Promise<Record<
     if (!userId) return {};
     try {
         const userDocRef = await adminDb.collection('users').doc(userId).get();
-        const userData = userDocRef.data();
+        if (!userDocRef.exists) return {};
+
+        const userData = serializeDoc(userDocRef);
+
         if (!userData || !userData.purchasedCourses) {
             return {};
         }
 
-        const purchasedCoursesMap = userData.purchasedCourses;
-        const serializedCourses: Record<string, PurchasedCourseInfo> = {};
-
-        for (const courseId in purchasedCoursesMap) {
-            const courseInfo = purchasedCoursesMap[courseId];
-            serializedCourses[courseId] = {
-                tenantId: courseInfo.tenantId,
-                price: courseInfo.price,
-                purchasedAt: courseInfo.purchasedAt.toDate().toISOString(),
-            };
-        }
-
-        return serializedCourses;
+        return userData.purchasedCourses as Record<string, PurchasedCourseInfo>;
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
         console.error(`Error fetching purchased course details for user ${userId}:`, errorMessage);
