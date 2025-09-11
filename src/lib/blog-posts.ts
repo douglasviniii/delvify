@@ -32,7 +32,7 @@ const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     if (!data) {
         throw new Error(`Document with id ${doc.id} has no data.`);
     }
-    const docData: { [key: string]: any } = { id: doc.id, ...data };
+    const docData: { [key: string]: any } = { id: doc.id, slug: data.slug, ...data };
     
     // Ensure all timestamp fields are converted to ISO strings
     for (const key in docData) {
