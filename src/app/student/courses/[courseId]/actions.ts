@@ -76,44 +76,50 @@ export async function createCheckoutSession(
     userId: string,
     userEmail: string,
     userDisplayName: string
-) {
+): Promise<{ url?: string; error?: string }> {
     if (!course || !userId || !userEmail) {
-        throw new Error('Informações do curso ou do usuário estão ausentes.');
+        return { error: 'Informações do curso ou do usuário estão ausentes.' };
     }
     
     // Convert price like "99,90" or "99.90" to cents (9990)
     const priceInCents = Math.round(parseFloat(course.price.replace(',', '.')) * 100);
     
-    const checkoutSession = await stripe.checkout.sessions.create({
-        payment_method_types: ['card', 'boleto'],
-        mode: 'payment',
-        line_items: [
-            {
-                price_data: {
-                    currency: 'brl',
-                    product_data: {
-                        name: course.title,
-                        description: course.description,
-                        images: [course.coverImageUrl],
+    try {
+        const checkoutSession = await stripe.checkout.sessions.create({
+            payment_method_types: ['card', 'boleto'],
+            mode: 'payment',
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'brl',
+                        product_data: {
+                            name: course.title,
+                            description: course.description,
+                            images: [course.coverImageUrl],
+                        },
+                        unit_amount: priceInCents,
                     },
-                    unit_amount: priceInCents,
+                    quantity: 1,
                 },
-                quantity: 1,
+            ],
+            customer_email: userEmail,
+            metadata: {
+                userId,
+                tenantId: course.tenantId,
+                courseId: course.id,
             },
-        ],
-        customer_email: userEmail,
-        metadata: {
-            userId,
-            tenantId: course.tenantId,
-            courseId: course.id,
-        },
-        success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/student/courses?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/student/courses/${course.id}`,
-    });
-    
-    if (!checkoutSession.url) {
-        throw new Error('Não foi possível criar a sessão de checkout.');
+            success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/student/courses?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/student/courses/${course.id}`,
+        });
+        
+        if (!checkoutSession.url) {
+             return { error: 'Não foi possível criar a sessão de checkout.' };
+        }
+        
+        return { url: checkoutSession.url };
+
+    } catch(error) {
+        console.error("Stripe checkout session creation failed:", error);
+        return { error: 'Falha ao comunicar com o sistema de pagamento.' };
     }
-    
-    redirect(checkoutSession.url);
 }

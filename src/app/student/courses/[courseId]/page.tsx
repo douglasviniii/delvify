@@ -67,20 +67,23 @@ export default function StudentCourseDetailsPage() {
             }
         };
 
-        fetchData();
+        if (!authLoading) {
+           fetchData();
+        }
     }, [user, authLoading, courseId, toast, router]);
 
     const handlePurchase = () => {
         if (!course || !user) return;
         
         startTransition(async () => {
-            try {
-                await createCheckoutSession(course, user.uid, user.email!, user.displayName!);
-            } catch (error) {
-                console.error(error);
+            const response = await createCheckoutSession(course, user.uid, user.email!, user.displayName!);
+
+            if (response.url) {
+                router.push(response.url);
+            } else {
                 toast({
                     title: "Erro no Checkout",
-                    description: "Não foi possível iniciar o processo de pagamento. Tente novamente.",
+                    description: response.error || "Não foi possível iniciar o processo de pagamento. Tente novamente.",
                     variant: "destructive"
                 });
             }
