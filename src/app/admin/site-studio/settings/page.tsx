@@ -12,10 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
+import { auth, storage } from '@/lib/firebase';
 import { saveGlobalSettings, getGlobalSettings } from './actions';
 import type { GlobalSettings } from '@/lib/settings';
 import Link from 'next/link';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const socialPlatforms = [
     { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" /> },
@@ -62,6 +63,7 @@ export default function GlobalSettingsPage() {
     const [settings, setSettings] = useState<GlobalSettings>(initialSettings);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -119,19 +121,26 @@ export default function GlobalSettingsPage() {
             variant: result.success ? "default" : "destructive",
         });
 
-        if (result.success && result.newLogoUrl) {
-            handleSettingChange('logoUrl', result.newLogoUrl);
-        }
     };
     
-    const handleLogoImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLogoImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            handleSettingChange('logoUrl', reader.result as string);
-          };
-          reader.readAsDataURL(file);
+        if (!file || !user) return;
+        
+        setIsUploading(true);
+        try {
+            const filePath = `tenants/${user.uid}/global/logo.${file.name.split('.').pop()}`;
+            const storageRef = ref(storage, filePath);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+
+            handleSettingChange('logoUrl', downloadURL);
+            toast({ title: 'Sucesso', description: 'Nova logo carregada.' });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+            toast({ title: "Erro de Upload", description: errorMessage, variant: "destructive" });
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -196,8 +205,8 @@ export default function GlobalSettingsPage() {
                                     <AvatarFallback>LG</AvatarFallback>
                                 </Avatar>
                                 <Input value={settings.logoUrl || ''} onChange={(e) => handleSettingChange('logoUrl', e.target.value)} placeholder="Cole a URL da sua logo"/>
-                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                                    <Upload className="mr-2 h-4 w-4" />
+                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                                     Carregar
                                 </Button>
                                 <input type="file" ref={fileInputRef} onChange={handleLogoImageChange} className="hidden" accept="image/*" />

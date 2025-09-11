@@ -12,7 +12,8 @@ import { PlusCircle, Trash2, Camera, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getTenantProfile, saveTenantProfile } from "./actions";
 import { User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
 type ResponsiblePerson = {
@@ -67,6 +68,7 @@ export default function AdminProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   const [companyData, setCompanyData] = useState<CompanyData>(initialCompanyData);
   const [bankData, setBankData] = useState<BankData>(initialBankData);
@@ -144,14 +146,24 @@ export default function AdminProfilePage() {
     ));
   };
   
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCompanyData(prev => ({...prev, profileImage: reader.result as string}));
-      };
-      reader.readAsDataURL(file);
+    if (file && user) {
+        setIsUploading(true);
+        try {
+            const filePath = `tenants/${user.uid}/profile_images/${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, filePath);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            
+            setCompanyData(prev => ({...prev, profileImage: downloadURL}));
+            toast({ title: "Sucesso", description: "Imagem de perfil carregada." });
+        } catch (error) {
+             const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+             toast({ title: "Erro de Upload", description: errorMessage, variant: "destructive" });
+        } finally {
+            setIsUploading(false);
+        }
     }
   };
 
@@ -169,10 +181,6 @@ export default function AdminProfilePage() {
             bankData,
             responsiblePeople
         });
-
-        if (result.success && result.profileImage) {
-           setCompanyData(prev => ({ ...prev, profileImage: result.profileImage as string}));
-        }
 
         toast({
             title: result.success ? "Sucesso!" : "Erro!",
@@ -210,8 +218,9 @@ export default function AdminProfilePage() {
                 size="icon"
                 className="absolute bottom-0 right-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
             >
-                <Camera className="h-4 w-4" />
+                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                 <span className="sr-only">Editar foto</span>
             </Button>
             <Input

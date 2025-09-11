@@ -13,7 +13,7 @@ if (!getApps().length) {
     try {
         admin.initializeApp({
             credential: admin.credential.cert(JSON.parse(serviceAccountKey)),
-            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+            storageBucket: "venda-fcil-pdv.firebasestorage.app", // Corrigido
         });
     } catch (error) {
         console.error('Falha ao inicializar o Firebase Admin SDK:', error);

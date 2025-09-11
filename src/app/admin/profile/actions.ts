@@ -37,35 +37,15 @@ interface TenantProfile {
 // Função para salvar dados do perfil do inquilino
 export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
   try {
-    let profileImageUrl = data.profileImage;
-
-    if (profileImageUrl && profileImageUrl.startsWith('data:image')) {
-      const mimeType = profileImageUrl.split(';')[0].split(':')[1];
-      const base64Data = profileImageUrl.split(',')[1];
-      const imageBuffer = Buffer.from(base64Data, 'base64');
-      
-      const bucket = adminStorage.bucket();
-      const fileName = `tenants/${tenantId}/profile_image.${mimeType.split('/')[1]}`;
-      const file = bucket.file(fileName);
-
-      await file.save(imageBuffer, {
-        metadata: { contentType: mimeType },
-        public: true, 
-      });
-      
-      profileImageUrl = file.publicUrl();
-    }
-
     const profileData = {
       ...data,
-      profileImage: profileImageUrl,
       updatedAt: new Date(),
     };
 
     const docRef = adminDb.collection('tenants').doc(tenantId);
     await docRef.set(profileData, { merge: true });
 
-    return { success: true, message: 'Perfil salvo com sucesso!', profileImage: profileImageUrl };
+    return { success: true, message: 'Perfil salvo com sucesso!' };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     console.error('Error saving tenant profile:', errorMessage);

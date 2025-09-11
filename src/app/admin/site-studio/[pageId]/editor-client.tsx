@@ -136,7 +136,8 @@ export function SiteEditorClient({ initialPageData, initialPosts, pageId, tenant
             toast({ title: 'Sucesso', description: 'Imagem carregada.' });
         } catch (error) {
             console.error("Upload error:", error);
-            toast({ title: 'Erro de Upload', description: 'Não foi possível carregar a imagem.', variant: 'destructive' });
+            const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+            toast({ title: 'Erro de Upload', description: errorMessage, variant: 'destructive' });
         } finally {
             setIsUploading(null);
             setCurrentSectionIdForUpload(null);

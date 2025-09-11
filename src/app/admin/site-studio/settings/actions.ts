@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb, adminStorage } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { GlobalSettings } from '@/lib/settings';
@@ -57,39 +57,13 @@ export async function saveGlobalSettings(tenantId: string, data: GlobalSettings)
       return { success: false, message: `Dados inválidos: ${validation.error.errors.map(e => e.message).join(', ')}` };
   }
 
-  let finalData = { ...validation.data };
-
-  // Lógica para upload de imagem se for base64
-  if (finalData.logoUrl && finalData.logoUrl.startsWith('data:image')) {
-    try {
-        const mimeType = finalData.logoUrl.split(';')[0].split(':')[1];
-        const base64Data = finalData.logoUrl.split(',')[1];
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-        
-        const bucket = adminStorage.bucket();
-        const fileName = `tenants/${tenantId}/global/logo.${mimeType.split('/')[1]}`;
-        const file = bucket.file(fileName);
-
-        await file.save(imageBuffer, {
-            metadata: { contentType: mimeType },
-            public: true, 
-        });
-        
-        finalData.logoUrl = file.publicUrl().replace('https://storage.googleapis.com/', 'https://firebasestorage.googleapis.com/v0/b/');
-    } catch(uploadError) {
-        console.error('Erro ao fazer upload da logo:', uploadError);
-        return { success: false, message: 'Ocorreu um erro ao fazer upload da nova logo.' };
-    }
-  }
-
-
   try {
-    await settingsRef(tenantId).set(finalData, { merge: true });
+    await settingsRef(tenantId).set(validation.data, { merge: true });
     
     // Revalida o cache das páginas afetadas para que as mudanças apareçam imediatamente
     revalidatePath('/', 'layout');
 
-    return { success: true, message: 'Configurações salvas com sucesso!', newLogoUrl: finalData.logoUrl };
+    return { success: true, message: 'Configurações salvas com sucesso!' };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
     console.error('Erro ao salvar as configurações globais:', error);
