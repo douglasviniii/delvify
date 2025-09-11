@@ -42,7 +42,8 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
                 public: true, 
             });
             
-            return file.publicUrl();
+            // Retorna a URL no formato compatível com o Next.js Image
+            return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
