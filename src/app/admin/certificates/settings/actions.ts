@@ -1,4 +1,3 @@
-
 'use server';
 
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
@@ -41,13 +40,11 @@ async function uploadImageIfNecessary(tenantId: string, imagePath: string, image
                 metadata: { contentType: mimeType },
             });
             
-            // Gera uma URL assinada com longa duração (expira em 2100)
-            const [url] = await file.getSignedUrl({
-                action: 'read',
-                expires: '01-01-2100' 
-            });
+            // Tornar o arquivo público
+            await file.makePublic();
 
-            return url;
+            // Retornar a URL pública
+            return file.publicUrl();
         } catch(uploadError) {
             console.error(`Erro ao fazer upload da imagem ${imagePath}:`, uploadError);
             throw new Error(`Ocorreu um erro ao fazer upload da imagem: ${imagePath}.`);
