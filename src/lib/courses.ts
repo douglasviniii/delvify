@@ -7,19 +7,33 @@ import { getDoc, doc } from 'firebase/firestore';
 import { db } from './firebase'; // Client SDK
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
 
+// Função de serialização robusta para garantir que todos os Timestamps, incluindo os aninhados, sejam convertidos.
+const serializeData = (data: any): any => {
+    if (data === null || typeof data !== 'object') {
+        return data;
+    }
+    if (data.toDate && typeof data.toDate === 'function') {
+        return data.toDate().toISOString();
+    }
+    if (Array.isArray(data)) {
+        return data.map(serializeData);
+    }
+    const serializedObject: { [key: string]: any } = {};
+    for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+            serializedObject[key] = serializeData(data[key]);
+        }
+    }
+    return serializedObject;
+};
+
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
     if (!data) {
         return { id: doc.id };
     }
-    const docData: { [key: string]: any } = { id: doc.id, ...data };
-    
-    for (const key in docData) {
-      if (docData[key] && typeof docData[key].toDate === 'function') {
-        docData[key] = docData[key].toDate().toISOString();
-      }
-    }
-    return docData;
+    const docData = { id: doc.id, ...data };
+    return serializeData(docData);
 }
 
 
@@ -144,32 +158,38 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
 }
 
 
-export async function getPurchasedCourses(userId: string): Promise<Course[]> {
-    if (!userId) return [];
+export async function getPurchasedCourses(userId: string): Promise<{ courses: Course[], details: Record<string, PurchasedCourseInfo> }> {
+    if (!userId) return { courses: [], details: {} };
     try {
         const userDocRef = await adminDb.collection('users').doc(userId).get();
-        if (!userDocRef.exists) return [];
+        if (!userDocRef.exists) return { courses: [], details: {} };
 
+        // A serialização robusta agora garante que todos os Timestamps aninhados sejam convertidos
         const userData = serializeDoc(userDocRef);
         if (!userData || !userData.purchasedCourses) {
-            return [];
+            return { courses: [], details: {} };
         }
 
-        const purchasedCoursesMap = userData.purchasedCourses;
+        const purchasedCoursesMap = userData.purchasedCourses as Record<string, PurchasedCourseInfo>;
         const coursePromises: Promise<Course | null>[] = Object.keys(purchasedCoursesMap).map(courseId => {
             const tenantId = purchasedCoursesMap[courseId].tenantId;
             return getCourseById(tenantId, courseId);
         });
 
         const courses = await Promise.all(coursePromises);
-        return courses.filter((course): course is Course => course !== null);
+        const validCourses = courses.filter((course): course is Course => course !== null);
+        
+        return { courses: validCourses, details: purchasedCoursesMap };
+
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
         console.error(`Error fetching purchased courses for user ${userId}:`, errorMessage);
-        return [];
+        return { courses: [], details: {} };
     }
 }
 
+// A função getPurchasedCourseDetails é redundante agora que getPurchasedCourses retorna os detalhes.
+// Pode ser removida no futuro para simplificar, mas mantida por enquanto para não quebrar outras partes que possam usá-la.
 export async function getPurchasedCourseDetails(userId: string): Promise<Record<string, PurchasedCourseInfo>> {
     if (!userId) return {};
     try {

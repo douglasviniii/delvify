@@ -6,14 +6,13 @@ import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import { getDoc, doc } from 'firebase/firestore';
-import { getPurchasedCourses, getPurchasedCourseDetails } from '@/lib/courses';
+import { getPurchasedCourses } from '@/lib/courses';
 import type { Course, PurchasedCourseInfo } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardDescription, CardTitle } from '@/components/ui/card';
 import { Loader2, Award, BookOpen, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // A certificate is available as soon as the course is purchased.
-// The completion date on the certificate will reflect the required hours, but generation is immediate.
 const isCertificateAvailable = (purchaseInfo: PurchasedCourseInfo | undefined): boolean => {
     return !!purchaseInfo;
 };
@@ -51,10 +50,7 @@ export default function StudentCertificatesPage() {
             setIsLoading(true);
             const fetchCoursesAndCheckEligibility = async () => {
                 try {
-                    const [purchasedCourses, purchasedDetails] = await Promise.all([
-                        getPurchasedCourses(user.uid),
-                        getPurchasedCourseDetails(user.uid)
-                    ]);
+                    const { courses: purchasedCourses, details: purchasedDetails } = await getPurchasedCourses(user.uid);
                     
                     const eligibleCourses = purchasedCourses.filter(course => {
                         const purchaseInfo = purchasedDetails[course.id];
