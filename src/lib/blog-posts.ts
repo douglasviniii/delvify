@@ -1,7 +1,9 @@
 
+
 'use server';
 
 import { adminDb } from './firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
 
 // This type definition needs to be maintained in sync with the one in admin/blog/page.tsx
 export type Post = {
@@ -15,7 +17,9 @@ export type Post = {
   authorId: string;
   createdAt: string; // Serialized as ISO string
   updatedAt?: string; // Serialized as ISO string
-  commentCount?: number; // Add comment count
+  commentCount?: number; 
+  likeCount?: number;
+  isLikedByUser?: boolean;
 };
 
 export type Comment = {
@@ -47,7 +51,7 @@ const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
 }
 
 // Function to get all posts from a specific tenant
-export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
+export async function getAllBlogPosts(tenantId: string, userId?: string): Promise<Post[]> {
   if (!tenantId) {
     console.error("Error: tenantId is required to fetch blog posts.");
     return [];
@@ -61,9 +65,18 @@ export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
     for (const doc of querySnapshot.docs) {
       const postData = serializeDoc(doc) as Post;
       
-      // Fetch comment count for each post
       const commentsSnapshot = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/comments`).get();
+      const likesSnapshot = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/likes`).get();
+      
       postData.commentCount = commentsSnapshot.size;
+      postData.likeCount = likesSnapshot.size;
+
+      if (userId) {
+          const likeDoc = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/likes`).doc(userId).get();
+          postData.isLikedByUser = likeDoc.exists;
+      } else {
+          postData.isLikedByUser = false;
+      }
       
       posts.push(postData);
     }

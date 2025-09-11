@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Post } from '@/lib/blog-posts';
@@ -10,6 +10,9 @@ import { ArrowRight, Calendar, UserCircle, MessageSquare, ThumbsUp, Share2, Load
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { getAllBlogPosts } from '@/lib/blog-posts';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { togglePostLike } from './actions';
 
 
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
@@ -23,18 +26,40 @@ const formatDate = (date: Date | string) => {
 }
 
 
-const PostCard = ({ post }: { post: Post }) => {
+const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
     const { toast } = useToast();
-    const [likes, setLikes] = useState(0);
-    const [isLiked, setIsLiked] = useState(false);
+    const [isPending, startTransition] = useTransition();
+
+    // Optimistic UI state
+    const [optimisticLikes, setOptimisticLikes] = useState({
+        likeCount: post.likeCount ?? 0,
+        isLiked: post.isLikedByUser ?? false
+    });
 
     const handleLike = () => {
-        if (isLiked) {
-            setLikes(prev => prev - 1);
-        } else {
-            setLikes(prev => prev + 1);
+        if (!userId) {
+            toast({ title: "Acesso Negado", description: "Você precisa estar logado para curtir.", variant: "destructive" });
+            return;
         }
-        setIsLiked(prev => !prev);
+
+        startTransition(async () => {
+             // Optimistic update
+            setOptimisticLikes(prev => ({
+                likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
+                isLiked: !prev.isLiked
+            }));
+
+            try {
+                await togglePostLike(TENANT_ID_WITH_POSTS, post.id, userId);
+            } catch (error) {
+                 // Revert on error
+                setOptimisticLikes({
+                    likeCount: post.likeCount ?? 0,
+                    isLiked: post.isLikedByUser ?? false
+                });
+                toast({ title: "Erro", description: "Não foi possível registrar sua curtida.", variant: "destructive"});
+            }
+        });
     }
 
     const handleShare = () => {
@@ -81,9 +106,9 @@ const PostCard = ({ post }: { post: Post }) => {
             <CardFooter className="flex flex-col items-start gap-4">
                <div className="w-full flex justify-between items-center text-muted-foreground">
                    <div className="flex items-center gap-4">
-                       <button onClick={handleLike} className={`flex items-center gap-1 hover:text-primary transition-colors ${isLiked ? 'text-primary' : ''}`}>
+                       <button onClick={handleLike} disabled={isPending} className={`flex items-center gap-1 hover:text-primary transition-colors ${optimisticLikes.isLiked ? 'text-primary' : ''}`}>
                             <ThumbsUp className="h-4 w-4" /> 
-                            <span className="text-sm">{likes}</span>
+                            <span className="text-sm">{optimisticLikes.likeCount}</span>
                         </button>
                        <Link href={`/student/blog/${post.slug}`} className="flex items-center gap-1 hover:text-primary transition-colors">
                           <MessageSquare className="h-4 w-4" /> 
@@ -106,15 +131,20 @@ const PostCard = ({ post }: { post: Post }) => {
 export default function StudentBlogPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, authLoading] = useAuthState(auth);
 
   useEffect(() => {
-    getAllBlogPosts(TENANT_ID_WITH_POSTS)
-      .then(setPosts)
-      .catch(err => console.error("Failed to load blog posts", err))
-      .finally(() => setIsLoading(false));
-  }, []);
+    // We wait for auth state to be resolved before fetching posts
+    if (!authLoading) {
+        setIsLoading(true);
+        getAllBlogPosts(TENANT_ID_WITH_POSTS, user?.uid)
+          .then(setPosts)
+          .catch(err => console.error("Failed to load blog posts", err))
+          .finally(() => setIsLoading(false));
+    }
+  }, [user, authLoading]);
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
         <div className="flex justify-center items-center h-64">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -135,7 +165,7 @@ export default function StudentBlogPage() {
         {posts.length > 0 ? (
             <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard key={post.id} post={post} userId={user?.uid} />
             ))}
             </div>
         ) : (
