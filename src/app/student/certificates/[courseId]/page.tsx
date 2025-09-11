@@ -63,7 +63,8 @@ export default async function CertificatePage({ params }: { params: { courseId: 
 
     const user = await getCurrentUser();
     if (!user) {
-        return redirect(`/login?callbackUrl=/student/certificates/${courseId}`);
+        const callbackUrl = encodeURIComponent(`/student/certificates/${courseId}`);
+        return redirect(`/login?callbackUrl=${callbackUrl}`);
     }
 
     try {
@@ -125,6 +126,3 @@ export default async function CertificatePage({ params }: { params: { courseId: 
 
 // Adicionando um fallback de suspense para a página
 export const dynamic = 'force-dynamic';
-
-
-

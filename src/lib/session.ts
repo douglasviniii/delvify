@@ -2,23 +2,40 @@
 'use server';
 
 import { adminAuth } from '@/lib/firebase-admin';
-import { headers } from 'next/headers';
+import { createServerSideUser, getTokens } from 'next-firebase-auth-edge';
+import { cookies } from 'next/headers';
+import type { UserRecord } from 'firebase-admin/auth';
+import { serviceAccount } from './firebase-admin-credentials';
 
-// This is a simplified session management for server components.
-// In a production app, you might use a library like NextAuth.js for more robust session handling.
 
-export async function getCurrentUser(): Promise<any | null> {
-  const authorization = headers().get('Authorization');
-  if (!authorization?.startsWith('Bearer ')) {
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
+};
+
+
+export async function getCurrentUser(): Promise<UserRecord | null> {
+  const tokens = await getTokens(cookies(), {
+    apiKey: firebaseConfig.apiKey,
+    cookieName: 'AuthToken',
+    cookieSignatureKeys: ['secret1', 'secret2'],
+    serviceAccount: serviceAccount
+  });
+
+  if (!tokens) {
     return null;
   }
-  const idToken = authorization.split('Bearer ')[1];
+
   try {
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
-    const user = await adminAuth.getUser(decodedToken.uid);
+    const user = await adminAuth.getUser(tokens.decodedToken.uid);
     return user;
   } catch (error) {
-    console.error('Error verifying auth token:', error);
+    console.error('Error fetching user data from Firebase Admin:', error);
     return null;
   }
 }
