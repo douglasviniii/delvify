@@ -83,7 +83,8 @@ export async function getAllBlogPosts(tenantId: string, userId?: string): Promis
 
     return posts;
   } catch (error) {
-    console.error(`Error fetching blog posts for tenant ${tenantId}:`, error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Error fetching blog posts for tenant ${tenantId}:`, errorMessage);
     return [];
   }
 }
@@ -108,7 +109,8 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
         return serializeDoc(postDoc) as Post;
 
     } catch (error) {
-        console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, errorMessage);
         // Fallback for environments where indexes might not be configured.
         // This is less efficient but more robust.
         try {
@@ -117,8 +119,9 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
             const post = allPosts.find(p => p.slug === slug);
             return post || null;
         } catch (fallbackError) {
-             console.error(`Fallback search also failed for slug ${slug}:`, fallbackError);
-             return null;
+            const fallbackErrorMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+            console.error(`Fallback search also failed for slug ${slug}:`, fallbackErrorMessage);
+            return null;
         }
     }
 }
@@ -138,7 +141,8 @@ export async function getPostComments(tenantId: string, postId: string): Promise
         
         return comments;
     } catch(error) {
-        console.error(`Error fetching comments for post ${postId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching comments for post ${postId}:`, errorMessage);
         return [];
     }
 }

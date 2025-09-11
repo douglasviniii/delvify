@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { adminDb } from './firebase-admin';
@@ -78,7 +79,8 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
 
     return courses;
   } catch (error) {
-    console.error(`Error fetching courses for tenant ${tenantId}:`, error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Error fetching courses for tenant ${tenantId}:`, errorMessage);
     return [];
   }
 }
@@ -96,7 +98,8 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
         }
         return null;
     } catch (error) {
-        console.error(`Error fetching course ${courseId} for tenant ${tenantId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching course ${courseId} for tenant ${tenantId}:`, errorMessage);
         return null;
     }
 }
@@ -116,7 +119,8 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
 
         return modules;
     } catch(error) {
-        console.error(`Error fetching modules for course ${courseId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching modules for course ${courseId}:`, errorMessage);
         return [];
     }
 }
@@ -134,7 +138,8 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
         })
         return categories;
     } catch (error) {
-        console.error(`Error fetching categories for tenant ${tenantId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching categories for tenant ${tenantId}:`, errorMessage);
         return [];
     }
 }
@@ -154,7 +159,8 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
 
         return reviews;
     } catch(error) {
-        console.error(`Error fetching reviews for course ${courseId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching reviews for course ${courseId}:`, errorMessage);
         return [];
     }
 }
@@ -170,7 +176,8 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
         }
         return false;
     } catch (error) {
-        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error checking purchase status for user ${userId}, course ${courseId}:`, errorMessage);
         return false;
     }
 }
@@ -193,7 +200,8 @@ export async function getPurchasedCourses(userId: string): Promise<Course[]> {
         const courses = await Promise.all(coursePromises);
         return courses.filter((course): course is Course => course !== null);
     } catch (error) {
-        console.error(`Error fetching purchased courses for user ${userId}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching purchased courses for user ${userId}:`, errorMessage);
         return [];
     }
 }
