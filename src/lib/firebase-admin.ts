@@ -6,17 +6,18 @@ import { getStorage } from 'firebase-admin/storage';
 
 let adminApp: App;
 
-const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-if (!serviceAccountString) {
+if (!serviceAccountBase64) {
     throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY não está definida. O Firebase Admin SDK não pode ser inicializado.");
 }
 
 let serviceAccount: ServiceAccount;
 try {
-    serviceAccount = JSON.parse(serviceAccountString);
+    const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
+    serviceAccount = JSON.parse(serviceAccountJson);
 } catch(e: any) {
-    console.error("Falha ao analisar as credenciais da conta de serviço do Firebase. Verifique se a variável de ambiente está corretamente formatada como um JSON de linha única.", e);
+    console.error("Falha ao analisar as credenciais da conta de serviço do Firebase a partir do Base64. Verifique se a variável de ambiente está correta.", e);
     throw new Error(`Formato inválido para as credenciais da conta de serviço do Firebase: ${e.message}`);
 }
 
