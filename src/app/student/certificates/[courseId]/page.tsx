@@ -1,11 +1,10 @@
 
 import { getCertificatePageData } from './actions';
 import { CertificateClient } from './certificate-client';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
-import { auth } from '@/lib/firebase';
-import { getCurrentUser } from '@/lib/session'; // Usaremos um método de sessão no servidor
+import { getCurrentUser } from '@/lib/session'; 
 
 
 // Este é o ID do inquilino para o qual os cursos estão sendo criados no admin.
@@ -23,13 +22,16 @@ function LoadingCertificate() {
 
 // O componente principal da página agora é um Server Component que busca os dados
 async function CertificateDataFetcher({ courseId }: { courseId: string }) {
-    // Em um app de produção, você usaria cookies ou cabeçalhos para obter o usuário do servidor.
-    // Como estamos usando o Firebase Auth no cliente, não temos um usuário de servidor confiável aqui.
-    // O UID `LBb33EzFFvdOjYfT9Iw4eO4dxvp2` é o usuário de demonstração.
-    // Em um cenário real, você passaria o UID do usuário da sessão aqui.
-    const demoUserId = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+    // Busca o usuário logado no servidor.
+    const user = await getCurrentUser();
 
-    const result = await getCertificatePageData(TENANT_ID_WITH_COURSES, courseId, demoUserId);
+    if (!user) {
+        // Redireciona para o login se não houver usuário.
+        // O ideal é passar um `callbackUrl` para que o usuário retorne após o login.
+        return redirect(`/login?callbackUrl=/student/certificates/${courseId}`);
+    }
+
+    const result = await getCertificatePageData(TENANT_ID_WITH_COURSES, courseId, user.uid);
 
     if (!result.success) {
         return <CertificateClient data={null} error={result.message} />;
