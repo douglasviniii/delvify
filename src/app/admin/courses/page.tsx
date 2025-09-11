@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal, CheckCircle2, Eye, Star } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal, CheckCircle2, Eye, Star, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -40,6 +40,7 @@ const courseSchema = z.object({
   tag: z.string().optional(),
   coverImageUrl: z.string().url('A URL da imagem de capa é obrigatória.'),
   contentType: z.enum(['video', 'pdf'], { required_error: 'Selecione o tipo de conteúdo.' }),
+  durationHours: z.string().regex(/^\d+$/, "Apenas números são permitidos.").min(1, "A carga horária é obrigatória."),
   status: z.enum(['draft', 'published']).default('draft'),
 });
 
@@ -55,6 +56,7 @@ type Course = {
   category: string;
   tag?: string;
   contentType: 'video' | 'pdf';
+  durationHours: number;
   status: 'draft' | 'published';
   createdAt: any;
   coverImageUrl: string;
@@ -302,6 +304,7 @@ export default function AdminCoursesPage() {
       tag: '',
       coverImageUrl: '',
       contentType: undefined,
+      durationHours: '',
       status: 'draft',
     },
   });
@@ -369,7 +372,8 @@ export default function AdminCoursesPage() {
         form.reset({
           ...fullCourse,
           promotionalPrice: fullCourse.promotionalPrice || '',
-          tag: fullCourse.tag || ''
+          tag: fullCourse.tag || '',
+          durationHours: String(fullCourse.durationHours),
         });
         setIsDialogOpen(true);
     } else {
@@ -407,15 +411,19 @@ export default function AdminCoursesPage() {
     }
     
     const tenantCoursesCollectionPath = `tenants/${user.uid}/courses`;
+    const dataToSave = {
+        ...values,
+        durationHours: parseInt(values.durationHours, 10)
+    };
 
     try {
       if (editingCourse) {
-        await updateDoc(doc(db, tenantCoursesCollectionPath, editingCourse.id), { ...values, updatedAt: serverTimestamp() });
+        await updateDoc(doc(db, tenantCoursesCollectionPath, editingCourse.id), { ...dataToSave, updatedAt: serverTimestamp() });
         toast({ title: 'Curso Atualizado' });
         setIsDialogOpen(false);
       } else {
         const newCourseRef = await addDoc(collection(db, tenantCoursesCollectionPath), {
-            ...values,
+            ...dataToSave,
             createdAt: serverTimestamp()
         });
         toast({ title: 'Curso Criado como Rascunho', description: 'Agora adicione os episódios do curso.' });
@@ -513,18 +521,28 @@ export default function AdminCoursesPage() {
                         )} />
                     </div>
 
-                    <FormField control={form.control} name="contentType" render={({ field }) => (
-                        <FormItem><FormLabel>Tipo de Conteúdo Principal</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione o formato" /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                <SelectItem value="video"><Video className="inline-block mr-2 h-4 w-4"/> Conteúdo em Vídeo</SelectItem>
-                                <SelectItem value="pdf"><FileText className="inline-block mr-2 h-4 w-4"/> Conteúdo em PDF</SelectItem>
-                            </SelectContent>
-                            </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )} />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name="contentType" render={({ field }) => (
+                            <FormItem><FormLabel>Tipo de Conteúdo Principal</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione o formato" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                    <SelectItem value="video"><Video className="inline-block mr-2 h-4 w-4"/> Conteúdo em Vídeo</SelectItem>
+                                    <SelectItem value="pdf"><FileText className="inline-block mr-2 h-4 w-4"/> Conteúdo em PDF</SelectItem>
+                                </SelectContent>
+                                </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="durationHours" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Carga Horária (em horas)</FormLabel>
+                                <FormControl><Input type="number" {...field} placeholder="Ex: 40" /></FormControl>
+                                <FormDescription>Define o tempo mínimo para liberação do certificado.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
 
                     <FormField control={form.control} name="coverImageUrl" render={({ field }) => (
                     <FormItem>

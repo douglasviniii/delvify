@@ -4,19 +4,36 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { getDoc, doc } from 'firebase/firestore';
 import { getPurchasedCourses } from '@/lib/courses';
 import type { Course } from '@/lib/courses';
 import { Card, CardContent, CardHeader, CardFooter, CardDescription, CardTitle } from '@/components/ui/card';
 import { Loader2, Award, BookOpen, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Mock completion logic: a course is "completed" if its ID is even.
-// Replace this with real progress tracking from your database.
-const isCourseCompleted = (courseId: string) => {
-    const numericId = parseInt(courseId.replace(/[^0-9]/g, '').slice(-1) || "0");
-    return numericId % 2 === 0;
-}
+// Mock logic: a course is considered "completed" for certificate purposes if enough time has passed.
+// This will be expanded with quiz completion logic.
+const isCertificateAvailable = (course: Course, purchaseDate: Date | null): boolean => {
+    if (!purchaseDate) return false;
+
+    // Check if the course is free. If so, only time matters.
+    const isFree = parseFloat(course.price.replace(',', '.')) === 0;
+    if (isFree) {
+        const hoursRequired = course.durationHours || 0;
+        const now = new Date();
+        const elapsedTimeInHours = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
+        return elapsedTimeInHours >= hoursRequired;
+    }
+
+    // For paid courses, we'll need to check for quiz completion in the future.
+    // For now, we'll use the same time-based logic.
+    // TODO: Add logic to check quiz submissions.
+    const hoursRequired = course.durationHours || 0;
+    const now = new Date();
+    const elapsedTimeInHours = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60);
+    return elapsedTimeInHours >= hoursRequired;
+};
 
 
 const CompletedCourseCard = ({ course }: { course: Course }) => {
@@ -49,14 +66,29 @@ export default function StudentCertificatesPage() {
     useEffect(() => {
         if (user) {
             setIsLoading(true);
-            getPurchasedCourses(user.uid)
-                .then(purchasedCourses => {
-                    // Filter for completed courses based on mock logic
-                    const completed = purchasedCourses.filter(c => isCourseCompleted(c.id));
-                    setCourses(completed);
-                })
-                .catch(err => console.error("Failed to load purchased courses", err))
-                .finally(() => setIsLoading(false));
+            const fetchCoursesAndCheckEligibility = async () => {
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    const userData = userDocSnap.data();
+                    const purchasedCoursesData = userData?.purchasedCourses || {};
+
+                    const purchasedCourses = await getPurchasedCourses(user.uid);
+                    
+                    const eligibleCourses = purchasedCourses.filter(course => {
+                        const purchaseInfo = purchasedCoursesData[course.id];
+                        const purchaseDate = purchaseInfo?.purchasedAt?.toDate();
+                        return isCertificateAvailable(course, purchaseDate);
+                    });
+                    
+                    setCourses(eligibleCourses);
+                } catch (err) {
+                    console.error("Failed to load or check courses", err);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchCoursesAndCheckEligibility();
         } else if (!authLoading) {
             setIsLoading(false);
         }
@@ -74,7 +106,7 @@ export default function StudentCertificatesPage() {
         <div className="space-y-6">
             <div>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Meus Certificados</h1>
-                <p className="text-muted-foreground">Aqui estão os certificados de todos os cursos que você concluiu.</p>
+                <p className="text-muted-foreground">Aqui estão os certificados dos cursos que você concluiu e cumpriu os requisitos.</p>
             </div>
             
             {courses.length > 0 ? (
@@ -89,7 +121,7 @@ export default function StudentCertificatesPage() {
                         <Award className="mx-auto h-12 w-12 text-muted-foreground" />
                         <h2 className="text-xl font-semibold mt-4">Nenhum certificado disponível.</h2>
                         <p className="text-muted-foreground mt-2">
-                            Conclua seus cursos para emitir seus certificados.
+                            Conclua seus cursos e aguarde o prazo para emitir seus certificados.
                         </p>
                          <Button asChild className="mt-4" variant="outline">
                             <Link href="/student/courses">

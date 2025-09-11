@@ -16,6 +16,7 @@ export type Course = {
   tag?: string;
   coverImageUrl: string;
   contentType: 'video' | 'pdf';
+  durationHours: number;
   status: 'draft' | 'published';
   createdAt: string; 
   updatedAt?: string;
