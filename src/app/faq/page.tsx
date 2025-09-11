@@ -2,7 +2,6 @@
 
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
-import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { adminDb } from '@/lib/firebase-admin';
 import { initialPageData } from '@/lib/page-data';
 import { FaqPageSection, DefaultSection } from '@/components/page-sections';
@@ -36,12 +35,11 @@ async function getPageSections(tenantId: string, pageId: string) {
 
 
 export default async function FAQPage() {
-  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
   const sections = await getPageSections(MAIN_TENANT_ID, 'faq');
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader settings={settings} />
+      <MainHeader />
       <main className="flex-1">
         {sections.map(section => {
             const Component = SectionComponents[section.component];

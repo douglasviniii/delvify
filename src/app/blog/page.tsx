@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { getAllBlogPosts, type Post } from '@/lib/blog-posts';
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
-import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { adminDb } from '@/lib/firebase-admin';
 import { initialPageData } from '@/lib/page-data';
 import { DefaultSection, BlogPageSection } from '@/components/page-sections';
@@ -42,12 +41,11 @@ async function getPageSections(tenantId: string, pageId: string) {
 
 export default async function BlogPage() {
   const posts = await getAllBlogPosts(TENANT_ID_WITH_POSTS);
-  const settings = await getGlobalSettingsForTenant(TENANT_ID_WITH_POSTS);
   const sections = await getPageSections(TENANT_ID_WITH_POSTS, 'blog');
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader settings={settings} />
+      <MainHeader />
       <main className="flex-1">
          {sections.map(section => {
             const Component = SectionComponents[section.component];

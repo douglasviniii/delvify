@@ -15,6 +15,7 @@ export type Post = {
   authorId: string;
   createdAt: string; // Serialized as ISO string
   updatedAt?: string; // Serialized as ISO string
+  commentCount?: number; // Add comment count
 };
 
 export type Comment = {
@@ -33,7 +34,7 @@ const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
         throw new Error(`Document with id ${doc.id} has no data.`);
     }
     // Explicitly include the slug which is part of the data object
-    const docData: { [key: string]: any } = { id: doc.id, ...data, slug: data.slug };
+    const docData: { [key: string]: any } = { id: doc.id, ...data };
     
     // Ensure all timestamp fields are converted to ISO strings
     for (const key in docData) {
@@ -57,9 +58,15 @@ export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
     const postsQuery = adminDb.collection(`tenants/${tenantId}/blog`).orderBy('createdAt', 'desc');
     const querySnapshot = await postsQuery.get();
     
-    querySnapshot.forEach((doc) => {
-      posts.push(serializeDoc(doc) as Post);
-    });
+    for (const doc of querySnapshot.docs) {
+      const postData = serializeDoc(doc) as Post;
+      
+      // Fetch comment count for each post
+      const commentsSnapshot = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/comments`).get();
+      postData.commentCount = commentsSnapshot.size;
+      
+      posts.push(postData);
+    }
 
     return posts;
   } catch (error) {

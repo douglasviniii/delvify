@@ -37,12 +37,14 @@ export default async function StudentBlogPage() {
                 <Card key={post.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow">
                     <CardHeader>
                         <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
-                            <Image
-                                src={post.imageUrl}
-                                alt={post.title}
-                                fill
-                                className="object-cover"
-                            />
+                            <Link href={`/student/blog/${post.slug}`}>
+                                <Image
+                                    src={post.imageUrl}
+                                    alt={post.title}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </Link>
                         </div>
                     </CardHeader>
                     <CardContent className="flex-1 space-y-4">
@@ -67,7 +69,10 @@ export default async function StudentBlogPage() {
                        <div className="w-full flex justify-between items-center text-muted-foreground">
                            <div className="flex items-center gap-4">
                                <button className="flex items-center gap-1 hover:text-primary transition-colors"><ThumbsUp className="h-4 w-4" /> <span className="text-sm">0</span></button>
-                               <button className="flex items-center gap-1 hover:text-primary transition-colors"><MessageSquare className="h-4 w-4" /> <span className="text-sm">0</span></button>
+                               <Link href={`/student/blog/${post.slug}`} className="flex items-center gap-1 hover:text-primary transition-colors">
+                                  <MessageSquare className="h-4 w-4" /> 
+                                  <span className="text-sm">{post.commentCount ?? 0}</span>
+                               </Link>
                            </div>
                            <button className="flex items-center gap-1 hover:text-primary transition-colors"><Share2 className="h-4 w-4" /></button>
                        </div>

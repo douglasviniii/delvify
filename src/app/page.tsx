@@ -49,12 +49,11 @@ async function getPageSections(tenantId: string, pageId: string) {
 export default async function Home() {
   const latestPosts = await getAllBlogPosts(MAIN_TENANT_ID);
   const sections = await getPageSections(MAIN_TENANT_ID, 'home');
-  const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
 
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader settings={settings} />
+      <MainHeader />
       <main className="flex-1">
         {sections.map(section => {
             const Component = SectionComponents[section.component];
