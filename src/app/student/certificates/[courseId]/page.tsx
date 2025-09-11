@@ -1,10 +1,43 @@
 
-import { getCurrentUser } from '@/lib/session'; // Assumindo que você tem um helper de sessão
+import { getCertificatePageData } from './actions';
 import { CertificateClient } from './certificate-client';
 import { notFound } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
+import { auth } from '@/lib/firebase';
+import { getCurrentUser } from '@/lib/session'; // Usaremos um método de sessão no servidor
+
 
 // Este é o ID do inquilino para o qual os cursos estão sendo criados no admin.
 const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
+// Um componente de loading para usar com Suspense
+function LoadingCertificate() {
+    return (
+        <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Carregando dados do certificado...</p>
+        </div>
+    );
+}
+
+// O componente principal da página agora é um Server Component que busca os dados
+async function CertificateDataFetcher({ courseId }: { courseId: string }) {
+    // Em um app de produção, você usaria cookies ou cabeçalhos para obter o usuário do servidor.
+    // Como estamos usando o Firebase Auth no cliente, não temos um usuário de servidor confiável aqui.
+    // O UID `LBb33EzFFvdOjYfT9Iw4eO4dxvp2` é o usuário de demonstração.
+    // Em um cenário real, você passaria o UID do usuário da sessão aqui.
+    const demoUserId = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
+    const result = await getCertificatePageData(TENANT_ID_WITH_COURSES, courseId, demoUserId);
+
+    if (!result.success) {
+        return <CertificateClient data={null} error={result.message} />;
+    }
+
+    return <CertificateClient data={result.data} error={null} />;
+}
+
 
 export default async function CertificatePage({ params }: { params: { courseId: string } }) {
     const courseId = params.courseId;
@@ -13,9 +46,9 @@ export default async function CertificatePage({ params }: { params: { courseId: 
         notFound();
     }
     
-    // Em um app real, o UID viria de uma sessão de servidor.
-    // Como estamos usando firebase-hooks no cliente, podemos deixar o cliente lidar com isso.
-    // O componente cliente obterá o UID do useAuthState.
-    
-    return <CertificateClient courseId={courseId} tenantId={TENANT_ID_WITH_COURSES} />;
+    return (
+        <Suspense fallback={<LoadingCertificate />}>
+            <CertificateDataFetcher courseId={courseId} />
+        </Suspense>
+    );
 }

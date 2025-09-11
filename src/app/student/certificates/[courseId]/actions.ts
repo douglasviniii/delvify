@@ -30,9 +30,13 @@ const serializeData = (data: any): any => {
 };
 
 // Ação combinada para buscar todos os dados necessários para o certificado
-export async function getCertificatePageData(tenantId: string, courseId: string, userId: string) {
+export async function getCertificatePageData(tenantId: string, courseId: string, userId: string | undefined) {
     try {
-        if (!userId || !tenantId || !courseId) {
+        if (!userId) {
+            throw new Error("Usuário não autenticado. Por favor, faça o login para acessar o certificado.");
+        }
+        
+        if (!tenantId || !courseId) {
             throw new Error("Informações insuficientes para buscar os dados do certificado.");
         }
 
@@ -72,10 +76,12 @@ export async function getCertificatePageData(tenantId: string, courseId: string,
 
         return {
             success: true,
-            course,
-            modules,
-            settings,
-            studentProfile
+            data: {
+              course,
+              modules,
+              settings,
+              studentProfile
+            }
         };
 
     } catch (error) {

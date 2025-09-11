@@ -2,85 +2,23 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { getCertificatePageData } from './actions';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { useEffect, useState } from 'react';
 import type { CertificateSettings, Module, Course, UserProfile } from '@/lib/types';
 import Certificate from '@/components/certificate';
 import { Loader2, ShieldAlert } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
 interface CertificateClientProps {
-    courseId: string;
-    tenantId: string;
+    data: {
+        course: Course;
+        modules: Module[];
+        settings: CertificateSettings | null;
+        studentProfile: UserProfile;
+    } | null;
+    error: string | null;
 }
 
-export function CertificateClient({ courseId, tenantId }: CertificateClientProps) {
+export function CertificateClient({ data, error }: CertificateClientProps) {
     const router = useRouter();
-    const [user, authLoading] = useAuthState(auth);
-    const { toast } = useToast();
-
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [course, setCourse] = useState<Course | null>(null);
-    const [modules, setModules] = useState<Module[]>([]);
-    const [settings, setSettings] = useState<CertificateSettings | null>(null);
-    const [studentProfile, setStudentProfile] = useState<UserProfile | null>(null);
-
-    useEffect(() => {
-        if (authLoading) {
-            return; 
-        }
-
-        if (!user) {
-            // Se não houver usuário após o carregamento, redirecione para o login
-            router.push('/login');
-            return;
-        }
-
-        const fetchData = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const result = await getCertificatePageData(tenantId, courseId, user.uid);
-                
-                if (!result.success) {
-                    throw new Error(result.message || "Não foi possível carregar os dados do certificado.");
-                }
-
-                setCourse(result.course || null);
-                setModules(result.modules || []);
-                setSettings(result.settings || null);
-                setStudentProfile(result.studentProfile || null);
-
-                if (!result.studentProfile || !result.studentProfile.cpf) {
-                     throw new Error("Dados do perfil incompletos. Por favor, preencha seu nome completo e CPF no seu perfil para emitir o certificado.");
-                }
-
-
-            } catch (err: any) {
-                console.error("Falha ao carregar dados do certificado", err);
-                toast({ title: "Erro", description: err.message, variant: "destructive" });
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        fetchData();
-
-    }, [user, authLoading, courseId, tenantId, toast, router]);
-
-    if (isLoading || authLoading) {
-        return (
-            <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
-                <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                <p className="mt-4 text-muted-foreground">Carregando dados do certificado...</p>
-            </div>
-        )
-    }
 
     if (error) {
         return (
@@ -93,14 +31,16 @@ export function CertificateClient({ courseId, tenantId }: CertificateClientProps
         )
     }
 
-    if (!course || !studentProfile) {
-        // Este estado pode ocorrer brevemente ou se algo inesperado acontecer.
+    if (!data) {
+        // This case should ideally not be hit if error is handled, but it's a good fallback.
         return (
             <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
                 <p className="text-muted-foreground">Dados insuficientes para gerar o certificado.</p>
             </div>
         );
     }
+    
+    const { course, studentProfile, modules, settings } = data;
 
     return (
         <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
