@@ -2,14 +2,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { getCourseForCertificate, getSettingsForCertificate, getStudentProfile } from './actions';
+import { getCertificatePageData } from './actions';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import type { CertificateSettings, Module, Course, UserProfile } from '@/lib/types';
 import Certificate from '@/components/certificate';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface CertificateClientProps {
     courseId: string;
@@ -43,29 +44,26 @@ export function CertificateClient({ courseId, tenantId }: CertificateClientProps
             setIsLoading(true);
             setError(null);
             try {
-                const [courseDataResult, certSettings, profileData] = await Promise.all([
-                    getCourseForCertificate(tenantId, courseId, user.uid),
-                    getSettingsForCertificate(tenantId),
-                    getStudentProfile(user.uid)
-                ]);
-
-                if (!courseDataResult.success || !courseDataResult.course || !courseDataResult.modules) {
-                    throw new Error(courseDataResult.message || "Você não tem permissão para ver este certificado ou o curso não existe.");
-                }
+                const result = await getCertificatePageData(tenantId, courseId, user.uid);
                 
-                if (!profileData) {
-                    throw new Error("Não foi possível encontrar os dados do aluno. Complete seu perfil.");
+                if (!result.success) {
+                    throw new Error(result.message || "Não foi possível carregar os dados do certificado.");
                 }
 
-                setCourse(courseDataResult.course);
-                setModules(courseDataResult.modules);
-                setSettings(certSettings);
-                setStudentProfile(profileData);
+                setCourse(result.course || null);
+                setModules(result.modules || []);
+                setSettings(result.settings || null);
+                setStudentProfile(result.studentProfile || null);
+
+                if (!result.studentProfile || !result.studentProfile.cpf) {
+                     throw new Error("Dados do perfil incompletos. Por favor, preencha seu nome completo e CPF no seu perfil para emitir o certificado.");
+                }
+
 
             } catch (err: any) {
                 console.error("Falha ao carregar dados do certificado", err);
-                toast({ title: "Erro", description: err.message || "Falha ao carregar os dados do certificado.", variant: "destructive" });
-                setError(err.message || "Ocorreu um erro.");
+                toast({ title: "Erro", description: err.message, variant: "destructive" });
+                setError(err.message);
             } finally {
                 setIsLoading(false);
             }
@@ -87,9 +85,10 @@ export function CertificateClient({ courseId, tenantId }: CertificateClientProps
     if (error) {
         return (
              <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center text-center">
-                <h1 className="text-2xl font-bold text-destructive">Não foi possível carregar o certificado</h1>
-                <p className="mt-2 text-muted-foreground">{error}</p>
-                <Button onClick={() => router.back()} className="mt-4">Voltar</Button>
+                <ShieldAlert className="h-16 w-16 text-destructive" />
+                <h1 className="mt-4 text-2xl font-bold text-destructive">Não foi possível carregar o certificado</h1>
+                <p className="mt-2 text-muted-foreground max-w-md">{error}</p>
+                <Button onClick={() => router.back()} className="mt-6">Voltar</Button>
             </div>
         )
     }
