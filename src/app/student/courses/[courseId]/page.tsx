@@ -1,7 +1,7 @@
 
 'use client';
 
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { getCourseById, getCourseReviews, hasPurchasedCourse } from '@/lib/courses';
 import CourseReviews from '@/app/courses/[courseId]/course-reviews';
 import Image from 'next/image';
@@ -19,8 +19,9 @@ import { createCheckoutSession } from './actions';
 
 const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-export default function StudentCourseDetailsPage({ params }: { params: { courseId: string } }) {
-    const courseId = params.courseId;
+export default function StudentCourseDetailsPage() {
+    const params = useParams();
+    const courseId = params.courseId as string;
     const [user, authLoading] = useAuthState(auth);
     const { toast } = useToast();
     const router = useRouter();
@@ -39,7 +40,7 @@ export default function StudentCourseDetailsPage({ params }: { params: { courseI
                 return;
             }
 
-            if (user) {
+            if (user && courseId) {
                 setIsLoading(true);
                 try {
                     const [courseData, reviewsData, purchaseData] = await Promise.all([
