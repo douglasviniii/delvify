@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag, User as UserIcon, Settings } from 'lucide-react';
+import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag, User as UserIcon, Settings, Newspaper } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { auth } from '@/lib/firebase';
 import { signOut, type User } from 'firebase/auth';
@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const menuItems = [
   { href: '/student/explore', label: 'Explore', icon: Compass },
   { href: '/student/courses', label: 'Meus Cursos', icon: Book },
+  { href: '/student/blog', label: 'Blog', icon: Newspaper },
   { href: '/student/certificates', label: 'Certificados', icon: GraduationCap },
   { href: '/student/purchases', label: 'Minhas Compras', icon: ShoppingBag },
 ];

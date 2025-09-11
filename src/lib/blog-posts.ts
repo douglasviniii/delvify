@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { adminDb } from './firebase-admin';
@@ -18,7 +17,17 @@ export type Post = {
   updatedAt?: string; // Serialized as ISO string
 };
 
-const serializePost = (doc: FirebaseFirestore.DocumentSnapshot): Post => {
+export type Comment = {
+    id: string;
+    authorId: string;
+    authorName: string;
+    authorAvatarUrl?: string;
+    text: string;
+    createdAt: string;
+    likes: number;
+}
+
+const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
     if (!data) {
         throw new Error(`Document with id ${doc.id} has no data.`);
@@ -32,7 +41,7 @@ const serializePost = (doc: FirebaseFirestore.DocumentSnapshot): Post => {
       }
     }
 
-    return docData as Post;
+    return docData;
 }
 
 // Function to get all posts from a specific tenant
@@ -48,7 +57,7 @@ export async function getAllBlogPosts(tenantId: string): Promise<Post[]> {
     const querySnapshot = await postsQuery.get();
     
     querySnapshot.forEach((doc) => {
-      posts.push(serializePost(doc));
+      posts.push(serializeDoc(doc) as Post);
     });
 
     return posts;
@@ -75,7 +84,7 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
         }
         
         const postDoc = snapshot.docs[0];
-        return serializePost(postDoc);
+        return serializeDoc(postDoc) as Post;
 
     } catch (error) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error);
@@ -90,5 +99,25 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
              console.error(`Fallback search also failed for slug ${slug}:`, fallbackError);
              return null;
         }
+    }
+}
+
+export async function getPostComments(tenantId: string, postId: string): Promise<Comment[]> {
+    if (!tenantId || !postId) {
+        return [];
+    }
+    try {
+        const comments: Comment[] = [];
+        const commentsQuery = adminDb.collection(`tenants/${tenantId}/blog/${postId}/comments`).orderBy('createdAt', 'desc');
+        const querySnapshot = await commentsQuery.get();
+
+        querySnapshot.forEach(doc => {
+            comments.push(serializeDoc(doc) as Comment);
+        });
+        
+        return comments;
+    } catch(error) {
+        console.error(`Error fetching comments for post ${postId}:`, error);
+        return [];
     }
 }
