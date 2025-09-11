@@ -6,7 +6,7 @@ import { getCertificateSettings } from '@/lib/certificates';
 import type { CertificateSettings, UserProfile, Course, Module, PurchasedCourseInfo } from '@/lib/types';
 import { adminDb } from '@/lib/firebase-admin';
 
-// Função de serialização para garantir que Timestamps sejam convertidos em strings, incluindo objetos aninhados.
+// Função de serialização robusta para garantir que Timestamps sejam convertidos em strings, incluindo objetos aninhados.
 const serializeData = (data: any): any => {
     if (!data) return data;
     if (Array.isArray(data)) {
@@ -16,24 +16,18 @@ const serializeData = (data: any): any => {
     if (typeof data === 'object' && data !== null && typeof data.toDate === 'function') {
         return data.toDate().toISOString();
     }
+    // Percorre recursivamente as propriedades do objeto
     if (typeof data === 'object' && data !== null) {
         const res: { [key: string]: any } = {};
         for (const key in data) {
-            res[key] = serializeData(data[key]);
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
+                res[key] = serializeData(data[key]);
+            }
         }
         return res;
     }
     return data;
 };
-
-const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
-    if (!doc.exists) return null;
-    const data = doc.data();
-    // Passa o objeto de dados inteiro para a serialização recursiva
-    const serializedContent = serializeData(data);
-    return { id: doc.id, ...serializedContent };
-};
-
 
 // Ação combinada para buscar todos os dados necessários para o certificado
 export async function getCertificatePageData(tenantId: string, courseId: string, userId: string) {
@@ -47,14 +41,14 @@ export async function getCertificatePageData(tenantId: string, courseId: string,
             throw new Error("Perfil do aluno não encontrado.");
         }
 
-        // Serializa o documento do usuário INTEIRO, incluindo os objetos aninhados como purchasedCourses.
-        const studentProfile = serializeDoc(userDoc) as UserProfile & { purchasedCourses?: Record<string, PurchasedCourseInfo> };
+        // Primeiro, serializa o documento do usuário INTEIRO, incluindo os objetos aninhados como purchasedCourses.
+        const studentProfile = serializeData({ id: userDoc.id, ...userDoc.data() }) as UserProfile & { purchasedCourses?: Record<string, PurchasedCourseInfo> };
         
         if (!studentProfile) {
              throw new Error("Não foi possível processar o perfil do aluno.");
         }
 
-        // AGORA a verificação usa os dados já serializados.
+        // AGORA, a verificação usa os dados já serializados e seguros.
         if (!studentProfile.purchasedCourses || !studentProfile.purchasedCourses[courseId]) {
             throw new Error("Este curso não foi adquirido por você.");
         }
