@@ -1,6 +1,9 @@
-
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
+import { config } from 'dotenv';
+
+// Load environment variables from .env file
+config({ path: '.env' });
 
 function initializeFirebaseAdmin() {
     if (!getApps().length) {
@@ -21,8 +24,6 @@ function initializeFirebaseAdmin() {
             console.log('Firebase Admin SDK inicializado com sucesso.');
         } catch (error: any) {
             console.error('Falha ao inicializar o Firebase Admin SDK:', error.message);
-            // Don't throw an error in production, as it might crash the server.
-            // Log it and let parts of the app fail gracefully.
         }
     }
 }
