@@ -1,37 +1,35 @@
+
 import admin from 'firebase-admin';
-import { getApps } from 'firebase-admin/app';
-import { config } from 'dotenv';
+import { getApps, initializeApp, getApp, App } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
+import { serviceAccount } from './firebase-admin-credentials';
 
-// Load environment variables from .env file
-config({ path: '.env' });
+function getFirebaseAdminApp(): App {
+    if (getApps().length > 0) {
+        return getApp();
+    }
 
-function initializeFirebaseAdmin() {
-    if (!getApps().length) {
-        try {
-            const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+    try {
+        console.log('Inicializando o Firebase Admin SDK...');
+        const app = initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            storageBucket: 'venda-fcil-pdv.appspot.com',
+        });
+        console.log('Firebase Admin SDK inicializado com sucesso.');
+        return app;
 
-            if (!serviceAccountBase64) {
-                throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64 não está definida.");
-            }
-
-            const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
-            const serviceAccount = JSON.parse(serviceAccountJson);
-
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount),
-                storageBucket: 'venda-fcil-pdv.appspot.com',
-            });
-            console.log('Firebase Admin SDK inicializado com sucesso.');
-        } catch (error: any) {
-            console.error('Falha ao inicializar o Firebase Admin SDK:', error.message);
-        }
+    } catch (error: any) {
+        console.error('Falha crítica ao inicializar o Firebase Admin SDK:', error.message);
+        throw new Error(`Falha ao inicializar o Firebase Admin SDK: ${error.message}`);
     }
 }
 
-initializeFirebaseAdmin();
+const app = getFirebaseAdminApp();
 
-const adminDb = admin.firestore();
-const adminAuth = admin.auth();
-const adminStorage = admin.storage();
+const adminDb = getFirestore(app);
+const adminAuth = getAuth(app);
+const adminStorage = getStorage(app);
 
 export { adminDb, adminAuth, adminStorage };
