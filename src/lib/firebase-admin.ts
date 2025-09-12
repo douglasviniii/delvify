@@ -1,23 +1,21 @@
 
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
-import { serviceAccount } from './firebase-admin-credentials';
 
 function initializeFirebaseAdmin() {
     if (!getApps().length) {
         try {
-            // Reconstruct the service account object with the private key from environment variables
-            const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+            const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
 
-            if (!privateKey) {
-                throw new Error("A variável de ambiente FIREBASE_PRIVATE_KEY não está definida.");
+            if (!serviceAccountBase64) {
+                throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64 não está definida.");
             }
 
+            const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
+            const serviceAccount = JSON.parse(serviceAccountJson);
+
             admin.initializeApp({
-                credential: admin.credential.cert({
-                    ...serviceAccount,
-                    privateKey,
-                }),
+                credential: admin.credential.cert(serviceAccount),
                 storageBucket: 'venda-fcil-pdv.appspot.com',
             });
             console.log('Firebase Admin SDK inicializado com sucesso.');

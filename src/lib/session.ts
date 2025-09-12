@@ -2,11 +2,9 @@
 'use server';
 
 import { adminAuth } from '@/lib/firebase-admin';
-import { createServerSideUser, getTokens } from 'next-firebase-auth-edge';
+import { getTokens } from 'next-firebase-auth-edge';
 import { cookies } from 'next/headers';
 import type { UserRecord } from 'firebase-admin/auth';
-import { serviceAccount } from './firebase-admin-credentials';
-
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -18,24 +16,32 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
 };
 
+const getServiceAccount = () => {
+  const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  if (!serviceAccountBase64) {
+    throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64 não está definida.");
+  }
+  const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
+  return JSON.parse(serviceAccountJson);
+};
+
 
 export async function getCurrentUser(): Promise<UserRecord | null> {
-  const tokens = await getTokens(cookies(), {
-    apiKey: firebaseConfig.apiKey,
-    cookieName: 'AuthToken',
-    cookieSignatureKeys: ['secret1', 'secret2'],
-    serviceAccount: serviceAccount
-  });
-
-  if (!tokens) {
-    return null;
-  }
-
   try {
+    const tokens = await getTokens(cookies(), {
+      apiKey: firebaseConfig.apiKey,
+      cookieName: 'AuthToken',
+      cookieSignatureKeys: ['secret1', 'secret2'],
+      serviceAccount: getServiceAccount(),
+    });
+
+    if (!tokens) {
+      return null;
+    }
     const user = await adminAuth.getUser(tokens.decodedToken.uid);
     return user;
   } catch (error) {
-    console.error('Error fetching user data from Firebase Admin:', error);
+    console.error('Error fetching current user:', error);
     return null;
   }
 }
