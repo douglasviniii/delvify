@@ -2,7 +2,7 @@
 'use server';
 
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase'; // Import client SDK
+import { db } from './firebase'; // Use client SDK for reads
 import type { GlobalSettings } from './types';
 
 
@@ -92,6 +92,7 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
     // Se não houver configurações salvas, retorna o padrão
     return defaultSettings;
   } catch (error: any) {
+    // Log the error but return default settings to avoid breaking the UI
     console.error('Erro ao buscar as configurações globais, retornando padrão:', error.message);
     return defaultSettings;
   }

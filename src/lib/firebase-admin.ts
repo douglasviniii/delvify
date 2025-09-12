@@ -4,7 +4,20 @@ import { getApps, initializeApp, getApp, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { serviceAccount } from './firebase-admin-credentials';
+
+// This function is the single source of truth for the service account credentials.
+const getServiceAccount = () => {
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+    if (!serviceAccountJson) {
+        throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64 não está definida ou está vazia.");
+    }
+    try {
+        const decoded = Buffer.from(serviceAccountJson, 'base64').toString('utf-8');
+        return JSON.parse(decoded);
+    } catch (e) {
+        throw new Error("Falha ao decodificar ou analisar as credenciais da conta de serviço do Firebase. Verifique a variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64.");
+    }
+};
 
 // Singleton pattern to ensure Firebase Admin is initialized only once.
 function getFirebaseAdminApp(): App {
@@ -13,19 +26,17 @@ function getFirebaseAdminApp(): App {
     }
 
     try {
-        console.log('Initializing Firebase Admin SDK...');
+        console.log('Inicializando o Firebase Admin SDK...');
         const app = initializeApp({
-            credential: admin.credential.cert(serviceAccount),
+            credential: admin.credential.cert(getServiceAccount()),
             storageBucket: 'venda-fcil-pdv.appspot.com',
         });
-        console.log('Firebase Admin SDK initialized successfully.');
+        console.log('Firebase Admin SDK inicializado com sucesso.');
         return app;
 
     } catch (error: any) {
-        // This will catch any errors during initialization, including credential parsing.
-        console.error('Critical failure initializing Firebase Admin SDK:', error.message);
-        // Throw a specific, informative error to stop the application from running in a broken state.
-        throw new Error(`Failed to initialize Firebase Admin SDK: ${error.message}`);
+        console.error('Falha crítica ao inicializar o Firebase Admin SDK:', error.message);
+        throw new Error(`Falha ao inicializar o Firebase Admin SDK: ${error.message}`);
     }
 }
 
