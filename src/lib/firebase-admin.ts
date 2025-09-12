@@ -4,8 +4,12 @@ import { getApps, initializeApp, getApp, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+import { config } from 'dotenv';
 
-// This function is the single source of truth for the service account credentials.
+// Carrega as variáveis de ambiente do arquivo .env
+config({ path: '.env' });
+
+// Esta função é a única fonte de verdade para as credenciais da conta de serviço.
 const getServiceAccount = () => {
     const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
     if (!serviceAccountJson) {
@@ -15,11 +19,12 @@ const getServiceAccount = () => {
         const decoded = Buffer.from(serviceAccountJson, 'base64').toString('utf-8');
         return JSON.parse(decoded);
     } catch (e) {
-        throw new Error("Falha ao decodificar ou analisar as credenciais da conta de serviço do Firebase. Verifique a variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64.");
+        const errorMessage = e instanceof Error ? e.message : 'Erro desconhecido';
+        throw new Error(`Falha ao decodificar ou analisar as credenciais da conta de serviço do Firebase. Verifique a variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64. Erro: ${errorMessage}`);
     }
 };
 
-// Singleton pattern to ensure Firebase Admin is initialized only once.
+// Padrão Singleton para garantir que o Firebase Admin seja inicializado apenas uma vez.
 function getFirebaseAdminApp(): App {
     if (getApps().length > 0) {
         return getApp();
@@ -27,8 +32,9 @@ function getFirebaseAdminApp(): App {
 
     try {
         console.log('Inicializando o Firebase Admin SDK...');
+        const serviceAccount = getServiceAccount();
         const app = initializeApp({
-            credential: admin.credential.cert(getServiceAccount()),
+            credential: admin.credential.cert(serviceAccount),
             storageBucket: 'venda-fcil-pdv.appspot.com',
         });
         console.log('Firebase Admin SDK inicializado com sucesso.');
@@ -40,10 +46,10 @@ function getFirebaseAdminApp(): App {
     }
 }
 
-// Get the initialized app.
+// Obtém o app inicializado.
 const app = getFirebaseAdminApp();
 
-// Initialize and export services.
+// Inicializa e exporta os serviços.
 const adminDb = getFirestore(app);
 const adminAuth = getAuth(app);
 const adminStorage = getStorage(app);
