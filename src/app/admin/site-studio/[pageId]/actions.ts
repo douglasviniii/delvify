@@ -3,7 +3,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { doc, getDoc } from 'firebase/firestore';
 import { adminDb } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 
 const sectionSchema = z.object({
@@ -86,10 +88,10 @@ export async function getPageDataForStudio(tenantId: string, pageId: string) {
     }
     
     try {
-        const pageRef = adminDb.collection('tenants').doc(tenantId).collection('pages').doc(pageId);
-        const pageSnap = await pageRef.get();
+        const pageRef = doc(db, `tenants/${tenantId}/pages/${pageId}`);
+        const pageSnap = await getDoc(pageRef);
 
-        if (pageSnap.exists) {
+        if (pageSnap.exists()) {
             const data = pageSnap.data();
             if (data && data.sections) {
                  return {

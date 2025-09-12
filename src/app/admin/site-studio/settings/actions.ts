@@ -2,9 +2,12 @@
 'use server';
 
 import { adminDb } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { GlobalSettings } from '@/lib/types';
+import { doc, getDoc } from 'firebase/firestore';
+
 
 // Define o schema para validação dos dados
 const SocialLinksSchema = z.object({
@@ -42,8 +45,11 @@ const GlobalSettingsSchema = z.object({
   }),
 });
 
-const settingsRef = (tenantId: string) => 
+const settingsRefAdmin = (tenantId: string) => 
   adminDb.collection('tenants').doc(tenantId).collection('settings').doc('global');
+
+const settingsRefClient = (tenantId: string) =>
+    doc(db, `tenants/${tenantId}/settings/global`);
 
 // Ação para salvar as configurações
 export async function saveGlobalSettings(tenantId: string, data: GlobalSettings) {
@@ -58,7 +64,7 @@ export async function saveGlobalSettings(tenantId: string, data: GlobalSettings)
   }
 
   try {
-    await settingsRef(tenantId).set(validation.data, { merge: true });
+    await settingsRefAdmin(tenantId).set(validation.data, { merge: true });
     
     // Revalida o cache das páginas afetadas para que as mudanças apareçam imediatamente
     revalidatePath('/', 'layout');
@@ -78,8 +84,8 @@ export async function getGlobalSettings(tenantId: string): Promise<GlobalSetting
     return null;
   }
   try {
-    const docSnap = await settingsRef(tenantId).get();
-    if (docSnap.exists) {
+    const docSnap = await getDoc(settingsRefClient(tenantId));
+    if (docSnap.exists()) {
       return docSnap.data() as GlobalSettings;
     }
     return null; // Retorna null se não houver configurações salvas
@@ -96,7 +102,7 @@ export async function savePageVisibility(tenantId: string, pageId: string, isVis
         return { success: false, message: 'ID do inquilino é obrigatório.' };
     }
     try {
-        await settingsRef(tenantId).set({
+        await settingsRefAdmin(tenantId).set({
             pageVisibility: {
                 [pageId]: isVisible,
             }

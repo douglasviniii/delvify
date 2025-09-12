@@ -2,10 +2,11 @@
 
 'use server';
 
-import { adminDb } from './firebase-admin';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { db } from './firebase';
 import type { Post, Comment } from './types';
 
-const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
+const serializeDoc = (doc: any): any => {
     const data = doc.data();
     if (!data) {
         return { id: doc.id };
@@ -32,21 +33,22 @@ export async function getAllBlogPosts(tenantId: string, userId?: string): Promis
 
   try {
     const posts: Post[] = [];
-    const postsQuery = adminDb.collection(`tenants/${tenantId}/blog`).orderBy('createdAt', 'desc');
-    const querySnapshot = await postsQuery.get();
+    const postsQuery = query(collection(db, `tenants/${tenantId}/blog`), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(postsQuery);
     
     for (const doc of querySnapshot.docs) {
       const postData = serializeDoc(doc) as Post;
       
-      const commentsSnapshot = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/comments`).get();
-      const likesSnapshot = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/likes`).get();
+      const commentsSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${doc.id}/comments`));
+      const likesSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${doc.id}/likes`));
       
       postData.commentCount = commentsSnapshot.size;
       postData.likeCount = likesSnapshot.size;
 
       if (userId) {
-          const likeDoc = await adminDb.collection(`tenants/${tenantId}/blog/${doc.id}/likes`).doc(userId).get();
-          postData.isLikedByUser = likeDoc.exists;
+          const likeQuery = query(collection(db, `tenants/${tenantId}/blog/${doc.id}/likes`), where('userId', '==', userId));
+          const likeSnapshot = await getDocs(likeQuery);
+          postData.isLikedByUser = !likeSnapshot.empty;
       } else {
           postData.isLikedByUser = false;
       }
@@ -69,8 +71,9 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
     }
     
     try {
-        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
-        const snapshot = await postsCollectionRef.where('slug', '==', slug).limit(1).get();
+        const postsCollectionRef = collection(db, `tenants/${tenantId}/blog`);
+        const q = query(postsCollectionRef, where('slug', '==', slug), limit(1));
+        const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
@@ -82,17 +85,7 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
 
     } catch (error: any) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error.message);
-        // Fallback for environments where indexes might not be configured.
-        // This is less efficient but more robust.
-        try {
-            console.log(`Falling back to manual search for slug: ${slug}`);
-            const allPosts = await getAllBlogPosts(tenantId);
-            const post = allPosts.find(p => p.slug === slug);
-            return post || null;
-        } catch (fallbackError: any) {
-            console.error(`Fallback search also failed for slug ${slug}:`, fallbackError.message);
-            return null;
-        }
+        return null;
     }
 }
 
@@ -102,8 +95,8 @@ export async function getPostComments(tenantId: string, postId: string): Promise
     }
     try {
         const comments: Comment[] = [];
-        const commentsQuery = adminDb.collection(`tenants/${tenantId}/blog/${postId}/comments`).orderBy('createdAt', 'desc');
-        const querySnapshot = await commentsQuery.get();
+        const commentsQuery = query(collection(db, `tenants/${tenantId}/blog/${postId}/comments`), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(commentsQuery);
 
         querySnapshot.forEach(doc => {
             comments.push(serializeDoc(doc) as Comment);

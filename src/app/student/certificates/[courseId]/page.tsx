@@ -4,9 +4,10 @@ import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { getCurrentUser } from '@/lib/session'; 
 import { getCourseById, getCourseModules } from '@/lib/courses';
-import { getCertificateSettings } from '@/app/admin/certificates/settings/actions';
+import { getCertificateSettings } from '@/lib/certificates';
 import type { CertificateSettings, UserProfile, Course, Module, PurchasedCourseInfo } from '@/lib/types';
-import { adminDb } from '@/lib/firebase-admin';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import Certificate from '@/components/certificate';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -68,10 +69,10 @@ export default async function CertificatePage({ params }: { params: { courseId: 
     }
 
     try {
-        const userDocRef = adminDb.collection('users').doc(user.uid);
-        const userDoc = await userDocRef.get();
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
 
-        if (!userDoc.exists) {
+        if (!userDoc.exists()) {
             return <ErrorDisplay message="Perfil do aluno não encontrado." />;
         }
         

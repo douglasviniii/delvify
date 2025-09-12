@@ -1,11 +1,12 @@
 
 'use server';
 
-import { adminDb } from './firebase-admin';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase'; // Use client SDK
 import type { CertificateSettings } from './types';
 
 const settingsRef = (tenantId: string) => 
-  adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
+  doc(db, `tenants/${tenantId}/settings/certificate`);
 
 // Função para buscar as configurações
 export async function getCertificateSettings(tenantId: string): Promise<CertificateSettings | null> {
@@ -14,8 +15,8 @@ export async function getCertificateSettings(tenantId: string): Promise<Certific
     return null;
   }
   try {
-    const docSnap = await settingsRef(tenantId).get();
-    if (docSnap.exists) {
+    const docSnap = await getDoc(settingsRef(tenantId));
+    if (docSnap.exists()) {
       return docSnap.data() as CertificateSettings;
     }
     return null; // Retorna null se não houver configurações salvas

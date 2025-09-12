@@ -2,7 +2,7 @@
 
 'use server';
 
-import { adminDb } from './firebase-admin';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from './firebase'; // Client SDK
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
@@ -27,7 +27,7 @@ const serializeData = (data: any): any => {
     return serializedObject;
 };
 
-const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
+const serializeDoc = (doc: any): any => {
     const data = doc.data();
     if (!data) {
         return { id: doc.id };
@@ -44,8 +44,12 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
   }
   try {
     const courses: Course[] = [];
-    const coursesQuery = adminDb.collection(`tenants/${tenantId}/courses`).where('status', '==', 'published').orderBy('createdAt', 'desc');
-    const querySnapshot = await coursesQuery.get();
+    const coursesQuery = query(
+        collection(db, `tenants/${tenantId}/courses`), 
+        where('status', '==', 'published'), 
+        orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(coursesQuery);
     
     querySnapshot.forEach((doc) => {
       const courseData = serializeDoc(doc) as Omit<Course, 'tenantId'>;
@@ -66,8 +70,8 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
         return null;
     }
     try {
-        const docRef = await adminDb.doc(`tenants/${tenantId}/courses/${courseId}`).get();
-        if (docRef.exists) {
+        const docRef = await getDoc(doc(db, `tenants/${tenantId}/courses`, courseId));
+        if (docRef.exists()) {
             const courseData = serializeDoc(docRef) as Omit<Course, 'tenantId'>;
             return { ...courseData, tenantId };
         }
@@ -85,8 +89,8 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
     }
     try {
         const modules: Module[] = [];
-        const modulesQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/modules`).orderBy('order');
-        const querySnapshot = await modulesQuery.get();
+        const modulesQuery = query(collection(db, `tenants/${tenantId}/courses/${courseId}/modules`), orderBy('order'));
+        const querySnapshot = await getDocs(modulesQuery);
 
         querySnapshot.forEach(doc => {
             modules.push(serializeDoc(doc) as Module);
@@ -106,8 +110,8 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
     }
     try {
         const categories: Category[] = [];
-        const catQuery = adminDb.collection(`tenants/${tenantId}/categories`).orderBy('name');
-        const querySnapshot = await catQuery.get();
+        const catQuery = query(collection(db, `tenants/${tenantId}/categories`), orderBy('name'));
+        const querySnapshot = await getDocs(catQuery);
         querySnapshot.forEach(doc => {
             categories.push(serializeDoc(doc) as Category);
         })
@@ -125,8 +129,8 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
     }
     try {
         const reviews: Review[] = [];
-        const reviewsQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/reviews`).orderBy('createdAt', 'desc');
-        const querySnapshot = await reviewsQuery.get();
+        const reviewsQuery = query(collection(db, `tenants/${tenantId}/courses/${courseId}/reviews`), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(reviewsQuery);
 
         querySnapshot.forEach(doc => {
             reviews.push(serializeDoc(doc) as Review);
@@ -161,8 +165,8 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
 export async function getPurchasedCourses(userId: string): Promise<{ courses: Course[], details: Record<string, PurchasedCourseInfo> }> {
     if (!userId) return { courses: [], details: {} };
     try {
-        const userDocRef = await adminDb.collection('users').doc(userId).get();
-        if (!userDocRef.exists) return { courses: [], details: {} };
+        const userDocRef = await getDoc(doc(db, 'users', userId));
+        if (!userDocRef.exists()) return { courses: [], details: {} };
 
         // A serialização robusta agora garante que todos os Timestamps aninhados sejam convertidos
         const userData = serializeDoc(userDocRef);
@@ -193,8 +197,8 @@ export async function getPurchasedCourses(userId: string): Promise<{ courses: Co
 export async function getPurchasedCourseDetails(userId: string): Promise<Record<string, PurchasedCourseInfo>> {
     if (!userId) return {};
     try {
-        const userDocRef = await adminDb.collection('users').doc(userId).get();
-        if (!userDocRef.exists) return {};
+        const userDocRef = await getDoc(doc(db, 'users', userId));
+        if (!userDocRef.exists()) return {};
 
         const userData = serializeDoc(userDocRef);
 

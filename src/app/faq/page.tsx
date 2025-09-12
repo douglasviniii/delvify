@@ -2,7 +2,8 @@
 
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
-import { adminDb } from '@/lib/firebase-admin';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 import { FaqPageSection, DefaultSection } from '@/components/page-sections';
 
@@ -15,10 +16,10 @@ const SectionComponents: Record<string, React.FC<any>> = {
 
 async function getPageSections(tenantId: string, pageId: string) {
     try {
-        const pageRef = adminDb.collection('tenants').doc(tenantId).collection('pages').doc(pageId);
-        const pageSnap = await pageRef.get();
+        const pageRef = doc(db, `tenants/${tenantId}/pages/${pageId}`);
+        const pageSnap = await getDoc(pageRef);
 
-        if (pageSnap.exists) {
+        if (pageSnap.exists()) {
             const pageData = pageSnap.data();
             if (pageData && Array.isArray(pageData.sections)) {
                 return pageData.sections;
