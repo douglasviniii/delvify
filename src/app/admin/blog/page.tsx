@@ -22,6 +22,7 @@ import TiptapEditor from '../../../components/ui/tiptap-editor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/ui/alert-dialog';
 import type { User } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 
 const slugify = (text: string) =>
@@ -65,19 +66,10 @@ export default function BlogManagementPage() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, loading, error] = useAuthState(auth);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return; // Don't fetch anything if user is not logged in
+    if (!user || loading) return; // Don't fetch anything if user is not logged in or auth state is loading
 
     // Tenant-specific collection path
     const tenantBlogCollectionPath = `tenants/${user.uid}/blog`;
@@ -108,7 +100,7 @@ export default function BlogManagementPage() {
       unsubscribePosts();
       unsubscribeCollabs();
     };
-  }, [user]);
+  }, [user, loading]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -236,6 +228,10 @@ export default function BlogManagementPage() {
   
   if (!user) {
      return <div className="flex h-full items-center justify-center"><p>Você precisa estar logado para gerenciar o blog.</p></div>;
+  }
+  
+  if (error) {
+    return <div className="flex h-full items-center justify-center"><p className='text-destructive'>Erro de autenticação: {error.message}</p></div>;
   }
 
   return (
