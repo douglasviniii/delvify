@@ -62,102 +62,99 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             </div>
             
             <div id="certificate-wrapper">
-                <div className="w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-0 flex flex-col">
-                    {/* Front of Certificate */}
-                    <div className="certificate-page relative w-full h-full flex-shrink-0 p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
-                        {watermarkLogoUrl && (
-                            <Image
-                                src={watermarkLogoUrl}
-                                alt="Marca d'água"
-                                layout="fill"
-                                objectFit="contain"
-                                className="absolute inset-0 m-auto opacity-10 z-0"
-                                data-ai-hint="logo watermark"
-                            />
-                        )}
-                        <div className="relative z-10 flex flex-col h-full">
-                            <header className="flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
-                               <div className="flex items-center gap-4">
-                                    {mainLogoUrl ? (
-                                        <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
-                                    ) : <span>{companyName}</span>}
-                                    <Award className="h-12 w-12" style={{ color: accentColor }} />
-                                </div>
-                                 <div className="text-right text-xs text-gray-600">
-                                    <p className="font-bold">{companyName}</p>
-                                    <p>{companyAddress}</p>
-                                    <p>CNPJ: {companyCnpj}</p>
-                                </div>
-                            </header>
+                <div className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
+                    {watermarkLogoUrl && (
+                        <Image
+                            src={watermarkLogoUrl}
+                            alt="Marca d'água"
+                            layout="fill"
+                            objectFit="contain"
+                            className="absolute inset-0 m-auto opacity-10 z-0"
+                            data-ai-hint="logo watermark"
+                        />
+                    )}
+                    <div className="relative z-10 flex flex-col h-full">
+                        <header className="flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
+                           <div className="flex items-center gap-4">
+                                {mainLogoUrl ? (
+                                    <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
+                                ) : <span>{companyName}</span>}
+                                <Award className="h-12 w-12" style={{ color: accentColor }} />
+                            </div>
+                             <div className="text-right text-xs text-gray-600">
+                                <p className="font-bold">{companyName}</p>
+                                <p>{companyAddress}</p>
+                                <p>CNPJ: {companyCnpj}</p>
+                            </div>
+                        </header>
 
-                            <main className="flex-1 flex flex-col items-center justify-center text-center">
-                                <h1 className="text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
-                                <p className="mt-8 text-xl">Certificamos que</p>
-                                <p className="mt-2 text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
-                                 <p className="mt-2 text-lg">portador(a) do CPF nº {studentCpf}</p>
-                                <p className="mt-6 text-xl max-w-3xl">
-                                    concluiu com sucesso o curso de <strong style={{ color: accentColor }}>{courseName}</strong>,
-                                    em {completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
-                                </p>
-                            </main>
+                        <main className="flex-1 flex flex-col items-center justify-center text-center">
+                            <h1 className="text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
+                            <p className="mt-8 text-xl">Certificamos que</p>
+                            <p className="mt-2 text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
+                             <p className="mt-2 text-lg">portador(a) do CPF nº {studentCpf}</p>
+                            <p className="mt-6 text-xl max-w-3xl">
+                                concluiu com sucesso o curso de <strong style={{ color: accentColor }}>{courseName}</strong>,
+                                em {completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
+                            </p>
+                        </main>
 
-                            <footer className="flex justify-center text-center mt-auto">
-                                 <div>
-                                    {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
-                                    <hr className="border-gray-700 mt-1" style={{ width: '220px' }}/>
-                                    <p className="text-sm font-semibold mt-1">{signatureText}</p>
-                                </div>
-                            </footer>
-                        </div>
+                        <footer className="absolute bottom-10 left-0 right-0 flex justify-center text-center">
+                             <div>
+                                {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
+                                <hr className="border-gray-700 mt-1" style={{ width: '220px' }}/>
+                                <p className="text-sm font-semibold mt-1">{signatureText}</p>
+                            </div>
+                        </footer>
                     </div>
+                </div>
 
-                    {/* Back of Certificate */}
-                    <div className="certificate-page relative w-full h-full flex-shrink-0 p-10 border-4 mt-8" style={{ borderColor: accentColor }}>
-                         {watermarkLogoUrl && (
-                            <Image
-                                src={watermarkLogoUrl}
-                                alt="Marca d'água"
-                                layout="fill"
-                                objectFit="contain"
-                                className="absolute inset-0 m-auto opacity-10 z-0"
-                                data-ai-hint="logo watermark"
-                            />
-                        )}
-                         <div className="relative z-10 flex flex-col h-full">
-                            <header className="text-center pb-4">
-                                <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
-                                <p className="text-lg font-semibold">{courseName}</p>
-                            </header>
+                {/* Back of Certificate */}
+                <div className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
+                     {watermarkLogoUrl && (
+                        <Image
+                            src={watermarkLogoUrl}
+                            alt="Marca d'água"
+                            layout="fill"
+                            objectFit="contain"
+                            className="absolute inset-0 m-auto opacity-10 z-0"
+                            data-ai-hint="logo watermark"
+                        />
+                    )}
+                     <div className="relative z-10 flex flex-col h-full">
+                        <header className="text-center pb-4">
+                            <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
+                            <p className="text-lg font-semibold">{courseName}</p>
+                        </header>
 
-                            <main className="flex-1 mt-6">
-                                <ul className="space-y-2 columns-2">
-                                    {courseModules.map((module, index) => (
-                                        <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
-                                    ))}
-                                </ul>
-                            </main>
-                            
-                            <footer className="text-center space-y-4 pt-4 border-t mt-auto">
-                                <div className='flex justify-between items-end'>
-                                    <div className='text-left text-xs text-gray-600'>
-                                         <p className="font-bold">Verificação de Autenticidade</p>
-                                         <p>Aponte a câmera para o QR Code ou acesse:</p>
-                                         <p className='font-mono'>{companyWebsite}/verify</p>
-                                         <p className='mt-2'>Código: <strong className='font-mono'>{verificationCode}</strong></p>
-                                    </div>
-                                    <div className='flex flex-col items-center'>
-                                         <Image 
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
-                                            width={100}
-                                            height={100}
-                                            alt="QR Code de Verificação"
-                                         />
-                                    </div>
+                        <main className="flex-1 mt-6">
+                            <ul className="space-y-2 columns-2">
+                                {courseModules.map((module, index) => (
+                                    <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
+                                ))}
+                            </ul>
+                        </main>
+                        
+                        <footer className="absolute bottom-10 left-10 right-10 text-center space-y-4 pt-4 border-t">
+                            <div className='flex justify-between items-end'>
+                                <div className='text-left text-xs text-gray-600'>
+                                     <p className="font-bold">Verificação de Autenticidade</p>
+                                     <p>Aponte a câmera para o QR Code ou acesse:</p>
+                                     <p className='font-mono'>{companyWebsite}/verify</p>
+                                     <p className='mt-2'>Código: <strong className='font-mono'>{verificationCode}</strong></p>
                                 </div>
-                                 <p className="text-xs text-gray-600">{additionalInfo}</p>
-                            </footer>
-                         </div>
-                    </div>
+                                <div className='flex flex-col items-center'>
+                                     <Image 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
+                                        width={100}
+                                        height={100}
+                                        alt="QR Code de Verificação"
+                                     />
+                                </div>
+                            </div>
+                             <p className="text-xs text-gray-600">{additionalInfo}</p>
+                        </footer>
+                     </div>
                 </div>
             </div>
              <style jsx global>{`
