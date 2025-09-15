@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { db, auth, storage } from '../../../lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, doc, serverTimestamp, getDoc, where } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
@@ -91,7 +91,7 @@ export default function BlogManagementPage() {
 
     // Fetch collaborators - now tenant-specific
     const tenantCollaboratorsPath = `tenants/${user.uid}/collaborators`;
-    const collabsQuery = query(collection(db, tenantCollaboratorsPath), where('tenantId', '==', user.uid));
+    const collabsQuery = query(collection(db, tenantCollaboratorsPath));
     const unsubscribeCollabs = onSnapshot(collabsQuery, (snapshot) => {
         const collabsData: Collaborator[] = [];
         snapshot.forEach((doc) => {
@@ -370,3 +370,5 @@ export default function BlogManagementPage() {
     </div>
   );
 }
+
+    
