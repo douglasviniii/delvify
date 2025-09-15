@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -12,15 +11,45 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { togglePostLike } from './actions';
+import { auth, db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { revalidatePath } from 'next/cache';
+
+async function togglePostLike(tenantId: string, postId: string, userId: string) {
+    'use server';
+    
+    if (!tenantId || !postId || !userId) {
+        throw new Error("Missing required IDs for liking a post.");
+    }
+
+    const likeRef = adminDb.collection(`tenants/${tenantId}/blog/${postId}/likes`).doc(userId);
+
+    try {
+        const likeDoc = await likeRef.get();
+
+        if (likeDoc.exists) {
+            await likeRef.delete();
+        } else {
+            await likeRef.set({
+                createdAt: FieldValue.serverTimestamp()
+            });
+        }
+        
+        revalidatePath('/student/blog');
+        revalidatePath(`/student/blog/${postId}`);
+
+    } catch (error) {
+        console.error("Error toggling post like:", error);
+        throw new Error("Could not update like status.");
+    }
+}
 
 
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 const formatDate = (date: Date | string | undefined) => {
     if (!date) return 'Data inválida';
-    // Assegura que estamos tratando a data como UTC para evitar problemas de fuso horário na hidratação
     const d = new Date(date);
     return d.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -35,7 +64,6 @@ const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
 
-    // Optimistic UI state
     const [optimisticLikes, setOptimisticLikes] = useState({
         likeCount: post.likeCount ?? 0,
         isLiked: post.isLikedByUser ?? false
@@ -48,7 +76,6 @@ const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
         }
 
         startTransition(async () => {
-             // Optimistic update
             setOptimisticLikes(prev => ({
                 likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
                 isLiked: !prev.isLiked
@@ -57,7 +84,6 @@ const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
             try {
                 await togglePostLike(TENANT_ID_WITH_POSTS, post.id, userId);
             } catch (error) {
-                 // Revert on error
                 setOptimisticLikes({
                     likeCount: post.likeCount ?? 0,
                     isLiked: post.isLikedByUser ?? false
@@ -139,7 +165,6 @@ export default function StudentBlogPage() {
   const [user, authLoading] = useAuthState(auth);
 
   useEffect(() => {
-    // We wait for auth state to be resolved before fetching posts
     if (!authLoading) {
       if (user) {
         setIsLoading(true);
@@ -148,7 +173,6 @@ export default function StudentBlogPage() {
           .catch(err => console.error("Failed to load blog posts", err))
           .finally(() => setIsLoading(false));
       } else {
-        // If there's no user, fetch posts without user-specific data
         setIsLoading(true);
         getAllBlogPosts(TENANT_ID_WITH_POSTS)
           .then(setPosts)
@@ -191,5 +215,3 @@ export default function StudentBlogPage() {
     </div>
   );
 }
-
-    
