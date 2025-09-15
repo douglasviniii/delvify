@@ -37,6 +37,7 @@ export function ClientFooter({ settings }: { settings: GlobalSettings }) {
     { id: 'blog', label: 'Blog', href: '/blog' },
     { id: 'faq', label: 'FAQ', href: '/faq' },
     { id: 'about', label: 'Quem Somos', href: '/about' },
+    { id: 'verify', label: 'Verificar Certificado', href: '/verify' },
     { id: 'login', label: 'Login', href: '/login' },
     { id: 'signup', label: 'Cadastre-se', href: '/signup' },
   ];
@@ -68,7 +69,7 @@ export function ClientFooter({ settings }: { settings: GlobalSettings }) {
       <div className="container py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-6">
-            <Logo />
+            <Logo logoUrl={settings.logoUrl}/>
             <p className="text-base text-muted-foreground">
               Soluções Inovadoras para um Mundo Digital.
             </p>

@@ -171,6 +171,7 @@ export const initialPageData: Record<string, PageData> = {
       }]
     },
     contact: createDefaultPageData("Contato", "DefaultSection"),
+    verify: createDefaultPageData("Verificação", "DefaultSection"),
     'privacy-policy': createDefaultPageData("Política de Privacidade", "DefaultSection"),
     'terms-of-use': createDefaultPageData("Termos de Uso", "DefaultSection"),
     'cookie-policy': createDefaultPageData("Política de Cookies", "DefaultSection"),
