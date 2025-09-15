@@ -112,7 +112,12 @@ export default function BlogManagementPage() {
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
+
+    if (!user) {
+        toast({ title: 'Erro de Autenticação', description: 'Usuário não encontrado. Faça login novamente.', variant: 'destructive'});
+        return;
+    }
 
     setIsUploading(true);
     try {
@@ -228,6 +233,10 @@ export default function BlogManagementPage() {
   if (loading) {
     return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
+  
+  if (!user) {
+     return <div className="flex h-full items-center justify-center"><p>Você precisa estar logado para gerenciar o blog.</p></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -268,14 +277,14 @@ export default function BlogManagementPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Autor</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} defaultValue={user?.uid}>
+                                <Select onValueChange={field.onChange} value={field.value} defaultValue={user.uid}>
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Selecione o autor do post..." />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value={user?.uid || ''}>Eu ({user?.displayName || 'Admin'})</SelectItem>
+                                        <SelectItem value={user.uid}>Eu ({user.displayName || 'Admin'})</SelectItem>
                                         {collaborators.map((collab) => (
                                             <SelectItem key={collab.uid} value={collab.uid}>{collab.displayName}</SelectItem>
                                         ))}
@@ -371,3 +380,5 @@ export default function BlogManagementPage() {
     </div>
   );
 }
+
+    
