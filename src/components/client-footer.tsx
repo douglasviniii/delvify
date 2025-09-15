@@ -32,6 +32,14 @@ const HoverLink = ({ href, children, color, hoverColor }: { href: string; childr
 }
 
 export function ClientFooter({ settings }: { settings: GlobalSettings }) {
+  const [copyrightText, setCopyrightText] = React.useState(settings.footerInfo.copyrightText);
+
+  React.useEffect(() => {
+    setCopyrightText(
+      settings.footerInfo.copyrightText.replace('{YEAR}', new Date().getFullYear().toString())
+    );
+  }, [settings.footerInfo.copyrightText]);
+    
   const allLinks = [
     { id: 'courses', label: 'Cursos', href: '/courses' },
     { id: 'blog', label: 'Blog', href: '/blog' },
@@ -61,8 +69,6 @@ export function ClientFooter({ settings }: { settings: GlobalSettings }) {
 
   const visibleLinks = allLinks.filter(link => settings.pageVisibility[link.id] ?? true);
   const visiblePolicies = allPolicies.filter(policy => settings.pageVisibility[policy.id] ?? true);
-
-  const copyrightText = settings.footerInfo.copyrightText.replace('{YEAR}', new Date().getFullYear().toString());
 
   return (
     <footer className="border-t bg-background">
