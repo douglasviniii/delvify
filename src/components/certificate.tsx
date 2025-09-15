@@ -1,11 +1,13 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Printer, Award } from 'lucide-react';
+import { Printer, Award, Loader2 } from 'lucide-react';
 import type { CertificateSettings, Module } from '@/lib/types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface CertificateProps {
     studentName: string;
@@ -33,6 +35,7 @@ const defaultSettings: CertificateSettings = {
 
 
 const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, courseName, completionDate, courseModules, settings }) => {
+    const [isDownloading, setIsDownloading] = useState(false);
     const effectiveSettings = settings || defaultSettings;
     const {
         mainLogoUrl,
@@ -47,8 +50,48 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
         companyWebsite
     } = effectiveSettings;
 
-    const handlePrint = () => {
-        window.print();
+    const handleDownloadPdf = async () => {
+        setIsDownloading(true);
+
+        const frontPage = document.getElementById('certificate-front');
+        const backPage = document.getElementById('certificate-back');
+
+        if (!frontPage || !backPage) {
+            console.error("Elementos do certificado não encontrados.");
+            setIsDownloading(false);
+            return;
+        }
+        
+        // A4 dimensions in mm: 297x210
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        const processPage = async (element: HTMLElement) => {
+            const canvas = await html2canvas(element, {
+                scale: 2, // Aumenta a resolução da captura
+                useCORS: true, // Permite carregar imagens de outros domínios
+                logging: false,
+            });
+            return canvas.toDataURL('image/png', 1.0); // Retorna a imagem em alta qualidade
+        };
+
+        try {
+            const frontImage = await processPage(frontPage);
+            pdf.addImage(frontImage, 'PNG', 0, 0, 297, 210);
+
+            const backImage = await processPage(backPage);
+            pdf.addPage();
+            pdf.addImage(backImage, 'PNG', 0, 0, 297, 210);
+
+            pdf.save(`Certificado-${courseName}.pdf`);
+        } catch (error) {
+            console.error("Erro ao gerar o PDF:", error);
+        } finally {
+            setIsDownloading(false);
+        }
     };
     
     const verificationCode = `DELV-${completionDate.getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
@@ -56,13 +99,25 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
     return (
         <>
-            <div className="w-full max-w-5xl flex justify-end gap-2 mb-4 print:hidden">
-                 <Button onClick={handlePrint} variant="outline"><Printer className="mr-2 h-4 w-4" /> Imprimir ou Salvar como PDF</Button>
+            <div className="w-full max-w-5xl mx-auto flex justify-end gap-2 mb-4">
+                 <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading}>
+                    {isDownloading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Baixando PDF...
+                        </>
+                    ) : (
+                        <>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimir ou Salvar como PDF
+                        </>
+                    )}
+                 </Button>
             </div>
             
-            <div id="certificate-wrapper">
+            <div id="certificate-wrapper" className="w-full max-w-5xl mx-auto">
                 {/* Certificate Front */}
-                <div className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
+                <div id="certificate-front" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
                      {watermarkLogoUrl && (
                         <Image
                             src={watermarkLogoUrl}
@@ -114,7 +169,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                 </div>
 
                 {/* Back of Certificate */}
-                <div className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
+                <div id="certificate-back" className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
                     {watermarkLogoUrl && (
                         <Image
                             src={watermarkLogoUrl}
@@ -162,6 +217,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     </div>
                 </div>
             </div>
+            
             <style jsx global>{`
                 @media print {
                     body * {
