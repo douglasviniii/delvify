@@ -1,4 +1,3 @@
-
 'use server';
 
 import { adminDb } from '@/lib/firebase-admin';
@@ -23,11 +22,13 @@ export async function togglePostLike(tenantId: string, postId: string, userId: s
             });
         }
         
+        // Revalidate both paths to ensure like counts are updated everywhere
         revalidatePath('/student/blog');
         revalidatePath(`/student/blog/${postId}`);
 
     } catch (error) {
         console.error("Error toggling post like:", error);
+        // In a real app, you might want to return a more structured error
         throw new Error("Could not update like status.");
     }
 }
