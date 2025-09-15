@@ -46,9 +46,9 @@ export async function getAllBlogPosts(tenantId: string, userId?: string): Promis
       postData.likeCount = likesSnapshot.size;
 
       if (userId) {
-          const likeQuery = query(collection(db, `tenants/${tenantId}/blog/${doc.id}/likes`), where('userId', '==', userId));
-          const likeSnapshot = await getDocs(likeQuery);
-          postData.isLikedByUser = !likeSnapshot.empty;
+          const likeDocRef = doc(db, `tenants/${tenantId}/blog/${doc.id}/likes`, userId);
+          const likeDoc = await getDoc(likeDocRef);
+          postData.isLikedByUser = likeDoc.exists();
       } else {
           postData.isLikedByUser = false;
       }
