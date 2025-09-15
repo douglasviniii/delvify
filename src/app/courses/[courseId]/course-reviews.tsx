@@ -11,7 +11,7 @@ import { useFormStatus } from 'react-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { submitReview } from './actions';
+import { submitReview } from '../[courseId]/actions';
 
 interface CourseReviewsProps {
     initialReviews: Review[];

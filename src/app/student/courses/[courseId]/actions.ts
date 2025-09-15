@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
@@ -21,16 +21,10 @@ const reviewSchema = z.object({
   userAvatar: z.string().url().nullable(),
 });
 
-type ReviewState = {
-    message?: string;
-    success: boolean;
-    issues?: string[];
-}
-
 export async function submitReview(
-  prevState: ReviewState,
+  prevState: { success: boolean; message: string; issues?: string[] },
   formData: FormData
-): Promise<ReviewState> {
+): Promise<{ success: boolean; message: string; issues?: string[] }> {
     const validatedFields = reviewSchema.safeParse({
         courseId: formData.get('courseId'),
         tenantId: formData.get('tenantId'),
@@ -62,6 +56,8 @@ export async function submitReview(
             comment,
             createdAt: FieldValue.serverTimestamp()
         }, { merge: true });
+
+        revalidatePath(`/student/courses/${courseId}`);
 
         return { success: true, message: "Avaliação enviada com sucesso!" };
 

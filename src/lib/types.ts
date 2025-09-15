@@ -58,8 +58,8 @@ export type Review = {
 
 export type Post = {
   id: string;
-  title: string;
   slug: string;
+  title: string;
   excerpt: string;
   content: string;
   imageUrl: string;

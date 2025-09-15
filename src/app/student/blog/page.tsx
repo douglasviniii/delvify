@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
+import { togglePostLike } from './actions';
 
 
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
@@ -31,7 +32,7 @@ const formatDate = (date: Date | string | undefined) => {
 
 const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
     const { toast } = useToast();
-    const [isLiking, setIsLiking] = useState(false);
+    const [isLiking, startLikeTransition] = useTransition();
 
     const [optimisticLikes, setOptimisticLikes] = useState({
         likeCount: post.likeCount ?? 0,
@@ -51,41 +52,23 @@ const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
             return;
         }
 
-        if (isLiking) return;
+        startLikeTransition(async () => {
+             const originalState = optimisticLikes;
+            
+            setOptimisticLikes(prev => ({
+                likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
+                isLiked: !prev.isLiked
+            }));
 
-        setIsLiking(true);
-
-        const originalState = optimisticLikes;
-        
-        // Optimistic update
-        setOptimisticLikes(prev => ({
-            likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
-            isLiked: !prev.isLiked
-        }));
-
-        try {
-            const response = await fetch(`/api/blog/posts/${post.id}/like`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ userId, tenantId: TENANT_ID_WITH_POSTS }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Falha ao curtir o post.");
+            try {
+                await togglePostLike(TENANT_ID_WITH_POSTS, post.id, userId);
+            } catch (error) {
+                console.error("Like action failed:", error);
+                setOptimisticLikes(originalState);
+                const errorMessage = error instanceof Error ? error.message : "Não foi possível registrar sua curtida.";
+                toast({ title: "Erro", description: errorMessage, variant: "destructive" });
             }
-            // The optimistic state is now confirmed by the server
-        } catch (error) {
-            console.error("Like action failed:", error);
-            // Revert on failure
-            setOptimisticLikes(originalState);
-            const errorMessage = error instanceof Error ? error.message : "Não foi possível registrar sua curtida.";
-            toast({ title: "Erro", description: errorMessage, variant: "destructive" });
-        } finally {
-            setIsLiking(false);
-        }
+        });
     }
 
     const handleShare = () => {
@@ -202,4 +185,3 @@ export default function StudentBlogPage() {
     </div>
   );
 }
-

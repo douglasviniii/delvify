@@ -2,8 +2,9 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { revalidatePath } from 'next/cache';
 
 const reviewSchema = z.object({
   courseId: z.string(),
@@ -57,8 +58,8 @@ export async function submitReview(
             createdAt: FieldValue.serverTimestamp()
         }, { merge: true });
 
-        // TODO: Revalidate path when Next.js caching is fully configured for this page
-        // revalidatePath(`/courses/${courseId}`);
+        revalidatePath(`/courses/${courseId}`);
+        revalidatePath(`/student/courses/${courseId}`);
 
         return { success: true, message: "Avaliação enviada com sucesso!" };
 

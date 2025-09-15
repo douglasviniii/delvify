@@ -76,7 +76,6 @@ export default async function StudentBlogPostPage({ params }: { params: { slug: 
         postId={params.slug}
         tenantId={TENANT_ID_WITH_POSTS}
         initialComments={comments}
-        submitCommentAction={submitCommentAction}
       />
 
     </div>

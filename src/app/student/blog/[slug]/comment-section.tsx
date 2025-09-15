@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send } from 'lucide-react';
 import Link from 'next/link';
+import { submitCommentAction } from './actions';
 
 
 function SubmitButton() {
@@ -29,10 +30,9 @@ interface CommentSectionProps {
     postId: string;
     tenantId: string;
     initialComments: Comment[];
-    submitCommentAction: (prevState: any, formData: FormData) => Promise<{ success: boolean; message: string; issues?: string[] }>;
 }
 
-export function CommentSection({ postId, tenantId, initialComments, submitCommentAction }: CommentSectionProps) {
+export function CommentSection({ postId, tenantId, initialComments }: CommentSectionProps) {
     const [user, loading] = useAuthState(auth);
     const { toast } = useToast();
     const formRef = useRef<HTMLFormElement>(null);
@@ -119,4 +119,3 @@ export function CommentSection({ postId, tenantId, initialComments, submitCommen
     )
 
 }
-

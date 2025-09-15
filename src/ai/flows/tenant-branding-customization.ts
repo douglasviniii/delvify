@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -7,7 +8,8 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { CustomizeTenantBrandingInputSchema, CustomizeTenantBrandingOutputSchema, type CustomizeTenantBrandingInput, type CustomizeTenantBrandingOutput } from '@/lib/types';
+import { CustomizeTenantBrandingInputSchema, CustomizeTenantBrandingOutputSchema } from '@/lib/types';
+import type { CustomizeTenantBrandingInput, CustomizeTenantBrandingOutput } from '@/lib/types';
 
 
 export async function customizeTenantBranding(input: CustomizeTenantBrandingInput): Promise<CustomizeTenantBrandingOutput> {
