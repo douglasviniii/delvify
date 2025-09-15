@@ -18,12 +18,16 @@ import { togglePostLike } from './actions';
 
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-const formatDate = (date: Date | string) => {
+const formatDate = (date: Date | string | undefined) => {
+    if (!date) return 'Data inválida';
+    // Assegura que estamos tratando a data como UTC para evitar problemas de fuso horário na hidratação
     const d = new Date(date);
-    if (isNaN(d.getTime())) {
-      return 'Data inválida';
-    }
-    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC' 
+    });
 }
 
 
