@@ -72,6 +72,6 @@ export async function getTenantProfile(tenantId: string): Promise<TenantProfile 
     }
   } catch (error) {
     console.error('Error getting tenant profile:', error);
-    throw new Error('Failed to fetch tenant profile.');
+    return null;
   }
 }
