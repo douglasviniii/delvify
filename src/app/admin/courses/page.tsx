@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, Upload, Loader2, Video, FileText, MoreHorizontal, CheckCircle2, Eye, Star, Clock } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Video, FileText, MoreHorizontal, CheckCircle2, Eye, Star, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { updateCourseStatus, createCategory, deleteCategory } from './actions';
 import type { Category } from '@/lib/types';
 import { useFormStatus } from 'react-dom';
+import MascotLoader from '@/components/ui/loader';
 
 
 const courseSchema = z.object({
@@ -121,7 +122,7 @@ const CourseCard = ({ course, onStatusChange, isChangingStatus, onEdit, onDelete
                 }}
                 disabled={isChangingStatus}
                 >
-                    {isChangingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : (course.status === 'published' ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4"/>)}
+                    {isChangingStatus ? <MascotLoader className="mr-2 h-4 w-4"/> : (course.status === 'published' ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4"/>)}
                     {course.status === 'published' ? 'Publicado' : 'Publicar'}
                 </Button>
                 <DropdownMenu>
@@ -192,7 +193,7 @@ function CategoryForm({ tenantId }: { tenantId: string }) {
         <form ref={formRef} action={action} className="flex items-center gap-2">
             <Input name="name" placeholder="Nova Categoria (Ex: Desenvolvimento)" required/>
             <Button type="submit" disabled={pending}>
-                {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                {pending ? <MascotLoader className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
                 Criar
             </Button>
         </form>
@@ -442,7 +443,7 @@ export default function AdminCoursesPage() {
   const coverImageUrl = form.watch('coverImageUrl');
 
   if (loading) {
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return <div className="flex h-full items-center justify-center"><MascotLoader /></div>;
   }
 
   return (
@@ -551,7 +552,7 @@ export default function AdminCoursesPage() {
                         <div className="flex items-center gap-4">
                             <Input {...field} placeholder="Cole uma URL ou carregue um arquivo" />
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                            {isUploading ? <MascotLoader className="mr-2 h-4 w-4" /> : <Upload className="mr-2 h-4 w-4" />}
                             Carregar
                             </Button>
                         </div>
@@ -565,7 +566,7 @@ export default function AdminCoursesPage() {
                     <DialogFooter className='pt-4'>
                         <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={form.formState.isSubmitting}>
-                            {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {form.formState.isSubmitting ? <MascotLoader className="mr-2 h-4 w-4" /> : null}
                             {editingCourse ? 'Salvar Alterações' : 'Criar e Gerenciar Episódios'}
                         </Button>
                     </DialogFooter>

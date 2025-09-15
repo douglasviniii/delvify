@@ -29,6 +29,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import MascotLoader from '@/components/ui/loader';
 
 
 const menuItems = [
@@ -102,7 +103,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const isWatchPage = pathname.includes('/watch');
 
   if (loading) {
-      return <div>Carregando...</div>;
+      return (
+        <div className="flex h-screen w-screen items-center justify-center">
+            <MascotLoader />
+        </div>
+      );
   }
   
   if (!user) {

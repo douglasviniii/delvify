@@ -18,9 +18,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload, Award } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Trash2, GripVertical, FileQuestion, Upload, Award } from 'lucide-react';
 import { saveCourseModules } from './actions';
 import type { Course, Module } from '@/lib/types';
+import MascotLoader from '@/components/ui/loader';
 
 
 const moduleSchema = z.object({
@@ -146,7 +147,7 @@ export default function CourseModulesPage() {
   };
   
   if (isLoading) {
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    return <div className="flex h-full items-center justify-center"><MascotLoader /></div>
   }
 
   return (
@@ -241,7 +242,7 @@ export default function CourseModulesPage() {
                                             }
                                         }}
                                       >
-                                        {isUploading === index ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                        {isUploading === index ? <MascotLoader className="mr-2 h-4 w-4" /> : <Upload className="mr-2 h-4 w-4" />}
                                         Carregar
                                       </Button>
                                   </div>
@@ -276,7 +277,7 @@ export default function CourseModulesPage() {
           </Card>
           <div className="flex justify-end">
              <Button type="submit" disabled={isSaving}>
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                {isSaving ? <MascotLoader className="mr-2 h-4 w-4" /> : null}
                 Salvar Alterações
             </Button>
           </div>
