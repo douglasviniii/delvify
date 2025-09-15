@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
@@ -12,7 +12,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send } from 'lucide-react';
 import Link from 'next/link';
-import { submitComment } from './actions';
 
 
 function SubmitButton() {
@@ -30,14 +29,15 @@ interface CommentSectionProps {
     postId: string;
     tenantId: string;
     initialComments: Comment[];
+    submitCommentAction: (prevState: any, formData: FormData) => Promise<{ success: boolean; message: string; issues?: string[] }>;
 }
 
-export function CommentSection({ postId, tenantId, initialComments }: CommentSectionProps) {
+export function CommentSection({ postId, tenantId, initialComments, submitCommentAction }: CommentSectionProps) {
     const [user, loading] = useAuthState(auth);
     const { toast } = useToast();
     const formRef = useRef<HTMLFormElement>(null);
 
-    const [state, formAction] = useActionState(submitComment, { success: false, message: '' });
+    const [state, formAction] = useActionState(submitCommentAction, { success: false, message: '' });
 
      useEffect(() => {
         if (state.message && !state.success) {
@@ -49,6 +49,11 @@ export function CommentSection({ postId, tenantId, initialComments }: CommentSec
         }
         if (state.success) {
             formRef.current?.reset();
+            // The page is revalidated by the server action, so no need for optimistic update here.
+            toast({
+                title: 'Sucesso!',
+                description: state.message,
+            });
         }
     }, [state, toast]);
 
@@ -114,3 +119,4 @@ export function CommentSection({ postId, tenantId, initialComments }: CommentSec
     )
 
 }
+

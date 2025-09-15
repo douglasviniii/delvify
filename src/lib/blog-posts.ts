@@ -2,8 +2,11 @@
 
 'use server';
 
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { adminDb } from './firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { revalidatePath } from 'next/cache';
 import type { Post, Comment } from './types';
 
 const serializeDoc = (doc: any): any => {
@@ -36,17 +39,17 @@ export async function getAllBlogPosts(tenantId: string, userId?: string): Promis
     const postsQuery = query(collection(db, `tenants/${tenantId}/blog`), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(postsQuery);
     
-    for (const doc of querySnapshot.docs) {
-      const postData = serializeDoc(doc) as Post;
+    for (const docRef of querySnapshot.docs) {
+      const postData = serializeDoc(docRef) as Post;
       
-      const commentsSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${doc.id}/comments`));
-      const likesSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${doc.id}/likes`));
+      const commentsSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${docRef.id}/comments`));
+      const likesSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${docRef.id}/likes`));
       
       postData.commentCount = commentsSnapshot.size;
       postData.likeCount = likesSnapshot.size;
 
       if (userId) {
-          const likeDocRef = doc(db, `tenants/${tenantId}/blog/${doc.id}/likes`, userId);
+          const likeDocRef = doc(db, `tenants/${tenantId}/blog/${docRef.id}/likes`, userId);
           const likeDoc = await getDoc(likeDocRef);
           postData.isLikedByUser = likeDoc.exists();
       } else {

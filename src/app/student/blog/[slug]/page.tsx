@@ -1,4 +1,5 @@
 
+
 import { getPostBySlug, getPostComments } from '@/lib/blog-posts';
 import type { Post, Comment } from '@/lib/types';
 import { notFound, redirect } from 'next/navigation';
@@ -8,11 +9,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CommentSection } from './comment-section';
-import { auth } from '@/lib/firebase';
+import { submitCommentAction } from './actions';
 
 
 // Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+
 
 export default async function StudentBlogPostPage({ params }: { params: { slug: string } }) {
   const post = await getPostBySlug(TENANT_ID_WITH_POSTS, params.slug);
@@ -71,9 +73,10 @@ export default async function StudentBlogPostPage({ params }: { params: { slug: 
       <Separator />
 
       <CommentSection 
-        postId={post.id}
+        postId={params.slug}
         tenantId={TENANT_ID_WITH_POSTS}
         initialComments={comments}
+        submitCommentAction={submitCommentAction}
       />
 
     </div>

@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { togglePostLike } from './actions';
 
 
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
@@ -32,35 +31,61 @@ const formatDate = (date: Date | string | undefined) => {
 
 const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
     const { toast } = useToast();
-    const [isPending, startTransition] = useTransition();
+    const [isLiking, setIsLiking] = useState(false);
 
     const [optimisticLikes, setOptimisticLikes] = useState({
         likeCount: post.likeCount ?? 0,
         isLiked: post.isLikedByUser ?? false
     });
 
-    const handleLike = () => {
+    useEffect(() => {
+        setOptimisticLikes({
+            likeCount: post.likeCount ?? 0,
+            isLiked: post.isLikedByUser ?? false
+        })
+    }, [post.likeCount, post.isLikedByUser]);
+
+    const handleLikeClick = async () => {
         if (!userId) {
             toast({ title: "Acesso Negado", description: "Você precisa estar logado para curtir.", variant: "destructive" });
             return;
         }
 
-        startTransition(async () => {
-            setOptimisticLikes(prev => ({
-                likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
-                isLiked: !prev.isLiked
-            }));
+        if (isLiking) return;
 
-            try {
-                await togglePostLike(TENANT_ID_WITH_POSTS, post.id, userId);
-            } catch (error) {
-                setOptimisticLikes({
-                    likeCount: post.likeCount ?? 0,
-                    isLiked: post.isLikedByUser ?? false
-                });
-                toast({ title: "Erro", description: "Não foi possível registrar sua curtida.", variant: "destructive"});
+        setIsLiking(true);
+
+        const originalState = optimisticLikes;
+        
+        // Optimistic update
+        setOptimisticLikes(prev => ({
+            likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
+            isLiked: !prev.isLiked
+        }));
+
+        try {
+            const response = await fetch(`/api/blog/posts/${post.id}/like`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, tenantId: TENANT_ID_WITH_POSTS }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Falha ao curtir o post.");
             }
-        });
+            // The optimistic state is now confirmed by the server
+        } catch (error) {
+            console.error("Like action failed:", error);
+            // Revert on failure
+            setOptimisticLikes(originalState);
+            const errorMessage = error instanceof Error ? error.message : "Não foi possível registrar sua curtida.";
+            toast({ title: "Erro", description: errorMessage, variant: "destructive" });
+        } finally {
+            setIsLiking(false);
+        }
     }
 
     const handleShare = () => {
@@ -107,8 +132,8 @@ const PostCard = ({ post, userId }: { post: Post; userId?: string }) => {
             <CardFooter className="flex flex-col items-start gap-4">
                <div className="w-full flex justify-between items-center text-muted-foreground">
                    <div className="flex items-center gap-4">
-                       <button onClick={handleLike} disabled={isPending} className={`flex items-center gap-1 hover:text-primary transition-colors ${optimisticLikes.isLiked ? 'text-primary' : ''}`}>
-                            <ThumbsUp className="h-4 w-4" /> 
+                       <button onClick={handleLikeClick} disabled={isLiking} className={`flex items-center gap-1 hover:text-primary transition-colors ${optimisticLikes.isLiked ? 'text-primary' : ''}`}>
+                            {isLiking ? <Loader2 className="h-4 w-4 animate-spin"/> : <ThumbsUp className="h-4 w-4" />} 
                             <span className="text-sm">{optimisticLikes.likeCount}</span>
                         </button>
                        <Link href={`/student/blog/${post.slug}`} className="flex items-center gap-1 hover:text-primary transition-colors">
@@ -133,7 +158,7 @@ export default function StudentBlogPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [user, authLoading] = useAuthState(auth);
-
+  
   useEffect(() => {
     if (!authLoading) {
       setIsLoading(true);
@@ -177,3 +202,4 @@ export default function StudentBlogPage() {
     </div>
   );
 }
+

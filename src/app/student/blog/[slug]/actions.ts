@@ -1,4 +1,3 @@
-
 'use server';
 
 import { adminDb } from '@/lib/firebase-admin';
@@ -6,7 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-export async function submitComment(
+export async function submitCommentAction(
   prevState: any,
   formData: FormData
 ): Promise<{ success: boolean; message: string; issues?: string[] }> {
@@ -37,9 +36,15 @@ export async function submitComment(
     }
 
     const { postId, tenantId, userId, userName, userAvatar, commentText } = validatedFields.data;
+    const postQuery = await adminDb.collection(`tenants/${tenantId}/blog`).where('slug', '==', postId).get();
+     if (postQuery.empty) {
+        return { success: false, message: "Post não encontrado para adicionar o comentário." };
+    }
+    const realPostId = postQuery.docs[0].id;
+
 
     try {
-        const commentRef = adminDb.collection(`tenants/${tenantId}/blog/${postId}/comments`).doc();
+        const commentRef = adminDb.collection(`tenants/${tenantId}/blog/${realPostId}/comments`).doc();
         await commentRef.set({
             authorId: userId,
             authorName: userName,
@@ -49,7 +54,7 @@ export async function submitComment(
             likes: 0,
         });
 
-        revalidatePath(`/student/blog/${postId}`);
+        revalidatePath(`/student/blog/${validatedFields.data.postId}`);
 
         return { success: true, message: "Comentário adicionado!" };
 
