@@ -51,7 +51,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
         window.print();
     };
     
-    // Geração do código único de verificação
     const verificationCode = `DELV-${completionDate.getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
     const verificationUrl = `${companyWebsite}/verify?code=${verificationCode}`;
 
@@ -99,7 +98,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </p>
                         </main>
 
-                        <footer className="pt-4 flex justify-center text-center">
+                        <footer className="pt-8 pb-4 text-center">
                              <div>
                                 {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
                                 <hr className="border-gray-700 mt-1" style={{ width: '220px' }}/>
@@ -123,12 +122,13 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             />
                         )}
                         <div className="relative z-10 flex flex-col h-full">
-                            <header className="text-center pb-4">
+                            <header className="text-center pb-4 mb-6">
                                 <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
-                                <p className="text-lg font-semibold">{courseName}</p>
+                                <p className="text-lg mt-2">{studentName}</p>
+                                <p className="text-md font-semibold text-gray-700">{courseName}</p>
                             </header>
 
-                            <main className="flex-1 mt-6">
+                            <main className="flex-1">
                                 <ul className="space-y-2 columns-2">
                                     {courseModules.map((module, index) => (
                                         <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
@@ -153,7 +153,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                         />
                                     </div>
                                 </div>
-                                <p className="text-xs text-center text-gray-600 mt-4">{additionalInfo}</p>
                             </footer>
                         </div>
                      </div>
