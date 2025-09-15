@@ -3,8 +3,9 @@
 'use server';
 
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
-import { getDoc, doc } from 'firebase/firestore';
+import { getDoc, doc as clientDoc } from 'firebase/firestore';
 import { db } from './firebase'; // Client SDK
+import { adminDb } from './firebase-admin'; // Admin SDK
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
 
 // Função de serialização robusta para garantir que todos os Timestamps, incluindo os aninhados, sejam convertidos.
@@ -70,7 +71,7 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
         return null;
     }
     try {
-        const docRef = await getDoc(doc(db, `tenants/${tenantId}/courses`, courseId));
+        const docRef = await getDoc(clientDoc(db, `tenants/${tenantId}/courses`, courseId));
         if (docRef.exists()) {
             const courseData = serializeDoc(docRef) as Omit<Course, 'tenantId'>;
             return { ...courseData, tenantId };
@@ -147,7 +148,7 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
 export async function hasPurchasedCourse(userId: string, courseId: string): Promise<boolean> {
     if (!userId || !courseId) return false;
     try {
-        const userDocRef = doc(db, 'users', userId); // Use client SDK for this check
+        const userDocRef = clientDoc(db, 'users', userId); // Use client SDK for this check
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
             const data = userDocSnap.data();
@@ -165,10 +166,11 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
 export async function getPurchasedCourses(userId: string): Promise<{ courses: Course[], details: Record<string, PurchasedCourseInfo> }> {
     if (!userId) return { courses: [], details: {} };
     try {
-        const userDocRef = await getDoc(doc(db, 'users', userId));
-        if (!userDocRef.exists()) return { courses: [], details: {} };
+        // Use o SDK Admin para operações do lado do servidor para garantir consistência
+        const userDocRef = await adminDb.collection('users').doc(userId).get();
+        if (!userDocRef.exists) return { courses: [], details: {} };
 
-        // A serialização robusta agora garante que todos os Timestamps aninhados sejam convertidos
+        // A serialização robusta garante que todos os Timestamps aninhados sejam convertidos
         const userData = serializeDoc(userDocRef);
         if (!userData || !userData.purchasedCourses) {
             return { courses: [], details: {} };
@@ -192,13 +194,12 @@ export async function getPurchasedCourses(userId: string): Promise<{ courses: Co
     }
 }
 
-// A função getPurchasedCourseDetails é redundante agora que getPurchasedCourses retorna os detalhes.
-// Pode ser removida no futuro para simplificar, mas mantida por enquanto para não quebrar outras partes que possam usá-la.
 export async function getPurchasedCourseDetails(userId: string): Promise<Record<string, PurchasedCourseInfo>> {
     if (!userId) return {};
     try {
-        const userDocRef = await getDoc(doc(db, 'users', userId));
-        if (!userDocRef.exists()) return {};
+        // Use o SDK Admin para operações do lado do servidor
+        const userDocRef = await adminDb.collection('users').doc(userId).get();
+        if (!userDocRef.exists) return {};
 
         const userData = serializeDoc(userDocRef);
 
@@ -213,4 +214,3 @@ export async function getPurchasedCourseDetails(userId: string): Promise<Record<
         return {};
     }
 }
-
