@@ -73,42 +73,44 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             data-ai-hint="logo watermark"
                         />
                     )}
-                    <header className="relative z-10 flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
-                        <div className="flex items-center gap-4">
-                            {mainLogoUrl ? (
-                                <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
-                            ) : <span>{companyName}</span>}
-                            <Award className="h-12 w-12" style={{ color: accentColor }} />
-                        </div>
+                    <div className="relative z-10 flex flex-col h-full">
+                        <header className="flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
+                            <div className="flex items-center gap-4">
+                                {mainLogoUrl ? (
+                                    <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
+                                ) : <span>{companyName}</span>}
+                                <Award className="h-12 w-12" style={{ color: accentColor }} />
+                            </div>
                             <div className="text-right text-xs text-gray-600">
-                            <p className="font-bold">{companyName}</p>
-                            <p>{companyAddress}</p>
-                            <p>CNPJ: {companyCnpj}</p>
-                        </div>
-                    </header>
+                                <p className="font-bold">{companyName}</p>
+                                <p>{companyAddress}</p>
+                                <p>CNPJ: {companyCnpj}</p>
+                            </div>
+                        </header>
 
-                    <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
-                        <h1 className="text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
-                        <p className="mt-8 text-xl">Certificamos que</p>
-                        <p className="mt-2 text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
+                        <main className="flex-1 flex flex-col items-center justify-center text-center">
+                            <h1 className="text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
+                            <p className="mt-8 text-xl">Certificamos que</p>
+                            <p className="mt-2 text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
                             <p className="mt-2 text-lg">portador(a) do CPF nº {studentCpf}</p>
-                        <p className="mt-6 text-xl max-w-3xl">
-                            concluiu com sucesso o curso de <strong style={{ color: accentColor }}>{courseName}</strong>,
-                            em {completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
-                        </p>
-                    </main>
+                            <p className="mt-6 text-xl max-w-3xl">
+                                concluiu com sucesso o curso de <strong style={{ color: accentColor }}>{courseName}</strong>,
+                                em {completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
+                            </p>
+                        </main>
 
-                    <footer className="relative z-10 mt-auto pt-4 flex justify-between items-end">
-                        <div className="text-center">
-                            <div className="w-64 h-12 mb-1 border-b-2 border-gray-700"></div>
-                            <p className="text-sm font-semibold mt-1">{studentName}</p>
-                        </div>
-                        <div className="text-center">
-                            {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
-                            <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
-                            <p className="text-sm font-semibold mt-1">{signatureText}</p>
-                        </div>
-                    </footer>
+                        <footer className="mt-auto pt-4 flex justify-between items-end">
+                            <div className="text-center">
+                                <div className="w-64 h-12 mb-1 border-b-2 border-gray-700"></div>
+                                <p className="text-sm font-semibold mt-1">{studentName}</p>
+                            </div>
+                            <div className="text-center">
+                                {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
+                                <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
+                                <p className="text-sm font-semibold mt-1">{signatureText}</p>
+                            </div>
+                        </footer>
+                    </div>
                 </div>
 
                 {/* Back of Certificate */}
@@ -124,38 +126,40 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         />
                     )}
                     
-                    <header className="relative z-10 text-center pb-4 mb-6">
-                        <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
-                        <div className="text-center mt-4">
-                            <p className="text-lg font-semibold">{studentName}</p>
-                            <p className="text-md text-gray-700">{courseName}</p>
-                        </div>
-                    </header>
+                    <div className="relative z-10 flex flex-col h-full">
+                        <header className="text-center pb-4 mb-6">
+                            <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
+                            <div className="text-center mt-4">
+                                <p className="text-lg font-semibold">{studentName}</p>
+                                <p className="text-md text-gray-700">{courseName}</p>
+                            </div>
+                        </header>
 
-                    <main className="relative z-10 flex-1">
-                        <ul className="space-y-2 columns-2">
-                            {courseModules.map((module, index) => (
-                                <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
-                            ))}
-                        </ul>
-                    </main>
-                    
-                    <footer className="relative z-10 pt-4 border-t mt-auto flex justify-between items-end">
-                        <div className='text-left text-xs text-gray-600 space-y-1'>
-                            <p className="font-bold">Verificação de Autenticidade</p>
-                            <p>Aponte a câmera para o QR Code ou acesse o site de verificação.</p>
-                            <p>Código: <strong className='font-mono'>{verificationCode}</strong></p>
-                            {additionalInfo && <p className="mt-2">{additionalInfo}</p>}
-                        </div>
-                        <div className='flex flex-col items-center'>
-                            <Image 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
-                                width={100}
-                                height={100}
-                                alt="QR Code de Verificação"
-                            />
-                        </div>
-                    </footer>
+                        <main className="flex-1">
+                            <ul className="space-y-2 columns-2">
+                                {courseModules.map((module, index) => (
+                                    <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
+                                ))}
+                            </ul>
+                        </main>
+                        
+                        <footer className="mt-auto pt-4 border-t flex justify-between items-end">
+                            <div className='text-left text-xs text-gray-600 space-y-1'>
+                                <p className="font-bold">Verificação de Autenticidade</p>
+                                <p>Aponte a câmera para o QR Code ou acesse o site de verificação.</p>
+                                <p>Código: <strong className='font-mono'>{verificationCode}</strong></p>
+                                {additionalInfo && <p className="mt-2">{additionalInfo}</p>}
+                            </div>
+                            <div className='flex flex-col items-center'>
+                                <Image 
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
+                                    width={100}
+                                    height={100}
+                                    alt="QR Code de Verificação"
+                                />
+                            </div>
+                        </footer>
+                    </div>
                 </div>
             </div>
             <style jsx global>{`
