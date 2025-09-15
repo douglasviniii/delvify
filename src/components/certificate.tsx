@@ -4,7 +4,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Printer, Award } from 'lucide-react';
+import { Printer, Award, QrCode } from 'lucide-react';
 import type { CertificateSettings, Module } from '@/lib/types';
 
 interface CertificateProps {
@@ -50,10 +50,13 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
         window.print();
     };
 
+    const verificationCode = `DELV-${completionDate.getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
+    const verificationUrl = `${effectiveSettings.companyWebsite}/verify?code=${verificationCode}`;
+
     return (
         <>
             <div className="w-full max-w-5xl flex justify-end gap-2 mb-4 print:hidden">
-                 <Button onClick={handlePrint} variant="outline"><Printer className="mr-2 h-4 w-4" /> Imprimir / Salvar PDF</Button>
+                 <Button onClick={handlePrint} variant="outline"><Printer className="mr-2 h-4 w-4" /> Imprimir ou Salvar como PDF</Button>
             </div>
             
             <div className="w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-0 flex flex-col page-break-container">
@@ -95,7 +98,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </p>
                         </main>
 
-                        <footer className="flex justify-center items-end gap-16">
+                        <footer className="flex justify-center items-end gap-16 pb-4">
                             <div className="text-center">
                                {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={90} objectFit="contain" data-ai-hint="signature" />}
                                 <hr className="border-gray-700 mt-1" />
@@ -131,9 +134,24 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </ul>
                         </main>
                         
-                        <footer className="text-center text-xs text-gray-600 space-y-2 pt-4 border-t">
-                            <p>{additionalInfo}</p>
-                            <p>Para verificar a autenticidade deste certificado, acesse nosso site.</p>
+                        <footer className="text-center space-y-4 pt-4 border-t">
+                            <div className='flex justify-between items-end'>
+                                <div className='text-left text-xs text-gray-600'>
+                                     <p className="font-bold">Verificação de Autenticidade</p>
+                                     <p>Aponte a câmera para o QR Code ou acesse:</p>
+                                     <p className='font-mono'>{effectiveSettings.companyWebsite}/verify</p>
+                                     <p className='mt-2'>Código: <strong className='font-mono'>{verificationCode}</strong></p>
+                                </div>
+                                <div className='flex flex-col items-center'>
+                                     <Image 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
+                                        width={100}
+                                        height={100}
+                                        alt="QR Code de Verificação"
+                                     />
+                                </div>
+                            </div>
+                             <p className="text-xs text-gray-600">{additionalInfo}</p>
                         </footer>
                      </div>
                 </div>
