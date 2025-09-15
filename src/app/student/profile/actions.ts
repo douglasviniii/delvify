@@ -1,5 +1,4 @@
 
-'use server';
 
 import { z } from 'zod';
 import { adminDb, adminStorage, adminAuth } from '@/lib/firebase-admin';

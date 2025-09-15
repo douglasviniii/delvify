@@ -1,5 +1,4 @@
 
-'use server';
 
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, serverTimestamp, addDoc, collection, deleteDoc } from 'firebase/firestore';
@@ -53,5 +52,3 @@ export async function deleteCategory(tenantId: string, categoryId: string) {
         return { success: false, message: `Erro ao remover categoria: ${errorMessage}` };
     }
 }
-
-    
