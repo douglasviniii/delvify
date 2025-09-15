@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, FormEvent, useEffect } from 'react';
@@ -35,7 +36,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     getGlobalSettingsForTenant(MAIN_TENANT_ID).then(settings => {
-      setLogoUrl(settings.logoUrl);
+      if(settings) {
+        setLogoUrl(settings.logoUrl);
+      }
     });
   }, []);
 
