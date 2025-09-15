@@ -1,16 +1,18 @@
 
+'use client';
 
-import { notFound, redirect } from 'next/navigation';
-import { Suspense } from 'react';
-import { getCurrentUser } from '@/lib/session'; 
+import { notFound, redirect, useParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, db } from '@/lib/firebase';
 import { getCourseById, getCourseModules } from '@/lib/courses';
 import { getCertificateSettings } from '@/lib/certificates';
 import type { CertificateSettings, UserProfile, Course, Module, PurchasedCourseInfo } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Certificate from '@/components/certificate';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
@@ -54,76 +56,112 @@ const serializeData = (data: any): any => {
     return serializedObject;
 };
 
+type CertificateData = {
+    studentProfile: UserProfile;
+    course: Course;
+    modules: Module[];
+    settings: CertificateSettings | null;
+    purchaseInfo: PurchasedCourseInfo;
+};
 
-// A página agora é um Server Component que faz todo o trabalho pesado.
-export default async function CertificatePage({ params }: { params: { courseId: string } }) {
-    const courseId = params.courseId;
-    if (!courseId) {
-        notFound();
+
+export default function CertificatePage() {
+    const params = useParams();
+    const courseId = params.courseId as string;
+    const [user, authLoading] = useAuthState(auth);
+    const { toast } = useToast();
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
+    
+    useEffect(() => {
+        if (authLoading) return;
+
+        if (!user) {
+            const callbackUrl = encodeURIComponent(`/student/certificates/${courseId}`);
+            redirect(`/login?callbackUrl=${callbackUrl}`);
+            return;
+        }
+
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (!userDoc.exists()) {
+                    throw new Error("Perfil do aluno não encontrado.");
+                }
+
+                const studentProfile = serializeData(userDoc.data()) as UserProfile;
+
+                if (!studentProfile.purchasedCourses || !studentProfile.purchasedCourses[courseId]) {
+                    throw new Error("Este curso não foi adquirido por você ou a compra ainda não foi processada.");
+                }
+                if (!studentProfile.cpf || !studentProfile.name) {
+                    throw new Error("Dados do perfil incompletos. Por favor, preencha seu nome completo e CPF em 'Meu Perfil' para emitir o certificado.");
+                }
+
+                const [course, modules, settings] = await Promise.all([
+                    getCourseById(TENANT_ID_WITH_COURSES, courseId),
+                    getCourseModules(TENANT_ID_WITH_COURSES, courseId),
+                    getCertificateSettings(TENANT_ID_WITH_COURSES)
+                ]);
+
+                if (!course) {
+                    throw new Error("Curso não encontrado.");
+                }
+
+                setCertificateData({
+                    studentProfile,
+                    course,
+                    modules,
+                    settings,
+                    purchaseInfo: studentProfile.purchasedCourses[courseId],
+                });
+
+            } catch (e: any) {
+                console.error(`Error in CertificatePage: ${e.message}`);
+                setError(e.message || "Um erro desconhecido ocorreu ao buscar os dados.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+
+    }, [user, authLoading, courseId, toast]);
+
+    if (isLoading || authLoading) {
+        return <LoadingCertificate />;
     }
 
-    const user = await getCurrentUser();
-    if (!user) {
-        const callbackUrl = encodeURIComponent(`/student/certificates/${courseId}`);
-        return redirect(`/login?callbackUrl=${callbackUrl}`);
+    if (error) {
+        return <ErrorDisplay message={error} />;
     }
 
-    try {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (!userDoc.exists()) {
-            return <ErrorDisplay message="Perfil do aluno não encontrado." />;
-        }
-        
-        // Serializa todo o documento do usuário imediatamente após a busca
-        const studentProfile = serializeData(userDoc.data()) as UserProfile;
-        
-        // As validações agora usam o objeto serializado
-        if (!studentProfile.purchasedCourses || !studentProfile.purchasedCourses[courseId]) {
-            return <ErrorDisplay message="Este curso não foi adquirido por você ou a compra ainda não foi processada." />;
-        }
-        if (!studentProfile.cpf || !studentProfile.name) {
-             return <ErrorDisplay message="Dados do perfil incompletos. Por favor, preencha seu nome completo e CPF em 'Meu Perfil' para emitir o certificado." />;
-        }
-
-        // TODO: Add logic to check if the student has actually completed the course.
-
-        const [course, modules, settings] = await Promise.all([
-            getCourseById(TENANT_ID_WITH_COURSES, courseId),
-            getCourseModules(TENANT_ID_WITH_COURSES, courseId),
-            getCertificateSettings(TENANT_ID_WITH_COURSES)
-        ]);
-
-        if (!course) {
-            return <ErrorDisplay message="Curso não encontrado." />;
-        }
-
-        const purchaseInfo = studentProfile.purchasedCourses[courseId];
-        const purchaseDate = new Date(purchaseInfo.purchasedAt);
-        const completionDate = new Date(purchaseDate.getTime() + (course.durationHours * 60 * 60 * 1000));
-
-        return (
-             <Suspense fallback={<LoadingCertificate />}>
-                <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
-                    <Certificate
-                        studentName={studentProfile.name}
-                        studentCpf={studentProfile.cpf}
-                        courseName={course.title}
-                        completionDate={completionDate}
-                        courseModules={modules}
-                        settings={settings}
-                    />
-                </div>
-            </Suspense>
-        );
-
-    } catch (error) {
-        const message = error instanceof Error ? error.message : "Um erro desconhecido ocorreu ao buscar os dados.";
-        console.error(`Error in CertificatePage: ${message}`);
-        return <ErrorDisplay message={message} />;
+    if (!certificateData) {
+        return <ErrorDisplay message="Não foi possível carregar os dados para o certificado." />;
     }
+    
+    const { studentProfile, course, modules, settings, purchaseInfo } = certificateData;
+    const purchaseDate = new Date(purchaseInfo.purchasedAt);
+    const completionDate = new Date(purchaseDate.getTime() + (course.durationHours * 60 * 60 * 1000));
+
+
+    return (
+        <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
+            <Certificate
+                studentName={studentProfile.name}
+                studentCpf={studentProfile.cpf}
+                courseName={course.title}
+                completionDate={completionDate}
+                courseModules={modules}
+                settings={settings}
+            />
+        </div>
+    );
 }
 
-// Adicionando um fallback de suspense para a página
 export const dynamic = 'force-dynamic';
