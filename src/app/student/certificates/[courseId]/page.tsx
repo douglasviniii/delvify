@@ -1,99 +1,96 @@
+'use client';
 
-import { notFound, redirect } from 'next/navigation';
-import { getCourseById, getCourseModules } from '@/lib/courses';
-import { getCertificateSettings } from '@/lib/certificates';
-import type { UserProfile } from '@/lib/types';
-import { doc, getDoc } from 'firebase/firestore';
+import { useParams, useRouter } from 'next/navigation';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, ShieldAlert } from 'lucide-react';
 import CertificateClient from './certificate-client';
-import { db } from '@/lib/firebase';
-import { getCurrentUser } from '@/lib/session';
+import { getCertificateData } from './actions';
+import { Button } from '@/components/ui/button';
 
-const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
-// Função de serialização robusta para garantir que todos os Timestamps sejam convertidos.
-const serializeData = (data: any): any => {
-    if (data === null || typeof data !== 'object') {
-        return data;
-    }
-    if (data.toDate && typeof data.toDate === 'function') {
-        return data.toDate().toISOString();
-    }
-    if (Array.isArray(data)) {
-        return data.map(serializeData);
-    }
-    const serializedObject: { [key: string]: any } = {};
-    for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-            serializedObject[key] = serializeData(data[key]);
-        }
-    }
-    return serializedObject;
-};
-
-
-async function getCertificateData(userId: string, courseId: string) {
-    const userDocRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-        throw new Error("Perfil do aluno não encontrado.");
-    }
-
-    const studentProfile = serializeData(userDoc.data()) as UserProfile;
-    
-    if (!studentProfile.purchasedCourses || !studentProfile.purchasedCourses[courseId]) {
-        throw new Error("Este curso não foi adquirido por você ou a compra ainda não foi processada.");
-    }
-    if (!studentProfile.cpf || !studentProfile.name) {
-        throw new Error("Dados do perfil incompletos. Por favor, preencha seu nome completo e CPF em 'Meu Perfil' para emitir o certificado.");
-    }
-
-    const [course, modules, settings] = await Promise.all([
-        getCourseById(TENANT_ID_WITH_COURSES, courseId),
-        getCourseModules(TENANT_ID_WITH_COURSES, courseId),
-        getCertificateSettings(TENANT_ID_WITH_COURSES)
-    ]);
-
-    if (!course) {
-        throw new Error("Curso não encontrado.");
-    }
-
-    return {
-        studentProfile,
-        course,
-        modules,
-        settings,
-        purchaseInfo: studentProfile.purchasedCourses[courseId],
-    };
+function LoadingState() {
+    return (
+        <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 p-4">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Carregando dados do certificado...</p>
+        </div>
+    );
 }
 
+function ErrorState({ message }: { message: string }) {
+     return (
+        <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 p-4 text-center">
+           <ShieldAlert className="h-16 w-16 text-destructive" />
+           <h1 className="mt-4 text-2xl font-bold text-destructive">Não foi possível gerar o certificado</h1>
+           <p className="mt-2 text-muted-foreground max-w-md">{message}</p>
+           <Button onClick={() => window.history.back()} className="mt-6">Voltar</Button>
+       </div>
+    )
+}
 
-export default async function CertificatePage({ params }: { params: { courseId: string } }) {
-    const courseId = params.courseId;
-    const user = await getCurrentUser();
+export default function CertificatePage() {
+    const params = useParams();
+    const courseId = params.courseId as string;
+    const router = useRouter();
+    const [user, authLoading] = useAuthState(auth);
+    const { toast } = useToast();
 
-    if (!user) {
-        const callbackUrl = encodeURIComponent(`/student/certificates/${courseId}`);
-        redirect(`/login?callbackUrl=${callbackUrl}`);
-    }
+    const [data, setData] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     
-    try {
-        const certificateData = await getCertificateData(user.uid, courseId);
+    useEffect(() => {
+        if (authLoading) return;
         
-        return (
-            <CertificateClient 
-                studentName={certificateData.studentProfile.name}
-                studentCpf={certificateData.studentProfile.cpf}
-                courseName={certificateData.course.title}
-                courseDurationHours={certificateData.course.durationHours}
-                purchaseDate={certificateData.purchaseInfo.purchasedAt}
-                courseModules={certificateData.modules}
-                settings={certificateData.settings}
-            />
-        );
-    } catch (e: any) {
-        return <CertificateClient error={e.message} />;
-    }
-}
+        if (!user) {
+            const callbackUrl = encodeURIComponent(`/student/certificates/${courseId}`);
+            router.push(`/login?callbackUrl=${callbackUrl}`);
+            return;
+        }
 
-export const dynamic = 'force-dynamic';
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const result = await getCertificateData(user.uid, courseId);
+                if (!result.success) {
+                    setError(result.message);
+                } else {
+                    setData(result.data);
+                }
+            } catch (e: any) {
+                setError(e.message || "Ocorreu um erro inesperado ao buscar os dados.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+
+    }, [user, authLoading, courseId, router, toast]);
+
+    if (isLoading || authLoading) {
+        return <LoadingState />;
+    }
+
+    if (error) {
+        return <ErrorState message={error} />;
+    }
+    
+    if (!data) {
+        return <ErrorState message="Não foram encontrados dados para gerar o certificado." />;
+    }
+
+    return (
+        <CertificateClient 
+            studentName={data.studentProfile.name}
+            studentCpf={data.studentProfile.cpf}
+            courseName={data.course.title}
+            courseDurationHours={data.course.durationHours}
+            purchaseDate={data.purchaseInfo.purchasedAt}
+            courseModules={data.modules}
+            settings={data.settings}
+        />
+    );
+}
