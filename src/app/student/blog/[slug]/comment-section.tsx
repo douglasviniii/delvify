@@ -5,10 +5,9 @@ import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { submitComment } from './actions';
 import type { Comment } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-
+import { submitComment } from './actions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
