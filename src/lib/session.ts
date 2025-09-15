@@ -5,6 +5,7 @@ import { adminAuth } from '@/lib/firebase-admin';
 import { getTokens } from 'next-firebase-auth-edge';
 import { cookies } from 'next/headers';
 import type { UserRecord } from 'firebase-admin/auth';
+import { serviceAccount } from './firebase-admin-credentials';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -17,12 +18,12 @@ const firebaseConfig = {
 };
 
 const getServiceAccount = () => {
-  const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-  if (!serviceAccountBase64) {
-    throw new Error("A variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64 não está definida.");
-  }
-  const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
-  return JSON.parse(serviceAccountJson);
+    // This correction ensures that the private_key is correctly formatted.
+    const formattedServiceAccount = {
+        ...serviceAccount,
+        private_key: serviceAccount.private_key.replace(/\\n/g, '\n')
+    };
+    return formattedServiceAccount;
 };
 
 
