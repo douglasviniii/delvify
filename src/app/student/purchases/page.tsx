@@ -1,37 +1,36 @@
+'use client';
 
+import { useState, useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { getPurchaseHistory } from '@/lib/purchases';
-import { redirect } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Purchase } from '@/lib/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-// Em uma aplicação multi-inquilino real, o ID do inquilino seria determinado dinamicamente (ex: pelo domínio).
-// Para este contexto, usamos um ID de inquilino fixo onde os cursos/compras estão sendo criados.
+// Em uma aplicação multi-inquilino real, o ID do inquilino seria determinado dinamicamente.
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
-export default async function StudentPurchasesPage() {
-    // Esta é uma Server Component, então podemos verificar o usuário aqui.
-    // A verificação real do usuário logado seria feita através de cookies/sessão.
-    // O `auth.currentUser` do SDK do cliente não funciona no servidor.
-    // Para este exemplo, vamos assumir que temos um ID de usuário.
-    // Em um app real, você obteria isso de libs como next-auth ou da sessão do firebase-admin.
-    
-    // Placeholder para o ID do usuário. Em um app real, você não teria que codificar isso.
-    const userId = "REPLACE_WITH_DYNAMIC_LOGGED_IN_USER_ID";
-    // NOTE: A lógica de obtenção do usuário no servidor precisaria ser implementada.
-    // Como estamos em um Server Component, não podemos usar hooks como `useAuthState`.
-    // Por enquanto, usaremos um ID de usuário fixo para demonstração, assumindo que ele está logado.
-    // O usuário de teste logado no sistema é `delvify@delvin.com` com o UID `LBb33EzFFvdOjYfT9Iw4eO4dxvp2`.
-    const demoUserId = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+export default function StudentPurchasesPage() {
+    const [user, authLoading] = useAuthState(auth);
+    const [purchases, setPurchases] = useState<Purchase[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    if (!demoUserId) {
-        redirect('/login');
-    }
-
-    const purchases = await getPurchaseHistory(MAIN_TENANT_ID, demoUserId);
+    useEffect(() => {
+        if (user) {
+            setIsLoading(true);
+            getPurchaseHistory(MAIN_TENANT_ID, user.uid)
+                .then(setPurchases)
+                .catch(err => console.error("Failed to load purchase history", err))
+                .finally(() => setIsLoading(false));
+        } else if (!authLoading) {
+            setIsLoading(false); // No user, stop loading
+        }
+    }, [user, authLoading]);
 
     const formatCurrency = (value: number) => {
         return value.toLocaleString('pt-BR', {
@@ -41,7 +40,6 @@ export default async function StudentPurchasesPage() {
     };
 
     const formatDate = (dateString: string) => {
-        // Assegura que estamos tratando a data como UTC para evitar problemas de fuso horário na hidratação
         return new Date(dateString).toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: 'long',
@@ -49,6 +47,14 @@ export default async function StudentPurchasesPage() {
             timeZone: 'UTC'
         });
     };
+    
+    if (isLoading || authLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
