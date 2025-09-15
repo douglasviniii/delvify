@@ -4,7 +4,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Printer, Award, QrCode } from 'lucide-react';
+import { Printer, Award } from 'lucide-react';
 import type { CertificateSettings, Module } from '@/lib/types';
 
 interface CertificateProps {
@@ -52,7 +52,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
     };
     
     const verificationCode = `DELV-${completionDate.getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
-    const verificationUrl = companyWebsite ? `${companyWebsite}/verify?code=${verificationCode}` : `https://verify.com/verify?code=${verificationCode}`;
+    const verificationUrl = companyWebsite ? `${new URL(companyWebsite).origin}/verify?code=${verificationCode}` : `https://verify.com/verify?code=${verificationCode}`;
 
     return (
         <>
@@ -73,6 +73,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             data-ai-hint="logo watermark"
                         />
                     )}
+                    {/* Content container for the front page */}
                     <div className="relative z-10 flex flex-col h-full">
                         <header className="flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
                            <div className="flex items-center gap-4">
@@ -99,7 +100,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </p>
                         </main>
 
-                        <footer className="pt-8 pb-4">
+                        <footer className="pt-4">
                              <div className="flex justify-around items-end">
                                 <div className="text-center">
                                     <div className="w-56 h-12 mb-1 border-b-2 border-gray-700"></div>
@@ -117,21 +118,21 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
                 {/* Back of Certificate */}
                 <div className="certificate-page w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
-                     <div className="relative z-10 flex flex-col h-full">
-                        {watermarkLogoUrl && (
-                            <Image
-                                src={watermarkLogoUrl}
-                                alt="Marca d'água"
-                                layout="fill"
-                                objectFit="contain"
-                                className="absolute inset-0 m-auto opacity-10 z-0"
-                                data-ai-hint="logo watermark"
-                            />
-                        )}
-                        
+                    {watermarkLogoUrl && (
+                        <Image
+                            src={watermarkLogoUrl}
+                            alt="Marca d'água"
+                            layout="fill"
+                            objectFit="contain"
+                            className="absolute inset-0 m-auto opacity-10 z-0"
+                            data-ai-hint="logo watermark"
+                        />
+                    )}
+                    {/* Content container for the back page */}
+                    <div className="relative z-10 flex flex-col h-full">
                         <header className="text-center pb-4 mb-6">
                             <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
-                             <div className="text-center mt-4">
+                            <div className="text-center mt-4">
                                 <p className="text-lg font-semibold">{studentName}</p>
                                 <p className="text-md text-gray-700">{courseName}</p>
                             </div>
@@ -145,7 +146,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </ul>
                         </main>
                         
-                        <footer className="pt-4 border-t mt-auto">
+                        <footer className="pt-4 border-t">
                             <div className='flex justify-between items-end'>
                                 <div className='text-left text-xs text-gray-600 space-y-1'>
                                     <p className="font-bold">Verificação de Autenticidade</p>
