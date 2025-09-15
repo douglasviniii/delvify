@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
         hostname: 'api.qrserver.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'venda-fcil-pdv.appspot.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
