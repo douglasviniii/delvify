@@ -49,16 +49,13 @@ export default function CertificateClient({ error, ...props }: CertificateClient
     }
 
     return (
-        <div className="bg-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center justify-center">
-            <Certificate
-                studentName={props.studentName}
-                studentCpf={props.studentCpf}
-                courseName={props.courseName}
-                completionDate={props.completionDate}
-                courseModules={props.courseModules}
-                settings={props.settings ?? null}
-            />
-        </div>
+        <Certificate
+            studentName={props.studentName}
+            studentCpf={props.studentCpf}
+            courseName={props.courseName}
+            completionDate={props.completionDate}
+            courseModules={props.courseModules}
+            settings={props.settings ?? null}
+        />
     );
 }
-
