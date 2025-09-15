@@ -37,16 +37,16 @@ const MascotLoader = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Roda Esquerda */}
           <g className="wheel">
-            <path d="M25,50 a20,20 0 1,1 0,-0.001Z" fill="#5F2EEA" />
+            <path d="M25,50 a20,20 0 1,1 0,-0.001Z" fill="#9466FF" />
             <circle cx="25" cy="50" r="10" fill="#E9D5FF" />
           </g>
           {/* Corpo do Mascote */}
-          <path d="M40 70 C 20 70, 15 50, 40 40 C 65 25, 85 40, 80 65 C 90 85, 50 95, 40 70 Z" fill="#D8B4FE" />
-          <path d="M45 62 A 5 5 0 0 1 55 62" stroke="#5F2EEA" strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path d="M40 70 C 20 70, 15 50, 40 40 C 65 25, 85 40, 80 65 C 90 85, 50 95, 40 70 Z" fill="#C4B5FD" />
+          <path d="M45 62 A 5 5 0 0 1 55 62" stroke="#9466FF" strokeWidth="3" fill="none" strokeLinecap="round" />
            {/* Roda Direita */}
           <g className="wheel" style={{ animationDelay: '-0.5s' }}>
-            <path d="M75,50 a20,20 0 1,1 0,-0.001Z" fill="#5F2EEA" />
-             <circle cx="75" cy="50" r="10" fill="#D8B4FE" />
+            <path d="M75,50 a20,20 0 1,1 0,-0.001Z" fill="#9466FF" />
+             <circle cx="75" cy="50" r="10" fill="#E9D5FF" />
           </g>
         </svg>
       </div>
