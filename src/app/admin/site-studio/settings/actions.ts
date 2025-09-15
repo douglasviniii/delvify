@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -46,10 +46,7 @@ const GlobalSettingsSchema = z.object({
 });
 
 const settingsRefAdmin = (tenantId: string) => 
-  adminDb.collection('tenants').doc(tenantId).collection('settings').doc('global');
-
-const settingsRefClient = (tenantId: string) =>
-    doc(db, `tenants/${tenantId}/settings/global`);
+  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('global');
 
 // Ação para salvar as configurações
 export async function saveGlobalSettings(tenantId: string, data: GlobalSettings) {
@@ -76,26 +73,6 @@ export async function saveGlobalSettings(tenantId: string, data: GlobalSettings)
     return { success: false, message: `Erro ao salvar: ${errorMessage}` };
   }
 }
-
-// Função para buscar as configurações
-export async function getGlobalSettings(tenantId: string): Promise<GlobalSettings | null> {
-  if (!tenantId) {
-    console.error("ID do inquilino é necessário para buscar as configurações.");
-    return null;
-  }
-  try {
-    const docSnap = await getDoc(settingsRefClient(tenantId));
-    if (docSnap.exists()) {
-      return docSnap.data() as GlobalSettings;
-    }
-    return null; // Retorna null se não houver configurações salvas
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
-    console.error('Erro ao buscar as configurações globais:', errorMessage);
-    throw new Error('Não foi possível buscar as configurações do site.');
-  }
-}
-
 
 export async function savePageVisibility(tenantId: string, pageId: string, isVisible: boolean) {
     if (!tenantId) {

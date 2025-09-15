@@ -1,5 +1,7 @@
 
-import { adminDb } from '@/lib/firebase-admin';
+'use server';
+
+import { getAdminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { CertificateSettings } from '@/lib/types';
@@ -21,7 +23,7 @@ const CertificateSettingsSchema = z.object({
 });
 
 const settingsRef = (tenantId: string) => 
-  adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
+  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('certificate');
 
 
 // Ação para salvar as configurações
@@ -49,24 +51,5 @@ export async function saveCertificateSettings(tenantId: string, data: Certificat
     const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
     console.error('Erro ao salvar as configurações do certificado:', error);
     return { success: false, message: `Erro ao salvar: ${errorMessage}` };
-  }
-}
-
-// Função para buscar as configurações
-export async function getCertificateSettings(tenantId: string): Promise<CertificateSettings | null> {
-  if (!tenantId) {
-    console.error("ID do inquilino é necessário para buscar as configurações do certificado.");
-    return null;
-  }
-  try {
-    const docSnap = await settingsRef(tenantId).get();
-    if (docSnap.exists) {
-      return docSnap.data() as CertificateSettings;
-    }
-    return null; // Retorna null se não houver configurações salvas
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
-    console.error('Erro ao buscar as configurações do certificado:', errorMessage);
-    throw new Error('Não foi possível buscar as configurações do certificado.');
   }
 }

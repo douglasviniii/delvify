@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminAuth } from '@/lib/firebase-admin';
+import { getAdminAuth } from '@/lib/firebase-admin';
 import { getTokens } from 'next-firebase-auth-edge';
 import { cookies } from 'next/headers';
 import type { UserRecord } from 'firebase-admin/auth';
@@ -18,6 +18,7 @@ const firebaseConfig = {
 
 
 export async function getCurrentUser(): Promise<UserRecord | null> {
+  const adminAuth = getAdminAuth();
   try {
     const tokens = await getTokens(cookies(), {
       apiKey: firebaseConfig.apiKey,

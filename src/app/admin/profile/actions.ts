@@ -1,9 +1,7 @@
 
 'use server';
 
-import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
-import { adminDb, adminStorage } from '@/lib/firebase-admin';
+import { getAdminDb, getAdminStorage } from '@/lib/firebase-admin';
 
 interface ResponsiblePerson {
   id: number;
@@ -42,7 +40,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
       updatedAt: new Date(),
     };
 
-    const docRef = adminDb.collection('tenants').doc(tenantId);
+    const docRef = getAdminDb().collection('tenants').doc(tenantId);
     await docRef.set(profileData, { merge: true });
 
     return { success: true, message: 'Perfil salvo com sucesso!' };
@@ -56,7 +54,7 @@ export async function saveTenantProfile(tenantId: string, data: TenantProfile) {
 // Função para obter dados do perfil do inquilino
 export async function getTenantProfile(tenantId: string): Promise<TenantProfile | null> {
   try {
-    const docRef = adminDb.collection('tenants').doc(tenantId);
+    const docRef = getAdminDb().collection('tenants').doc(tenantId);
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {

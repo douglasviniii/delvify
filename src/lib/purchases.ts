@@ -2,7 +2,7 @@
 
 'use server';
 
-import { adminDb } from './firebase-admin';
+import { getAdminDb } from './firebase-admin';
 import type { Purchase } from './types';
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
@@ -26,6 +26,8 @@ export async function getPurchaseHistory(tenantId: string, userId: string): Prom
         console.error("Tenant ID and User ID are required to fetch purchase history.");
         return [];
     }
+
+    const adminDb = getAdminDb();
 
     try {
         const purchases: Purchase[] = [];

@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { adminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { config } from 'dotenv';
 
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
         console.error(`❌ Error message: ${err.message}`);
         return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
     }
+
+    const adminDb = getAdminDb();
 
     // Handle the event
     switch (event.type) {
