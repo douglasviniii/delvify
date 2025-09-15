@@ -99,7 +99,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </p>
                         </main>
 
-                        <footer className="absolute bottom-10 left-0 right-0 flex justify-center text-center">
+                        <footer className="absolute bottom-10 left-10 right-10 flex justify-center text-center">
                              <div>
                                 {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
                                 <hr className="border-gray-700 mt-1" style={{ width: '220px' }}/>
@@ -110,50 +110,52 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                 </div>
 
                 {/* Back of Certificate */}
-                <div className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
-                     {watermarkLogoUrl && (
-                        <Image
-                            src={watermarkLogoUrl}
-                            alt="Marca d'água"
-                            layout="fill"
-                            objectFit="contain"
-                            className="absolute inset-0 m-auto opacity-10 z-0"
-                            data-ai-hint="logo watermark"
-                        />
-                    )}
-                     <div className="relative z-10 flex flex-col h-full">
-                        <header className="text-center pb-4">
-                            <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
-                            <p className="text-lg font-semibold">{courseName}</p>
-                        </header>
+                <div className="certificate-page w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
+                     <div className="relative flex flex-col h-full">
+                        {watermarkLogoUrl && (
+                            <Image
+                                src={watermarkLogoUrl}
+                                alt="Marca d'água"
+                                layout="fill"
+                                objectFit="contain"
+                                className="absolute inset-0 m-auto opacity-10 z-0"
+                                data-ai-hint="logo watermark"
+                            />
+                        )}
+                        <div className="relative z-10 flex flex-col h-full">
+                            <header className="text-center pb-4">
+                                <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
+                                <p className="text-lg font-semibold">{courseName}</p>
+                            </header>
 
-                        <main className="flex-1 mt-6">
-                            <ul className="space-y-2 columns-2">
-                                {courseModules.map((module, index) => (
-                                    <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
-                                ))}
-                            </ul>
-                        </main>
-                        
-                        <footer className="absolute bottom-10 left-10 right-10 text-center space-y-4 pt-4 border-t">
-                            <div className='flex justify-between items-end'>
-                                <div className='text-left text-xs text-gray-600'>
-                                     <p className="font-bold">Verificação de Autenticidade</p>
-                                     <p>Aponte a câmera para o QR Code ou acesse:</p>
-                                     <p className='font-mono'>{companyWebsite}/verify</p>
-                                     <p className='mt-2'>Código: <strong className='font-mono'>{verificationCode}</strong></p>
+                            <main className="flex-1 mt-6">
+                                <ul className="space-y-2 columns-2">
+                                    {courseModules.map((module, index) => (
+                                        <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
+                                    ))}
+                                </ul>
+                            </main>
+                            
+                            <footer className="absolute bottom-0 left-0 right-0 text-center space-y-4 pt-4 border-t">
+                                <div className='flex justify-between items-end'>
+                                    <div className='text-left text-xs text-gray-600'>
+                                        <p className="font-bold">Verificação de Autenticidade</p>
+                                        <p>Aponte a câmera para o QR Code ou acesse:</p>
+                                        <p className='font-mono'>{companyWebsite}/verify</p>
+                                        <p className='mt-2'>Código: <strong className='font-mono'>{verificationCode}</strong></p>
+                                    </div>
+                                    <div className='flex flex-col items-center'>
+                                        <Image 
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
+                                            width={100}
+                                            height={100}
+                                            alt="QR Code de Verificação"
+                                        />
+                                    </div>
                                 </div>
-                                <div className='flex flex-col items-center'>
-                                     <Image 
-                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`}
-                                        width={100}
-                                        height={100}
-                                        alt="QR Code de Verificação"
-                                     />
-                                </div>
-                            </div>
-                             <p className="text-xs text-gray-600">{additionalInfo}</p>
-                        </footer>
+                                <p className="text-xs text-gray-600">{additionalInfo}</p>
+                            </footer>
+                        </div>
                      </div>
                 </div>
             </div>
