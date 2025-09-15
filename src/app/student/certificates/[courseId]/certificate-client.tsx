@@ -4,14 +4,15 @@
 import Certificate from '@/components/certificate';
 import { Button } from '@/components/ui/button';
 import { Loader2, ShieldAlert } from 'lucide-react';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { CertificateSettings, Module } from '@/lib/types';
 
 interface CertificateClientProps {
     studentName?: string;
     studentCpf?: string;
     courseName?: string;
-    completionDate?: Date;
+    purchaseDate?: string;
+    courseDurationHours?: number;
     courseModules?: Module[];
     settings?: CertificateSettings | null;
     error?: string;
@@ -39,12 +40,22 @@ function ErrorDisplay({ message }: { message: string }) {
 
 
 export default function CertificateClient({ error, ...props }: CertificateClientProps) {
+    const [completionDate, setCompletionDate] = useState<Date | null>(null);
+
+    useEffect(() => {
+        if (props.purchaseDate && props.courseDurationHours) {
+            const purchaseDateObj = new Date(props.purchaseDate);
+            const completionDateObj = new Date(purchaseDateObj.getTime() + (props.courseDurationHours * 60 * 60 * 1000));
+            setCompletionDate(completionDateObj);
+        }
+    }, [props.purchaseDate, props.courseDurationHours]);
+
     if (error) {
         return <ErrorDisplay message={error} />;
     }
     
-    // Se não houver erro, mas as props estiverem faltando, mostramos um loader/erro genérico
-    if (!props.studentName || !props.studentCpf || !props.courseName || !props.completionDate || !props.courseModules) {
+    // Se não houver erro, mas as props ou a data de conclusão estiverem faltando, mostramos um loader.
+    if (!props.studentName || !props.studentCpf || !props.courseName || !props.courseModules || !completionDate) {
         return <LoadingCertificate />;
     }
 
@@ -53,7 +64,7 @@ export default function CertificateClient({ error, ...props }: CertificateClient
             studentName={props.studentName}
             studentCpf={props.studentCpf}
             courseName={props.courseName}
-            completionDate={props.completionDate}
+            completionDate={completionDate}
             courseModules={props.courseModules}
             settings={props.settings ?? null}
         />

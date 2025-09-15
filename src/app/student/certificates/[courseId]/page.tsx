@@ -2,7 +2,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getCourseById, getCourseModules } from '@/lib/courses';
 import { getCertificateSettings } from '@/lib/certificates';
-import type { CertificateSettings, UserProfile, Course, Module, PurchasedCourseInfo } from '@/lib/types';
+import type { UserProfile } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import CertificateClient from './certificate-client';
 import { db } from '@/lib/firebase';
@@ -80,22 +80,18 @@ export default async function CertificatePage({ params }: { params: { courseId: 
     try {
         const certificateData = await getCertificateData(user.uid, courseId);
         
-        const purchaseDate = new Date(certificateData.purchaseInfo.purchasedAt);
-        const completionDate = new Date(purchaseDate.getTime() + (certificateData.course.durationHours * 60 * 60 * 1000));
-
         return (
             <CertificateClient 
                 studentName={certificateData.studentProfile.name}
                 studentCpf={certificateData.studentProfile.cpf}
                 courseName={certificateData.course.title}
-                completionDate={completionDate}
+                courseDurationHours={certificateData.course.durationHours}
+                purchaseDate={certificateData.purchaseInfo.purchasedAt}
                 courseModules={certificateData.modules}
                 settings={certificateData.settings}
             />
         );
     } catch (e: any) {
-        // Se ocorrer um erro, renderizamos o componente cliente com a mensagem de erro.
-        // O componente cliente pode então exibir uma UI de erro apropriada.
         return <CertificateClient error={e.message} />;
     }
 }
