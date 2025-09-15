@@ -62,9 +62,9 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             </div>
             
             <div id="certificate-wrapper">
-                <div className="w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-0 flex flex-col page-break-container">
+                <div className="w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-0 flex flex-col">
                     {/* Front of Certificate */}
-                    <div className="certificate-page relative w-full h-full flex-shrink-0 p-10 border-4" style={{ borderColor: accentColor }}>
+                    <div className="certificate-page relative w-full h-full flex-shrink-0 p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
                         {watermarkLogoUrl && (
                             <Image
                                 src={watermarkLogoUrl}
@@ -101,10 +101,10 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 </p>
                             </main>
 
-                            <footer className="flex justify-center gap-16 mt-auto pb-2">
-                                 <div className="text-center">
-                                    {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="-mb-2" />}
-                                    <hr className="border-gray-700 mt-1" />
+                            <footer className="flex justify-center text-center mt-auto">
+                                 <div>
+                                    {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
+                                    <hr className="border-gray-700 mt-1" style={{ width: '220px' }}/>
                                     <p className="text-sm font-semibold mt-1">{signatureText}</p>
                                 </div>
                             </footer>
@@ -175,17 +175,20 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         width: 100%;
                     }
                     .certificate-page {
-                        page-break-after: always;
                         width: 100%;
                         height: 100vh;
                         border-width: 8px !important;
+                        box-sizing: border-box;
+                        margin: 0 !important;
+                        box-shadow: none !important;
+                        page-break-after: always;
                     }
                      .certificate-page:last-child {
                         page-break-after: avoid;
                     }
                     body {
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                 }
                 @page {
