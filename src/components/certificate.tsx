@@ -101,8 +101,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         </main>
 
                         <footer className="flex justify-center items-end gap-16 pb-4">
-                            <div className="text-center">
-                               {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={90} objectFit="contain" data-ai-hint="signature" />}
+                             <div className="text-center">
+                                {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="-mb-4" />}
                                 <hr className="border-gray-700 mt-1" />
                                 <p className="text-sm font-semibold mt-1">{signatureText}</p>
                             </div>
