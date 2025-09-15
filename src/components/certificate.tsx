@@ -100,10 +100,9 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         </main>
 
                         <footer className="pt-8 pb-4">
-                            <div className="flex justify-around items-end">
+                             <div className="flex justify-around items-end">
                                 <div className="text-center">
-                                    <div className="w-56 h-12 mb-1"><!-- Espaço para assinatura do aluno --></div>
-                                    <hr className="border-gray-700" />
+                                    <div className="w-56 h-12 mb-1 border-b-2 border-gray-700"></div>
                                     <p className="text-sm font-semibold mt-1">{studentName}</p>
                                 </div>
                                 <div className="text-center">
@@ -132,13 +131,13 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         
                         <header className="text-center pb-4 mb-6">
                             <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
-                        </header>
-
-                        <main className="flex-1">
-                            <div className="text-center mb-4">
+                             <div className="text-center mt-4">
                                 <p className="text-lg font-semibold">{studentName}</p>
                                 <p className="text-md text-gray-700">{courseName}</p>
                             </div>
+                        </header>
+
+                        <main className="flex-1">
                             <ul className="space-y-2 columns-2">
                                 {courseModules.map((module, index) => (
                                     <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
@@ -167,7 +166,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                      </div>
                 </div>
             </div>
-
             <style jsx global>{`
                 @media print {
                     body * {
