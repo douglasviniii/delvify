@@ -44,14 +44,16 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
         additionalInfo,
         companyAddress,
         companyCnpj,
+        companyWebsite
     } = effectiveSettings;
 
     const handlePrint = () => {
         window.print();
     };
-
+    
+    // Geração do código único de verificação
     const verificationCode = `DELV-${completionDate.getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
-    const verificationUrl = `${effectiveSettings.companyWebsite}/verify?code=${verificationCode}`;
+    const verificationUrl = `${companyWebsite}/verify?code=${verificationCode}`;
 
     return (
         <>
@@ -128,8 +130,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
                         <main className="flex-1 mt-6">
                             <ul className="space-y-2 columns-2">
-                                {courseModules.map((module) => (
-                                    <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{module.order + 1}. {module.title}</li>
+                                {courseModules.map((module, index) => (
+                                    <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
                                 ))}
                             </ul>
                         </main>
@@ -139,7 +141,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 <div className='text-left text-xs text-gray-600'>
                                      <p className="font-bold">Verificação de Autenticidade</p>
                                      <p>Aponte a câmera para o QR Code ou acesse:</p>
-                                     <p className='font-mono'>{effectiveSettings.companyWebsite}/verify</p>
+                                     <p className='font-mono'>{companyWebsite}/verify</p>
                                      <p className='mt-2'>Código: <strong className='font-mono'>{verificationCode}</strong></p>
                                 </div>
                                 <div className='flex flex-col items-center'>
