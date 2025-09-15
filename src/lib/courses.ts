@@ -213,3 +213,4 @@ export async function getPurchasedCourseDetails(userId: string): Promise<Record<
         return {};
     }
 }
+
