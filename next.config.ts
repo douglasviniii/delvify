@@ -52,6 +52,12 @@ const nextConfig: NextConfig = {
         hostname: 'files.stripe.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.qrserver.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
