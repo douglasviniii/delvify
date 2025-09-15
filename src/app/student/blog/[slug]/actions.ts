@@ -10,7 +10,7 @@ export async function submitCommentAction(
   formData: FormData
 ): Promise<{ success: boolean; message: string; issues?: string[] }> {
     const commentSchema = z.object({
-        postId: z.string(),
+        postId: z.string(), // This is actually the slug
         tenantId: z.string(),
         userId: z.string(),
         userName: z.string(),
@@ -35,15 +35,17 @@ export async function submitCommentAction(
         }
     }
 
-    const { postId, tenantId, userId, userName, userAvatar, commentText } = validatedFields.data;
-    const postQuery = await adminDb.collection(`tenants/${tenantId}/blog`).where('slug', '==', postId).get();
-     if (postQuery.empty) {
-        return { success: false, message: "Post não encontrado para adicionar o comentário." };
-    }
-    const realPostId = postQuery.docs[0].id;
-
+    const { postId: postSlug, tenantId, userId, userName, userAvatar, commentText } = validatedFields.data;
 
     try {
+        // Query for the post document using the slug to get the actual document ID
+        const postQuery = await adminDb.collection(`tenants/${tenantId}/blog`).where('slug', '==', postSlug).limit(1).get();
+
+        if (postQuery.empty) {
+            return { success: false, message: "Post não encontrado para adicionar o comentário." };
+        }
+        const realPostId = postQuery.docs[0].id;
+
         const commentRef = adminDb.collection(`tenants/${tenantId}/blog/${realPostId}/comments`).doc();
         await commentRef.set({
             authorId: userId,
@@ -54,7 +56,7 @@ export async function submitCommentAction(
             likes: 0,
         });
 
-        revalidatePath(`/student/blog/${validatedFields.data.postId}`);
+        revalidatePath(`/student/blog/${postSlug}`);
 
         return { success: true, message: "Comentário adicionado!" };
 
