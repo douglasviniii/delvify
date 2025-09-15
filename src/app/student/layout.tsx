@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag, User as UserIcon, Settings, Newspaper, Loader2 } from 'lucide-react';
+import { Book, Compass, GraduationCap, LogOut, Menu, ShoppingBag, User as UserIcon, Settings, Newspaper } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { auth } from '@/lib/firebase';
 import { signOut, type User } from 'firebase/auth';
@@ -29,6 +29,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MascotLoader } from '@/components/ui/loader';
 
 
 const menuItems = [
@@ -104,7 +105,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   if (loading) {
       return (
         <div className="flex h-screen w-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <MascotLoader />
         </div>
       );
   }
