@@ -99,7 +99,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </p>
                         </main>
 
-                        <footer className="absolute bottom-10 left-10 right-10 flex justify-center text-center">
+                        <footer className="pt-4 flex justify-center text-center">
                              <div>
                                 {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
                                 <hr className="border-gray-700 mt-1" style={{ width: '220px' }}/>
@@ -136,7 +136,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 </ul>
                             </main>
                             
-                            <footer className="absolute bottom-10 left-10 right-10 pt-4 border-t">
+                            <footer className="pt-4 border-t">
                                 <div className='flex justify-between items-end'>
                                     <div className='text-left text-xs text-gray-600'>
                                         <p className="font-bold">Verificação de Autenticidade</p>
