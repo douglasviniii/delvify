@@ -166,11 +166,9 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
 export async function getPurchasedCourses(userId: string): Promise<{ courses: Course[], details: Record<string, PurchasedCourseInfo> }> {
     if (!userId) return { courses: [], details: {} };
     try {
-        // Use o SDK Admin para operações do lado do servidor para garantir consistência
         const userDocRef = await adminDb.collection('users').doc(userId).get();
         if (!userDocRef.exists) return { courses: [], details: {} };
 
-        // A serialização robusta garante que todos os Timestamps aninhados sejam convertidos
         const userData = serializeDoc(userDocRef);
         if (!userData || !userData.purchasedCourses) {
             return { courses: [], details: {} };
