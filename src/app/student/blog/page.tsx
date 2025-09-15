@@ -141,11 +141,20 @@ export default function StudentBlogPage() {
   useEffect(() => {
     // We wait for auth state to be resolved before fetching posts
     if (!authLoading) {
+      if (user) {
         setIsLoading(true);
-        getAllBlogPosts(TENANT_ID_WITH_POSTS, user?.uid)
+        getAllBlogPosts(TENANT_ID_WITH_POSTS, user.uid)
           .then(setPosts)
           .catch(err => console.error("Failed to load blog posts", err))
           .finally(() => setIsLoading(false));
+      } else {
+        // If there's no user, fetch posts without user-specific data
+        setIsLoading(true);
+        getAllBlogPosts(TENANT_ID_WITH_POSTS)
+          .then(setPosts)
+          .catch(err => console.error("Failed to load blog posts", err))
+          .finally(() => setIsLoading(false));
+      }
     }
   }, [user, authLoading]);
 
