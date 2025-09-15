@@ -9,7 +9,7 @@ import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
-import { DefaultSection, BlogPageSection } from '@/components/page-sections';
+import { DefaultSection, BlogPageSection } from '@/components/sections';
 
 // Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
 // Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.

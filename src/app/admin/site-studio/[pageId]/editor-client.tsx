@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { savePage } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/page-sections";
+import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/sections";
 import type { User } from 'firebase/auth';
 import { auth, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';

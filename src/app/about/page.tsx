@@ -5,7 +5,7 @@ import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
-import { AboutPageSection, DefaultSection } from '@/components/page-sections';
+import { AboutPageSection, DefaultSection } from '@/components/sections';
 
 const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 

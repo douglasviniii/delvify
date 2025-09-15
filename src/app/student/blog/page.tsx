@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -11,39 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '@/lib/firebase';
-import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
-import { revalidatePath } from 'next/cache';
-
-async function togglePostLike(tenantId: string, postId: string, userId: string) {
-    'use server';
-    
-    if (!tenantId || !postId || !userId) {
-        throw new Error("Missing required IDs for liking a post.");
-    }
-
-    const likeRef = adminDb.collection(`tenants/${tenantId}/blog/${postId}/likes`).doc(userId);
-
-    try {
-        const likeDoc = await likeRef.get();
-
-        if (likeDoc.exists) {
-            await likeRef.delete();
-        } else {
-            await likeRef.set({
-                createdAt: FieldValue.serverTimestamp()
-            });
-        }
-        
-        revalidatePath('/student/blog');
-        revalidatePath(`/student/blog/${postId}`);
-
-    } catch (error) {
-        console.error("Error toggling post like:", error);
-        throw new Error("Could not update like status.");
-    }
-}
+import { auth } from '@/lib/firebase';
+import { togglePostLike } from './actions';
 
 
 const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
@@ -166,19 +136,11 @@ export default function StudentBlogPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      if (user) {
-        setIsLoading(true);
-        getAllBlogPosts(TENANT_ID_WITH_POSTS, user.uid)
-          .then(setPosts)
-          .catch(err => console.error("Failed to load blog posts", err))
-          .finally(() => setIsLoading(false));
-      } else {
-        setIsLoading(true);
-        getAllBlogPosts(TENANT_ID_WITH_POSTS)
-          .then(setPosts)
-          .catch(err => console.error("Failed to load blog posts", err))
-          .finally(() => setIsLoading(false));
-      }
+      setIsLoading(true);
+      getAllBlogPosts(TENANT_ID_WITH_POSTS, user?.uid)
+        .then(setPosts)
+        .catch(err => console.error("Failed to load blog posts", err))
+        .finally(() => setIsLoading(false));
     }
   }, [user, authLoading]);
 

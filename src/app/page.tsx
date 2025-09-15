@@ -2,7 +2,7 @@
 
 import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
-import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection, BlogPageSection } from '@/components/page-sections';
+import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, DefaultSection, CtaSection } from '@/components/sections';
 import { getAllBlogPosts } from '@/lib/blog-posts';
 import { collection, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -18,7 +18,6 @@ const SectionComponents: Record<string, React.FC<any>> = {
   AiCustomizationSection,
   CoursesSection,
   LatestPostsSection,
-  BlogPageSection,
   DefaultSection,
   CtaSection
 };
