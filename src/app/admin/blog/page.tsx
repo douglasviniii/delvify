@@ -141,7 +141,7 @@ export default function BlogManagementPage() {
         const fullPost = {
             id: post.id,
             ...fullPostData,
-            authorId: fullPostData.authorId || '',
+            authorId: String(fullPostData.authorId || ''),
         } as BlogPost & { excerpt: string, content: string };
         setEditingPost(fullPost);
         form.reset(fullPost);
