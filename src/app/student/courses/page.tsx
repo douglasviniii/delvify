@@ -14,9 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 const CourseCard = ({ course }: { course: Course }) => {
-    // Lógica de conclusão simulada: se o ID for um número par, o curso está "concluído".
-    // Isso será substituído pela lógica de progresso real.
-    const isCompleted = parseInt(course.id.replace(/[^0-9]/g, '').slice(-1) || "0") % 2 === 0;
+    // A lógica simulada foi removida para corrigir o erro de hidratação.
+    // A lógica de progresso real deve ser implementada aqui no futuro.
+    const isCompleted = false;
 
     return (
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col w-full group">
