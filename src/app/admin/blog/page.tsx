@@ -100,6 +100,7 @@ export default function BlogManagementPage() {
         setCollaborators(collabsData);
     }, (error) => {
         console.error("Error fetching collaborators: ", error);
+        toast({ title: 'Aviso', description: 'Não foi possível carregar a lista de colaboradores. A funcionalidade da página não será afetada.', variant: 'default'});
     });
 
 
@@ -107,7 +108,7 @@ export default function BlogManagementPage() {
       unsubscribePosts();
       unsubscribeCollabs();
     };
-  }, [user]);
+  }, [user, toast]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -370,5 +371,3 @@ export default function BlogManagementPage() {
     </div>
   );
 }
-
-    
