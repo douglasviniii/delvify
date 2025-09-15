@@ -41,10 +41,12 @@ export default async function StudentPurchasesPage() {
     };
 
     const formatDate = (dateString: string) => {
+        // Assegura que estamos tratando a data como UTC para evitar problemas de fuso horário na hidratação
         return new Date(dateString).toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
+            timeZone: 'UTC'
         });
     };
 
