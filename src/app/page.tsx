@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation';
 
 export default function RootPage() {
-  // A lógica de redirecionamento agora está no middleware.
-  // Esta página pode redirecionar para uma página de aterrissagem padrão ou a página de login, se necessário.
+  // O middleware irá interceptar o redirecionamento e adicionar o prefixo de idioma correto.
+  // Por exemplo, /login se tornará /pt/login.
   redirect('/login');
 }
