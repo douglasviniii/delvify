@@ -97,3 +97,19 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
     return defaultSettings;
   }
 }
+
+export async function getGlobalSettings(tenantId: string): Promise<GlobalSettings | null> {
+    if (!tenantId) {
+        return null;
+    }
+    try {
+        const docSnap = await getDoc(settingsRef(tenantId));
+        if (docSnap.exists()) {
+            return docSnap.data() as GlobalSettings;
+        }
+        return null;
+    } catch (error) {
+        console.error("Erro ao buscar configurações globais (cliente):", error);
+        return null;
+    }
+}

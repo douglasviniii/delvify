@@ -48,6 +48,8 @@ const GlobalSettingsSchema = z.object({
 const settingsRefAdmin = (tenantId: string) => 
   getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('global');
 
+
+
 // Ação para salvar as configurações
 export async function saveGlobalSettings(tenantId: string, data: GlobalSettings) {
   if (!tenantId) {
