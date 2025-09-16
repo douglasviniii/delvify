@@ -333,8 +333,8 @@ export default function AdminCompaniesPage() {
                         <CardDescription>Receita mensal de todas as empresas.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                         <ResponsiveContainer width="100%" height={350}>
-                            <BarChart data={chartData}>
+                        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                            <BarChart accessibilityLayer data={chartData}>
                                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
                                 <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `R$ ${Number(value) / 1000}k`} />
                                  <ChartTooltip
@@ -343,7 +343,7 @@ export default function AdminCompaniesPage() {
                                 />
                                 <Bar dataKey="total" fill="var(--color-total)" radius={8} />
                             </BarChart>
-                        </ResponsiveContainer>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
             </TabsContent>
