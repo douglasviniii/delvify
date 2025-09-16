@@ -64,7 +64,15 @@ export async function getTenants(): Promise<Tenant[]> {
     try {
         const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(tenantsQuery);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tenant));
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Serialize the Timestamp to a string to make it a "plain object"
+            const serializedData = {
+                ...data,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
+            };
+            return { id: doc.id, ...serializedData } as Tenant;
+        });
     } catch (error) {
         console.error("Error fetching tenants:", error);
         return [];
