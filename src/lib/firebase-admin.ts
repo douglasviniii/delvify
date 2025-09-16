@@ -1,4 +1,3 @@
-
 import admin from 'firebase-admin';
 import { getApps, initializeApp, getApp } from 'firebase-admin/app';
 
