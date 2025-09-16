@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins, FileText, Loader2 as Spinner } from "lucide-react";
+import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins, FileText, Loader2 as Spinner, Download, Send, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { FinancialSettingsForm } from './financial-settings-form';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export type Tenant = {
   id: string;
@@ -70,7 +71,13 @@ export default function AdminCompaniesPage() {
   const [invoiceMonth, setInvoiceMonth] = useState(new Date().getMonth()); // 0-indexed month
   const [invoiceYear, setInvoiceYear] = useState(new Date().getFullYear());
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
 
+  // Check if the selected month/year is in the past
+  const now = new Date();
+  const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const firstDayOfSelectedMonth = new Date(invoiceYear, invoiceMonth, 1);
+  const canGenerateInvoices = firstDayOfSelectedMonth < firstDayOfCurrentMonth;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +106,7 @@ export default function AdminCompaniesPage() {
     const fetchInvoices = async () => {
       const fetchedInvoices = await getGeneratedInvoices(invoiceYear, invoiceMonth + 1);
       setInvoices(fetchedInvoices);
+      setSelectedInvoices(new Set()); // Clear selection on data change
     };
     fetchInvoices();
   }, [invoiceYear, invoiceMonth]);
@@ -146,6 +154,27 @@ export default function AdminCompaniesPage() {
       setInvoices(fetchedInvoices);
     }
   };
+  
+  const handleToggleAllInvoices = (checked: boolean) => {
+    if (checked) {
+      setSelectedInvoices(new Set(invoices.map(i => i.id)));
+    } else {
+      setSelectedInvoices(new Set());
+    }
+  };
+
+  const handleToggleInvoice = (invoiceId: string) => {
+    setSelectedInvoices(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(invoiceId)) {
+        newSet.delete(invoiceId);
+      } else {
+        newSet.add(invoiceId);
+      }
+      return newSet;
+    });
+  };
+
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Data não disponível';
@@ -367,7 +396,7 @@ export default function AdminCompaniesPage() {
                         <CardDescription>Receita mensal de todas as empresas.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                             <BarChart accessibilityLayer data={chartData}>
                                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
                                 <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `R$ ${Number(value) / 1000}k`} />
@@ -391,8 +420,7 @@ export default function AdminCompaniesPage() {
                         <Card className="bg-muted/30">
                           <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="flex-1 space-y-2">
-                                <Label className="font-medium">Gerar Faturas</Label>
-                                <p className="text-sm text-muted-foreground">Selecione o período para gerar novas faturas de repasse para todas as empresas.</p>
+                                <Label className="font-medium">Gerar Faturas Mensais</Label>
                                 <div className="flex items-center gap-2">
                                     <Select value={String(invoiceMonth)} onValueChange={(val) => setInvoiceMonth(Number(val))}>
                                         <SelectTrigger className="w-[180px]">
@@ -417,54 +445,96 @@ export default function AdminCompaniesPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                 <p className="text-sm text-muted-foreground">Selecione o período para gerar faturas para todas as empresas.</p>
                             </div>
-                            <Button onClick={handleGenerateInvoices} disabled={isGenerating} size="lg">
+                            <Button onClick={handleGenerateInvoices} disabled={isGenerating || !canGenerateInvoices} size="lg" title={!canGenerateInvoices ? "Você só pode gerar faturas para meses que já terminaram." : ""}>
                                 {isGenerating ? <Spinner className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
-                                {isGenerating ? 'Gerando Faturas...' : 'Gerar Faturas do Mês'}
+                                {isGenerating ? 'Gerando...' : 'Gerar Faturas'}
                             </Button>
                            </CardContent>
                         </Card>
                         
-                        <div className="border rounded-lg">
-                           <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Empresa</TableHead>
-                                    <TableHead>Período</TableHead>
-                                    <TableHead className="text-right">Receita Bruta</TableHead>
-                                    <TableHead className="text-right">Valor Líquido</TableHead>
-                                    <TableHead className="text-center">Status</TableHead>
-                                    <TableHead className="text-right">Ações</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {invoices.length > 0 ? invoices.map(invoice => (
-                                    <TableRow key={invoice.id}>
-                                        <TableCell>
-                                          <div className="font-medium">{tenants.find(t => t.id === invoice.tenantId)?.companyName || 'Empresa não encontrada'}</div>
-                                          <div className="text-xs text-muted-foreground">ID: {invoice.id}</div>
-                                        </TableCell>
-                                        <TableCell>{`${String(invoice.month).padStart(2, '0')}/${invoice.year}`}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(invoice.totalRevenue)}</TableCell>
-                                        <TableCell className="font-semibold text-right">{formatCurrency(invoice.netAmountToTransfer)}</TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
-                                                {invoice.status === 'paid' ? 'Pago' : 'Pendente'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">Ver Detalhes</Button>
-                                        </TableCell>
-                                    </TableRow>
-                                )) : (
+                        <div className="space-y-4">
+                             <div className="flex items-center gap-4">
+                                <h3 className="text-lg font-medium">Faturas Geradas para {new Date(invoiceYear, invoiceMonth).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}</h3>
+                                <div className="flex-grow border-t"></div>
+                                <Button variant="outline" size="sm" disabled={selectedInvoices.size === 0}>
+                                    <Send className="mr-2 h-4 w-4" /> Enviar em Massa
+                                </Button>
+                                <Button variant="destructive" size="sm" disabled={selectedInvoices.size === 0}>
+                                     <Trash2 className="mr-2 h-4 w-4" /> Deletar em Massa
+                                </Button>
+                            </div>
+                            <div className="border rounded-lg">
+                               <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                            Nenhuma fatura gerada para este período.
-                                        </TableCell>
+                                        <TableHead className="w-[50px] text-center">
+                                            <Checkbox
+                                                checked={selectedInvoices.size === invoices.length && invoices.length > 0}
+                                                onCheckedChange={handleToggleAllInvoices}
+                                            />
+                                        </TableHead>
+                                        <TableHead>Empresa</TableHead>
+                                        <TableHead>Período</TableHead>
+                                        <TableHead className="text-right">Valor Bruto</TableHead>
+                                        <TableHead className="text-right">Valor Líquido</TableHead>
+                                        <TableHead className="text-center">Status</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {invoices.length > 0 ? invoices.map(invoice => (
+                                        <TableRow key={invoice.id} data-state={selectedInvoices.has(invoice.id) && "selected"}>
+                                            <TableCell className="text-center">
+                                                <Checkbox
+                                                    checked={selectedInvoices.has(invoice.id)}
+                                                    onCheckedChange={() => handleToggleInvoice(invoice.id)}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                              <div className="font-medium">{tenants.find(t => t.id === invoice.tenantId)?.companyName || 'Empresa não encontrada'}</div>
+                                              <div className="text-xs text-muted-foreground">ID: {invoice.id}</div>
+                                            </TableCell>
+                                            <TableCell>{`${String(invoice.month).padStart(2, '0')}/${invoice.year}`}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(invoice.totalRevenue)}</TableCell>
+                                            <TableCell className="font-semibold text-right">{formatCurrency(invoice.netAmountToTransfer)}</TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
+                                                    {invoice.status === 'paid' ? 'Pago' : 'Pendente'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <span className="sr-only">Abrir menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Ações da Fatura</DropdownMenuLabel>
+                                                        <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                                                        <DropdownMenuItem><Download className="mr-2 h-4 w-4" />Baixar PDF</DropdownMenuItem>
+                                                        <DropdownMenuItem><Send className="mr-2 h-4 w-4" />Marcar como Paga</DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                                Nenhuma fatura gerada para este período.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -574,3 +644,4 @@ export default function AdminCompaniesPage() {
     </div>
   );
 }
+
