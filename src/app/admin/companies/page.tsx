@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type Tenant = {
   id: string;
@@ -22,9 +23,19 @@ type Tenant = {
   createdAt: any;
 };
 
+const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode}) => (
+    <div className="flex flex-col py-3 px-4 odd:bg-muted/50 sm:flex-row sm:gap-4">
+        <dt className="w-1/4 font-medium text-foreground">{term}</dt>
+        <dd className="mt-1 text-muted-foreground sm:mt-0 sm:w-3/4">{children}</dd>
+    </div>
+)
+
+
 export default function AdminCompaniesPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
@@ -46,6 +57,21 @@ export default function AdminCompaniesPage() {
 
     return () => unsubscribe();
   }, []);
+
+  const handleManageClick = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsDialogOpen(true);
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -104,7 +130,7 @@ export default function AdminCompaniesPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleManageClick(tenant)}>
                                                 Gerenciar Empresa
                                             </DropdownMenuItem>
                                             <DropdownMenuItem>Ver Painel</DropdownMenuItem>
@@ -130,6 +156,44 @@ export default function AdminCompaniesPage() {
             )}
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                  <DialogTitle>Gerenciar Empresa</DialogTitle>
+                  <DialogDescription>
+                      Detalhes cadastrais da empresa selecionada.
+                  </DialogDescription>
+              </DialogHeader>
+              {selectedTenant && (
+                <div className="mt-4">
+                    <dl className="divide-y divide-border border rounded-lg overflow-hidden">
+                        <DescriptionListItem term="Nome da Empresa">
+                           {selectedTenant.companyName}
+                        </DescriptionListItem>
+                         <DescriptionListItem term="CNPJ">
+                           {selectedTenant.cnpj}
+                        </DescriptionListItem>
+                         <DescriptionListItem term="ID do Inquilino">
+                           <code className="text-xs bg-muted p-1 rounded-sm">{selectedTenant.id}</code>
+                        </DescriptionListItem>
+                         <DescriptionListItem term="Plano">
+                           <Badge variant="secondary">{selectedTenant.plan || 'Padrão'}</Badge>
+                        </DescriptionListItem>
+                         <DescriptionListItem term="Status">
+                            <Badge variant={selectedTenant.status === 'active' ? 'default' : 'destructive'}>
+                                {selectedTenant.status === 'active' ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                        </DescriptionListItem>
+                         <DescriptionListItem term="Data de Criação">
+                           {formatDate(selectedTenant.createdAt)}
+                        </DescriptionListItem>
+                    </dl>
+                </div>
+              )}
+          </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
