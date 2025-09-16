@@ -13,6 +13,7 @@ import {
   Menu,
   User as UserIcon,
   Award,
+  DollarSign,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -53,9 +54,8 @@ const menuItems = [
   { href: '/admin/courses', label: 'Studio de Cursos', icon: BookCopy },
   { href: '/admin/site-studio', label: 'Estudio de Site', icon: PanelTop },
   { href: '/admin/certificates/settings', label: 'Certificados', icon: Award },
-  { href: '#', label: 'Páginas', icon: File },
-  // O item 'Empresas' será adicionado condicionalmente
   { href: '/admin/users', label: 'Alunos', icon: GraduationCap },
+  { href: '/admin/financial/repasses', label: 'Repasses Financeiros', icon: DollarSign },
 ];
 
 const AdminSidebarMenu = () => {
@@ -74,9 +74,14 @@ const AdminSidebarMenu = () => {
     }
   }
 
+  // Hide financial transfers for non-super admins
+  const filteredMenuItems = user?.uid === SUPER_ADMIN_UID 
+      ? menuItems.filter(item => item.href !== '/admin/financial/repasses') 
+      : menuItems;
+
   return (
     <SidebarMenu>
-      {menuItems.map((item) => (
+      {filteredMenuItems.map((item) => (
         <SidebarMenuItem key={item.label}>
           <Link href={item.href} onClick={handleLinkClick}>
             <SidebarMenuButton
@@ -94,10 +99,10 @@ const AdminSidebarMenu = () => {
           <Link href="/admin/companies" onClick={handleLinkClick}>
             <SidebarMenuButton
               isActive={pathname.startsWith('/admin/companies')}
-              tooltip="Empresas"
+              tooltip="Empresas & Finanças"
             >
               <Building />
-              <span>Empresas</span>
+              <span>Empresas & Finanças</span>
             </SidebarMenuButton>
           </Link>
         </SidebarMenuItem>
@@ -246,3 +251,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </SidebarProvider>
   );
 }
+
+    

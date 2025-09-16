@@ -110,8 +110,8 @@ export default function AdminCompaniesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">Gerenciamento de Empresas</h1>
-            <p className="text-muted-foreground">Crie e gerencie os inquilinos (empresas) da plataforma.</p>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">Centro de Empresas e Financeiro</h1>
+            <p className="text-muted-foreground">Gerencie seus clientes (inquilinos), finanças, repasses e configurações da plataforma.</p>
         </div>
         <Button asChild>
           <Link href="/signup/tenant">
@@ -121,74 +121,102 @@ export default function AdminCompaniesPage() {
         </Button>
       </div>
       
-      <Card>
-        <CardHeader>
-            <CardTitle>Empresas Ativas</CardTitle>
-            <CardDescription>Abaixo está a lista de todos os seus clientes (inquilinos).</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {isLoading ? (
-                <div className="flex justify-center items-center h-48">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            ) : tenants.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Empresa</TableHead>
-                            <TableHead>CNPJ</TableHead>
-                            <TableHead>Plano</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead><span className="sr-only">Ações</span></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {tenants.map(tenant => (
-                            <TableRow key={tenant.id}>
-                                <TableCell className="font-medium">{tenant.companyName}</TableCell>
-                                <TableCell>{tenant.cnpj}</TableCell>
-                                <TableCell><Badge variant="secondary">{tenant.plan || 'Padrão'}</Badge></TableCell>
-                                <TableCell>
-                                    <Badge variant={tenant.status === 'active' ? 'default' : 'destructive'}>
-                                        {tenant.status === 'active' ? 'Ativo' : 'Inativo'}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Abrir menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => handleManageClick(tenant)}>
-                                                Gerenciar Empresa
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>Ver Painel</DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                                Desativar
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            ) : (
-                <div className="flex h-[40vh] items-center justify-center rounded-lg border border-dashed">
-                    <div className="text-center">
-                        <Building className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <h2 className="text-xl font-semibold mt-4">Nenhuma Empresa Encontrada</h2>
-                        <p className="text-muted-foreground mt-2">Clique em "Nova Empresa" para adicionar seu primeiro cliente.</p>
-                    </div>
-                </div>
-            )}
-        </CardContent>
-      </Card>
+       <Tabs defaultValue="manage" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="manage">Gerenciar Empresas</TabsTrigger>
+                <TabsTrigger value="financial">Financeiro</TabsTrigger>
+                <TabsTrigger value="transfers">Repasses</TabsTrigger>
+                <TabsTrigger value="settings">Configurações</TabsTrigger>
+            </TabsList>
+            <TabsContent value="manage">
+              <Card>
+                <CardHeader>
+                    <CardTitle>Empresas Ativas</CardTitle>
+                    <CardDescription>Abaixo está a lista de todos os seus clientes (inquilinos).</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-48">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    ) : tenants.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Empresa</TableHead>
+                                    <TableHead>CNPJ</TableHead>
+                                    <TableHead>Plano</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead><span className="sr-only">Ações</span></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {tenants.map(tenant => (
+                                    <TableRow key={tenant.id}>
+                                        <TableCell className="font-medium">{tenant.companyName}</TableCell>
+                                        <TableCell>{tenant.cnpj}</TableCell>
+                                        <TableCell><Badge variant="secondary">{tenant.plan || 'Padrão'}</Badge></TableCell>
+                                        <TableCell>
+                                            <Badge variant={tenant.status === 'active' ? 'default' : 'destructive'}>
+                                                {tenant.status === 'active' ? 'Ativo' : 'Inativo'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Abrir menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                                    <DropdownMenuItem onClick={() => handleManageClick(tenant)}>
+                                                        Gerenciar Empresa
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>Ver Painel</DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                                        Desativar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="flex h-[40vh] items-center justify-center rounded-lg border border-dashed">
+                            <div className="text-center">
+                                <Building className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h2 className="text-xl font-semibold mt-4">Nenhuma Empresa Encontrada</h2>
+                                <p className="text-muted-foreground mt-2">Clique em "Nova Empresa" para adicionar seu primeiro cliente.</p>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+             <TabsContent value="financial">
+                <Card>
+                    <CardHeader><CardTitle>Dashboard Financeiro</CardTitle></CardHeader>
+                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground">Em breve: um dashboard financeiro completo.</CardContent>
+                </Card>
+            </TabsContent>
+             <TabsContent value="transfers">
+                 <Card>
+                    <CardHeader><CardTitle>Faturas de Repasse</CardTitle></CardHeader>
+                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground">Em breve: geração e gerenciamento de faturas de repasse.</CardContent>
+                </Card>
+            </TabsContent>
+             <TabsContent value="settings">
+                 <Card>
+                    <CardHeader><CardTitle>Configurações Financeiras</CardTitle></CardHeader>
+                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground">Em breve: configuração de taxas e impostos da plataforma.</CardContent>
+                </Card>
+            </TabsContent>
+      </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
