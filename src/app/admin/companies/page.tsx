@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { saveTenantDomain } from './actions';
 
 type Tenant = {
   id: string;
@@ -24,6 +26,7 @@ type Tenant = {
   plan: string;
   status: 'active' | 'inactive';
   createdAt: any;
+  customDomain?: string;
 };
 
 const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode}) => (
@@ -39,6 +42,10 @@ export default function AdminCompaniesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [domainInput, setDomainInput] = useState('');
+  const [isSaving, startTransition] = useTransition();
+  const { toast } = useToast();
+
 
   useEffect(() => {
     const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
@@ -63,7 +70,22 @@ export default function AdminCompaniesPage() {
 
   const handleManageClick = (tenant: Tenant) => {
     setSelectedTenant(tenant);
+    setDomainInput(tenant.customDomain || '');
     setIsDialogOpen(true);
+  }
+  
+  const handleSaveDomain = () => {
+    if (!selectedTenant) return;
+    startTransition(async () => {
+        const result = await saveTenantDomain(selectedTenant.id, domainInput);
+        if (result.success) {
+            toast({ title: "Sucesso!", description: "Domínio salvo com sucesso." });
+            // Optimistic update of the local state
+            setTenants(prev => prev.map(t => t.id === selectedTenant.id ? {...t, customDomain: domainInput} : t));
+        } else {
+            toast({ title: "Erro", description: result.message, variant: "destructive" });
+        }
+    })
   }
 
   const formatDate = (dateString: string) => {
@@ -209,7 +231,12 @@ export default function AdminCompaniesPage() {
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="customDomain">Domínio Personalizado</Label>
-                                    <Input id="customDomain" placeholder="www.dominiodocliente.com.br" />
+                                    <Input 
+                                      id="customDomain"
+                                      placeholder="www.dominiodocliente.com.br"
+                                      value={domainInput}
+                                      onChange={(e) => setDomainInput(e.target.value)}
+                                    />
                                 </div>
                                 <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-2">
                                     <p className="font-bold text-foreground">Instruções de Apontamento DNS:</p>
@@ -218,6 +245,10 @@ export default function AdminCompaniesPage() {
                                     <p>3. Crie um novo registro do tipo <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">CNAME</code> com o host/nome <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">www</code> apontando para o valor <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">cname.delvify.com</code>.</p>
                                     <p>4. Salve as alterações. Pode levar até 48 horas para o domínio propagar.</p>
                                 </div>
+                                <Button onClick={handleSaveDomain} disabled={isSaving}>
+                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                    Salvar Domínio
+                                </Button>
                             </CardContent>
                         </Card>
                     </TabsContent>
