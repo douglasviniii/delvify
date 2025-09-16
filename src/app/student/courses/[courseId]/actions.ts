@@ -125,8 +125,8 @@ export async function createCheckoutSession(
 
 
 export async function enrollInFreeCourse(userId: string, course: Course): Promise<{ success: boolean; message: string }> {
-    if (!userId || !course) {
-        return { success: false, message: "ID do usuário ou dados do curso ausentes." };
+    if (!userId || !course || !course.tenantId) {
+        return { success: false, message: "ID do usuário, dados do curso ou ID do tenant ausentes." };
     }
 
     const isFree = parseFloat(course.price.replace(',', '.')) === 0;
