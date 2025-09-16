@@ -128,3 +128,25 @@ export async function getAllPurchases(): Promise<Purchase[]> {
         return [];
     }
 }
+
+export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> {
+    if (!tenantId) {
+        console.error("Tenant ID is required to fetch purchases.");
+        return [];
+    }
+    const adminDb = getAdminDb();
+    try {
+        const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(purchasesQuery);
+        
+        const purchases: Purchase[] = [];
+        for(const doc of querySnapshot.docs) {
+            purchases.push(serializeDoc(doc) as Purchase);
+        }
+        return purchases;
+    } catch(error) {
+        const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+        console.error(`Error fetching purchases for tenant ${tenantId}:`, errorMessage);
+        return [];
+    }
+}
