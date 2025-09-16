@@ -349,7 +349,7 @@ export default function AdminCompaniesPage() {
                             <div className="text-2xl font-bold">{formatCurrency(totalTaxes)}</div>
                             <p className="text-xs text-muted-foreground">Valor a ser pago em impostos.</p>
                         </CardContent>
-                    </Card>>
+                    </Card>
                      <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total a Repassar</CardTitle>
@@ -388,11 +388,13 @@ export default function AdminCompaniesPage() {
                       <CardDescription>Gere e gerencie as faturas de repasse mensais para seus clientes.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/50">
+                        <Card className="bg-muted/30">
+                          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="flex-1 space-y-2">
-                                <Label>Selecione o Período para Geração</Label>
+                                <Label className="font-medium">Gerar Faturas</Label>
+                                <p className="text-sm text-muted-foreground">Selecione o período para gerar novas faturas de repasse para todas as empresas.</p>
                                 <div className="flex items-center gap-2">
-                                     <Select value={String(invoiceMonth)} onValueChange={(val) => setInvoiceMonth(Number(val))}>
+                                    <Select value={String(invoiceMonth)} onValueChange={(val) => setInvoiceMonth(Number(val))}>
                                         <SelectTrigger className="w-[180px]">
                                             <SelectValue placeholder="Mês" />
                                         </SelectTrigger>
@@ -416,11 +418,12 @@ export default function AdminCompaniesPage() {
                                     </Select>
                                 </div>
                             </div>
-                            <Button onClick={handleGenerateInvoices} disabled={isGenerating}>
+                            <Button onClick={handleGenerateInvoices} disabled={isGenerating} size="lg">
                                 {isGenerating ? <Spinner className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
                                 {isGenerating ? 'Gerando Faturas...' : 'Gerar Faturas do Mês'}
                             </Button>
-                        </div>
+                           </CardContent>
+                        </Card>
                         
                         <div className="border rounded-lg">
                            <Table>
@@ -437,8 +440,11 @@ export default function AdminCompaniesPage() {
                             <TableBody>
                                 {invoices.length > 0 ? invoices.map(invoice => (
                                     <TableRow key={invoice.id}>
-                                        <TableCell className="font-medium">{tenants.find(t => t.id === invoice.tenantId)?.companyName || 'Empresa não encontrada'}</TableCell>
-                                        <TableCell>{`${new Date(0, invoice.month - 1).toLocaleString('pt-BR', { month: 'long' })}/${invoice.year}`}</TableCell>
+                                        <TableCell>
+                                          <div className="font-medium">{tenants.find(t => t.id === invoice.tenantId)?.companyName || 'Empresa não encontrada'}</div>
+                                          <div className="text-xs text-muted-foreground">ID: {invoice.id}</div>
+                                        </TableCell>
+                                        <TableCell>{`${String(invoice.month).padStart(2, '0')}/${invoice.year}`}</TableCell>
                                         <TableCell className="text-right">{formatCurrency(invoice.totalRevenue)}</TableCell>
                                         <TableCell className="font-semibold text-right">{formatCurrency(invoice.netAmountToTransfer)}</TableCell>
                                         <TableCell className="text-center">
@@ -452,7 +458,7 @@ export default function AdminCompaniesPage() {
                                     </TableRow>
                                 )) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center">
+                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                             Nenhuma fatura gerada para este período.
                                         </TableCell>
                                     </TableRow>
