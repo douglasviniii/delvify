@@ -19,27 +19,26 @@ export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
   
   // Extrai o hostname da requisição. Prioriza o 'x-forwarded-host' que é passado pelo proxy/infra.
-  const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'app.delvify.com';
+  let hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'app.delvify.com';
 
-  // Define o domínio principal da sua aplicação.
-  // Em produção, isso deve ser o seu domínio real, ex: 'delvify.com'.
-  const mainAppDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:9002';
+  // Remove a porta em ambiente de desenvolvimento, se presente.
+  if (hostname.includes(':')) {
+    hostname = hostname.split(':')[0];
+  }
   
-  // Limpa o hostname para remover a porta em ambiente de desenvolvimento
-  const currentHost = hostname.replace(`:${url.port}`, '');
-
+  // Define o domínio principal da sua aplicação.
+  const mainAppDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'delvify.com';
+  
   // Se a requisição for para o domínio principal, não faz nada e permite que a requisição continue.
-  if (currentHost === mainAppDomain) {
+  if (hostname === mainAppDomain || hostname === 'localhost') {
     return NextResponse.next();
   }
 
-  // Reescreve a URL: todos os outros domínios são tratados como subdomínios/inquilinos.
-  // Por exemplo, uma requisição para 'cursosdojoao.com/sobre' é reescrita para
-  // 'app.delvify.com/cursosdojoao.com/sobre'.
-  // O cabeçalho 'x-forwarded-host' é usado para passar o hostname original para a aplicação.
-  const rewriteUrl = new URL(`/${currentHost}${url.pathname}`, req.url);
+  // Reescreve a URL: todos os outros domínios são tratados como inquilinos.
+  const rewriteUrl = new URL(`/${hostname}${url.pathname}`, req.url);
   
   const response = NextResponse.rewrite(rewriteUrl);
+  // Passa o hostname original para a aplicação poder identificá-lo.
   response.headers.set('x-forwarded-host', hostname);
 
   return response;
