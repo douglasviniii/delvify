@@ -62,7 +62,7 @@ const DescriptionListItem = ({ term, children }: { term: string, children: React
         <dt className="w-1/4 font-medium text-foreground">{term}</dt>
         <dd className="mt-1 text-muted-foreground sm:mt-0 sm:w-3/4">{children}</dd>
     </div>
-)
+);
 
 
 export default function AdminCompaniesPage() {
@@ -415,5 +415,3 @@ export default function AdminCompaniesPage() {
     </div>
   );
 }
-
-    
