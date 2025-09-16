@@ -5,7 +5,8 @@ import { useState, FormEvent, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -48,17 +49,22 @@ export default function LoginPage() {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if the user is a tenant admin by looking for a document in the 'tenants' collection with their UID.
+      const tenantDocRef = doc(db, 'tenants', user.uid);
+      const tenantDocSnap = await getDoc(tenantDocRef);
       
-      // A simple way to distinguish between an admin/tenant and a student.
-      // In a real app, this could be based on custom claims in Firebase Auth.
-      if (userCredential.user.uid === 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2') {
-         toast({
+      if (tenantDocSnap.exists()) {
+        // User is a tenant admin (or super admin), redirect to admin dashboard.
+        toast({
           title: 'Login de Admin bem-sucedido!',
           description: 'Redirecionando para o painel...',
         });
         router.push('/admin/dashboard');
       } else {
-         toast({
+        // User is a student, redirect to student area.
+        toast({
           title: 'Login bem-sucedido!',
           description: 'Redirecionando para sua área...',
         });
