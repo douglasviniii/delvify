@@ -161,7 +161,7 @@ export default function AdminCompaniesPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-4xl">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                   <DialogTitle>Gerenciar {selectedTenant?.companyName}</DialogTitle>
                   <DialogDescription>
@@ -247,5 +247,3 @@ export default function AdminCompaniesPage() {
     </div>
   );
 }
-
-    
