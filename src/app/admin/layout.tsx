@@ -45,6 +45,7 @@ import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UserNav } from '@/components/ui/user-nav';
 
+const SUPER_ADMIN_UID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -53,13 +54,19 @@ const menuItems = [
   { href: '/admin/site-studio', label: 'Estudio de Site', icon: PanelTop },
   { href: '/admin/certificates/settings', label: 'Certificados', icon: Award },
   { href: '#', label: 'Páginas', icon: File },
-  { href: '#', label: 'Empresas', icon: Building },
+  // O item 'Empresas' será adicionado condicionalmente
   { href: '/admin/users', label: 'Alunos', icon: GraduationCap },
 ];
 
 const AdminSidebarMenu = () => {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(setUser);
+    return () => unsubscribe();
+  }, []);
   
   const handleLinkClick = () => {
     if(setOpenMobile) {
@@ -82,6 +89,19 @@ const AdminSidebarMenu = () => {
           </Link>
         </SidebarMenuItem>
       ))}
+      {user?.uid === SUPER_ADMIN_UID && (
+        <SidebarMenuItem>
+          <Link href="/admin/companies" onClick={handleLinkClick}>
+            <SidebarMenuButton
+              isActive={pathname.startsWith('/admin/companies')}
+              tooltip="Empresas"
+            >
+              <Building />
+              <span>Empresas</span>
+            </SidebarMenuButton>
+          </Link>
+        </SidebarMenuItem>
+      )}
     </SidebarMenu>
   );
 };
