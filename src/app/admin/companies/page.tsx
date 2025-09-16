@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,7 +29,14 @@ export default function AdminCompaniesPage() {
   useEffect(() => {
     const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(tenantsQuery, (snapshot) => {
-      const tenantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tenant));
+      const tenantsData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          // Convert Timestamp to a serializable format (ISO string)
+          if (data.createdAt instanceof Timestamp) {
+              data.createdAt = data.createdAt.toDate().toISOString();
+          }
+          return { id: doc.id, ...data } as Tenant;
+      });
       setTenants(tenantsData);
       setIsLoading(false);
     }, (error) => {
