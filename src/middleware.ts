@@ -15,22 +15,9 @@ export const config = {
 };
 
 export default function middleware(req: NextRequest) {
-  const url = req.nextUrl;
-  const hostname = req.headers.get('host') || 'delvify.delvind.com';
-
-  const rootDomain = 'delvify.delvind.com';
-  
-  // Normalize hostname for local development
-  const currentHost = hostname.split(':')[0];
-
-  // If it's the root domain or localhost, do nothing
-  if (currentHost === rootDomain || currentHost === 'localhost') {
-    return NextResponse.next();
-  }
-
-  // For any other domain (tenant domain), rewrite the path
-  // e.g., a request to `tenant1.com/dashboard` is rewritten to `/tenant1.com/dashboard`
-  return NextResponse.rewrite(
-    new URL(`/${currentHost}${url.pathname}${url.search}`, req.url)
-  );
+  // A lógica de reescrita de multi-inquilino foi temporariamente desativada
+  // para corrigir um erro 404 generalizado.
+  // TODO: Reimplementar a lógica multi-inquilino de forma robusta,
+  // possivelmente lendo o hostname nas páginas do servidor em vez de reescrever a URL.
+  return NextResponse.next();
 }
