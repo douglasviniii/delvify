@@ -12,9 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-// Em uma aplicação multi-inquilino real, o ID do inquilino seria determinado dinamicamente.
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
 export default function StudentPurchasesPage() {
     const [user, authLoading] = useAuthState(auth);
     const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -23,7 +20,7 @@ export default function StudentPurchasesPage() {
     useEffect(() => {
         if (user) {
             setIsLoading(true);
-            getPurchaseHistory(MAIN_TENANT_ID, user.uid)
+            getPurchaseHistory(user.uid)
                 .then(setPurchases)
                 .catch(err => console.error("Failed to load purchase history", err))
                 .finally(() => setIsLoading(false));
