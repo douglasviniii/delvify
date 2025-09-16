@@ -1,8 +1,6 @@
-
-import { redirect } from 'next/navigation';
-
+// This page will now be handled by the middleware and the [lang] directory.
+// This root page.tsx only needs to exist.
+// We can render null and the middleware will handle the redirect.
 export default function RootPage() {
-  // O middleware irá interceptar o redirecionamento e adicionar o prefixo de idioma correto.
-  // Por exemplo, /login se tornará /pt/login.
-  redirect('/login');
+  return null;
 }
