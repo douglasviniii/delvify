@@ -3,7 +3,10 @@
 'use server';
 
 import { getAdminDb } from './firebase-admin';
-import type { Purchase, PurchasedCourseInfo } from './types';
+import type { Purchase, PurchasedCourseInfo, Course } from './types';
+import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
+import { db } from './firebase';
+
 
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
     const data = doc.data();
@@ -30,7 +33,6 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
     const adminDb = getAdminDb();
 
     try {
-        // 1. Get all purchased courses for the user to identify all relevant tenant IDs
         const userDoc = await adminDb.collection('users').doc(userId).get();
         if (!userDoc.exists) {
             return [];
@@ -42,14 +44,10 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
         }
 
         const purchasedCoursesInfo: Record<string, PurchasedCourseInfo> = userData.purchasedCourses;
-        
-        // 2. Collect all unique tenant IDs from the user's purchases
-        const tenantIds = new Set<string>();
-        Object.values(purchasedCoursesInfo).forEach(info => tenantIds.add(info.tenantId));
+        const tenantIds = new Set<string>(Object.values(purchasedCoursesInfo).map(info => info.tenantId));
 
         const allPurchases: Purchase[] = [];
 
-        // 3. Fetch purchases from each tenant
         for (const tenantId of Array.from(tenantIds)) {
             const purchasesQuery = adminDb.collection(`tenants/${tenantId}/purchases`)
                 .where('userId', '==', userId)
@@ -57,9 +55,9 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
             
             const querySnapshot = await purchasesQuery.get();
 
-            // 4. Fetch course details for each purchase
             for (const doc of querySnapshot.docs) {
                 const purchaseData = serializeDoc(doc) as Purchase;
+                purchaseData.tenantId = tenantId;
                 
                 try {
                     const courseRef = await adminDb.doc(`tenants/${tenantId}/courses/${purchaseData.courseId}`).get();
@@ -69,7 +67,7 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
                         purchaseData.courseTitle = 'Curso não encontrado';
                     }
                 } catch (courseError) {
-                    const errorMessage = courseError instanceof Error ? courseError.message : 'Um erro desconhecido ocorreu.';
+                     const errorMessage = courseError instanceof Error ? courseError.message : 'Um erro desconhecido ocorreu.';
                     console.error(`Could not fetch course title for courseId ${purchaseData.courseId}`, errorMessage);
                     purchaseData.courseTitle = 'Detalhes do curso indisponíveis';
                 }
@@ -78,7 +76,6 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
             }
         }
         
-        // 5. Re-sort all collected purchases by date
         allPurchases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         return allPurchases;
@@ -86,6 +83,48 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
         console.error(`Error fetching purchase history for user ${userId}:`, errorMessage);
+        return [];
+    }
+}
+
+
+export async function getAllPurchases(): Promise<Purchase[]> {
+    const adminDb = getAdminDb();
+    try {
+        const purchasesCol = collectionGroup(adminDb, 'purchases');
+        const purchasesSnapshot = await getDocs(purchasesCol);
+        
+        const allPurchases: Purchase[] = [];
+        const courseCache = new Map<string, Course>();
+
+        for (const purchaseDoc of purchasesSnapshot.docs) {
+            const purchase = serializeDoc(purchaseDoc) as Omit<Purchase, 'tenantId' | 'courseTitle'>;
+            const tenantId = purchaseDoc.ref.parent.parent?.id;
+
+            if (tenantId) {
+                let courseTitle = 'Curso não encontrado';
+                const courseCacheKey = `${tenantId}-${purchase.courseId}`;
+                
+                if (courseCache.has(courseCacheKey)) {
+                    courseTitle = courseCache.get(courseCacheKey)?.title || 'Curso não encontrado';
+                } else {
+                    const courseRef = doc(db, `tenants/${tenantId}/courses/${purchase.courseId}`);
+                    const courseSnap = await getDoc(courseRef);
+                    if (courseSnap.exists()) {
+                        const courseData = courseSnap.data() as Course;
+                        courseCache.set(courseCacheKey, courseData);
+                        courseTitle = courseData.title;
+                    }
+                }
+                
+                allPurchases.push({ ...purchase, tenantId, courseTitle });
+            }
+        }
+        
+        return allPurchases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } catch(error) {
+        const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+        console.error('Error fetching all purchases:', errorMessage);
         return [];
     }
 }

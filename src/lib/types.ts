@@ -116,9 +116,10 @@ export interface GlobalSettings {
 
 export type Purchase = {
     id: string;
+    tenantId: string; // Added tenantId to each purchase
     userId: string;
     courseId: string;
-    courseTitle?: string; // Will be added by combining data
+    courseTitle?: string;
     amount: number;
     currency?: string;
     stripeCheckoutSessionId?: string;
@@ -145,6 +146,16 @@ export type PurchasedCourseInfo = {
   price: number;
   purchasedAt: string; // ISO String format
 }
+
+export const FinancialSettingsSchema = z.object({
+  stripePercentage: z.coerce.number().min(0, "Deve ser positivo."),
+  stripeFixed: z.coerce.number().min(0, "Deve ser positivo."),
+  delvifyPercentage: z.coerce.number().min(0, "Deve ser positivo."),
+  delvifyFixed: z.coerce.number().min(0, "Deve ser positivo."),
+  taxPercentage: z.coerce.number().min(0, "Deve ser positivo."),
+});
+
+export type FinancialSettings = z.infer<typeof FinancialSettingsSchema>;
 
 
 export const CustomizeTenantBrandingInputSchema = z.object({

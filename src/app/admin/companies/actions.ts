@@ -4,6 +4,9 @@
 import { getAdminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { Tenant } from './page';
 
 
 export async function saveTenantDomain(tenantId: string, domain: string) {
@@ -11,7 +14,6 @@ export async function saveTenantDomain(tenantId: string, domain: string) {
         return { success: false, message: "ID do inquilino não encontrado." };
     }
     
-    // Zod schema to validate domain name
     const DomainSchema = z.string().regex(/^(?!-)[A-Za-z0-9-]+([\-\.]{1}[a-z0-9]+)*\.[A-Za-z]{2,6}$/, "Formato de domínio inválido").or(z.literal(''));
     
     const validation = DomainSchema.safeParse(domain);
@@ -58,4 +60,13 @@ export async function saveTenantNotes(tenantId: string, notes: string) {
     }
 }
 
-    
+export async function getTenants(): Promise<Tenant[]> {
+    try {
+        const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(tenantsQuery);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tenant));
+    } catch (error) {
+        console.error("Error fetching tenants:", error);
+        return [];
+    }
+}

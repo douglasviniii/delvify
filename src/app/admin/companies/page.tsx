@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users } from "lucide-react";
+import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
@@ -17,14 +17,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { saveTenantDomain, saveTenantNotes } from './actions';
+import { saveTenantDomain, saveTenantNotes, getTenants } from './actions';
+import { getAllPurchases } from '@/lib/purchases';
+import { getFinancialSettings } from './financial-settings-actions';
+import type { FinancialSettings, Purchase } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { FinancialSettingsForm } from './financial-settings-form';
 
-
-type Tenant = {
+export type Tenant = {
   id: string;
   companyName: string;
   cnpj: string;
@@ -35,27 +38,12 @@ type Tenant = {
   notes?: string;
 };
 
-const chartData = [
-  { month: "Jan", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Fev", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Mar", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Abr", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Mai", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Jun", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Jul", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Ago", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Set", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Out", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Nov", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Dez", total: Math.floor(Math.random() * 5000) + 1000 },
-]
-
 const chartConfig = {
   total: {
     label: "Receita",
     color: "hsl(var(--primary))",
   },
-}
+};
 
 const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode }) => (
     <div className="flex flex-col py-3 px-4 odd:bg-muted/50 sm:flex-row sm:gap-4">
@@ -67,6 +55,8 @@ const DescriptionListItem = ({ term, children }: { term: string, children: React
 
 export default function AdminCompaniesPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [financialSettings, setFinancialSettings] = useState<FinancialSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -74,27 +64,29 @@ export default function AdminCompaniesPage() {
   const [notesInput, setNotesInput] = useState('');
   const [isSaving, startTransition] = useTransition();
   const { toast } = useToast();
-
+  const [selectedTenantFilter, setSelectedTenantFilter] = useState('all');
 
   useEffect(() => {
-    const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(tenantsQuery, (snapshot) => {
-      const tenantsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          if (data.createdAt instanceof Timestamp) {
-              data.createdAt = data.createdAt.toDate().toISOString();
-          }
-          return { id: doc.id, ...data } as Tenant;
-      });
-      setTenants(tenantsData);
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Error fetching tenants:", error);
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [tenantsData, purchasesData, settingsData] = await Promise.all([
+                getTenants(),
+                getAllPurchases(),
+                getFinancialSettings()
+            ]);
+            setTenants(tenantsData);
+            setPurchases(purchasesData);
+            setFinancialSettings(settingsData);
+        } catch (error) {
+            console.error("Error fetching page data:", error);
+            toast({ title: "Erro", description: "Não foi possível carregar os dados da página.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchData();
+  }, [toast]);
 
   const handleManageClick = (tenant: Tenant) => {
     setSelectedTenant(tenant);
@@ -131,6 +123,52 @@ export default function AdminCompaniesPage() {
       minute: '2-digit'
     });
   };
+
+  const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  }
+  
+  const filteredPurchases = selectedTenantFilter === 'all'
+    ? purchases
+    : purchases.filter(p => p.tenantId === selectedTenantFilter);
+  
+  const totalRevenue = filteredPurchases.reduce((acc, p) => acc + p.amount, 0);
+
+  let totalDelvifyProfit = 0;
+  let totalTaxes = 0;
+  let totalToTransfer = 0;
+
+  if (financialSettings) {
+      filteredPurchases.forEach(purchase => {
+          const saleValue = purchase.amount;
+          
+          const taxValue = saleValue * (financialSettings.taxPercentage / 100);
+          const valueAfterTaxes = saleValue - taxValue;
+          
+          const stripeFee = valueAfterTaxes * (financialSettings.stripePercentage / 100) + financialSettings.stripeFixed;
+          const valueAfterStripe = valueAfterTaxes - stripeFee;
+          
+          const delvifyFee = valueAfterStripe * (financialSettings.delvifyPercentage / 100) + financialSettings.delvifyFixed;
+          
+          const tenantNet = valueAfterStripe - delvifyFee;
+
+          totalDelvifyProfit += delvifyFee;
+          totalTaxes += taxValue;
+          totalToTransfer += tenantNet;
+      });
+  }
+  
+  const monthlyRevenue = purchases.reduce((acc, p) => {
+      const month = new Date(p.createdAt).toLocaleString('pt-BR', { month: 'short' });
+      acc[month] = (acc[month] || 0) + p.amount;
+      return acc;
+  }, {} as Record<string, number>);
+
+  const chartData = Object.keys(monthlyRevenue).map(month => ({
+      month,
+      total: monthlyRevenue[month]
+  })).reverse();
+
 
   return (
     <div className="space-y-6">
@@ -227,7 +265,7 @@ export default function AdminCompaniesPage() {
             <TabsContent value="financial" className="space-y-6">
                 <div className="flex items-center justify-between">
                     <CardTitle>Dashboard Financeiro</CardTitle>
-                     <Select>
+                     <Select value={selectedTenantFilter} onValueChange={setSelectedTenantFilter}>
                         <SelectTrigger className="w-[280px]">
                             <SelectValue placeholder="Filtrar por empresa..." />
                         </SelectTrigger>
@@ -246,38 +284,38 @@ export default function AdminCompaniesPage() {
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">R$ 45.231,89</div>
-                            <p className="text-xs text-muted-foreground">+20.1% em relação ao mês passado</p>
+                            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+                            <p className="text-xs text-muted-foreground">Total de vendas na plataforma.</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Vendas</CardTitle>
+                            <CardTitle className="text-sm font-medium">Lucro da Plataforma</CardTitle>
                             <TrendingUp className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">+1230</div>
-                            <p className="text-xs text-muted-foreground">+180.1% em relação ao mês passado</p>
+                            <div className="text-2xl font-bold">{formatCurrency(totalDelvifyProfit)}</div>
+                            <p className="text-xs text-muted-foreground">Sua receita líquida após taxas.</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Reembolsos</CardTitle>
-                            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium">Impostos Retidos</CardTitle>
+                            <PiggyBank className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">-R$ 1.231,10</div>
-                            <p className="text-xs text-muted-foreground">+19% em relação ao mês passado</p>
+                            <div className="text-2xl font-bold">{formatCurrency(totalTaxes)}</div>
+                            <p className="text-xs text-muted-foreground">Valor a ser pago em impostos.</p>
                         </CardContent>
-                    </Card>
+                    </Card>>
                      <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Novos Inquilinos</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium">Total a Repassar</CardTitle>
+                            <HandCoins className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">+{tenants.length}</div>
-                            <p className="text-xs text-muted-foreground">Total de empresas na plataforma</p>
+                            <div className="text-2xl font-bold">{formatCurrency(totalToTransfer)}</div>
+                            <p className="text-xs text-muted-foreground">Valor líquido para seus clientes.</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -308,10 +346,7 @@ export default function AdminCompaniesPage() {
                 </Card>
             </TabsContent>
              <TabsContent value="settings">
-                 <Card>
-                    <CardHeader><CardTitle>Configurações Financeiras</CardTitle></CardHeader>
-                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground">Em breve: configuração de taxas e impostos da plataforma.</CardContent>
-                </Card>
+                 <FinancialSettingsForm />
             </TabsContent>
       </Tabs>
 
