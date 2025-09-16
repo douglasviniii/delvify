@@ -175,7 +175,7 @@ export default function CourseModulesPage() {
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
-        accept={course?.contentType === 'pdf' ? '.pdf' : 'video/*'}
+        accept={course?.contentType === 'pdf' ? 'image/png, image/jpeg, image/gif' : 'video/*'}
       />
 
       <Form {...form}>
@@ -184,7 +184,8 @@ export default function CourseModulesPage() {
             <CardHeader>
               <CardTitle>Episódios do Curso</CardTitle>
               <CardDescription>
-                Adicione, remova e reordene os episódios. O tipo de conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'PDF'}) foi definido na criação do curso.
+                Adicione, remova e reordene os episódios. O tipo de conteúdo foi definido como {' '}
+                <strong>{course?.contentType === 'video' ? 'Vídeo' : 'Slides (Imagens)'}</strong>.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -200,7 +201,7 @@ export default function CourseModulesPage() {
                           name={`modules.${index}.title`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Título do Episódio</FormLabel>
+                              <FormLabel>Título do Episódio/Slide</FormLabel>
                               <FormControl>
                                 <Input placeholder="Ex: Introdução ao Curso" {...field} />
                               </FormControl>
@@ -213,7 +214,7 @@ export default function CourseModulesPage() {
                           name={`modules.${index}.description`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Descrição do Episódio (Opcional)</FormLabel>
+                              <FormLabel>Descrição (Opcional)</FormLabel>
                               <FormControl>
                                 <Textarea placeholder="Descreva o que será abordado neste episódio." {...field} />
                               </FormControl>
@@ -226,7 +227,7 @@ export default function CourseModulesPage() {
                           name={`modules.${index}.contentUrl`}
                           render={({ field: urlField }) => (
                             <FormItem>
-                               <FormLabel>Arquivo de Conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'PDF'})</FormLabel>
+                               <FormLabel>Arquivo de Conteúdo ({course?.contentType === 'video' ? 'Vídeo' : 'Imagem do Slide'})</FormLabel>
                                 <FormControl>
                                   <div className="flex items-center gap-4">
                                       <Input placeholder="Cole uma URL ou carregue um arquivo" {...urlField} />

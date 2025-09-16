@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect, useActionState } from 'react';
 import type { Course, Module } from '@/lib/types';
-import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight, Star as StarIcon, Menu, X } from 'lucide-react';
+import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight, Star as StarIcon, Menu, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import Image from 'next/image';
 
 function ReviewSubmitButton() {
     const { pending } = useFormStatus();
@@ -160,8 +161,8 @@ const Sidebar = ({
                             <div className="flex-1">
                                 <p className="leading-tight">{index + 1}. {module.title}</p>
                                 <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                    {course.contentType === 'video' ? <PlayCircle className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
-                                    {course.contentType === 'video' ? 'Vídeo' : 'Documento'}
+                                    {course.contentType === 'video' ? <PlayCircle className="h-3 w-3" /> : <ImageIcon className="h-3 w-3" />}
+                                    {course.contentType === 'video' ? 'Vídeo' : 'Slide'}
                                 </span>
                             </div>
                         </button>
@@ -210,14 +211,17 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
         }
 
         if (course.contentType === 'pdf') {
-            const pdfUrl = `https://docs.google.com/gview?url=${encodeURIComponent(activeModule.contentUrl)}&embedded=true`;
             return (
-                <iframe
-                    src={pdfUrl}
-                    className="w-full h-full border-0"
-                    title={activeModule.title}
-                    allowFullScreen
-                />
+                <div className="w-full h-full flex items-center justify-center bg-muted/30">
+                    <Image
+                        key={activeModule.id}
+                        src={activeModule.contentUrl}
+                        alt={activeModule.title}
+                        width={1280}
+                        height={720}
+                        className="object-contain max-w-full max-h-full"
+                    />
+                </div>
             );
         }
 
