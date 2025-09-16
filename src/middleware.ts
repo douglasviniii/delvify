@@ -17,9 +17,9 @@ export const config = {
 
 export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
-
-  // Extrai o hostname da requisição (ex: 'cursosdojoao.com', 'app.delvify.com').
-  const hostname = req.headers.get('host') || 'app.delvify.com';
+  
+  // Extrai o hostname da requisição. Prioriza o 'x-forwarded-host' que é passado pelo proxy/infra.
+  const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'app.delvify.com';
 
   // Define o domínio principal da sua aplicação.
   // Em produção, isso deve ser o seu domínio real, ex: 'delvify.com'.
