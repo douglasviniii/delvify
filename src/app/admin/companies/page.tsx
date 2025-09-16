@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Building, PlusCircle } from "lucide-react";
+import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
@@ -19,6 +19,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { saveTenantDomain, saveTenantNotes } from './actions';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+
 
 type Tenant = {
   id: string;
@@ -30,6 +34,28 @@ type Tenant = {
   customDomain?: string;
   notes?: string;
 };
+
+const chartData = [
+  { month: "Jan", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Fev", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Mar", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Abr", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Mai", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Jun", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Jul", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Ago", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Set", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Out", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Nov", total: Math.floor(Math.random() * 5000) + 1000 },
+  { month: "Dez", total: Math.floor(Math.random() * 5000) + 1000 },
+]
+
+const chartConfig = {
+  total: {
+    label: "Receita",
+    color: "hsl(var(--primary))",
+  },
+}
 
 const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode}) => (
     <div className="flex flex-col py-3 px-4 odd:bg-muted/50 sm:flex-row sm:gap-4">
@@ -103,8 +129,8 @@ export default function AdminCompaniesPage() {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -198,10 +224,81 @@ export default function AdminCompaniesPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-             <TabsContent value="financial">
-                <Card>
-                    <CardHeader><CardTitle>Dashboard Financeiro</CardTitle></CardHeader>
-                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground">Em breve: um dashboard financeiro completo.</CardContent>
+            <TabsContent value="financial" className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <CardTitle>Dashboard Financeiro</CardTitle>
+                     <Select>
+                        <SelectTrigger className="w-[280px]">
+                            <SelectValue placeholder="Filtrar por empresa..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas as Empresas</SelectItem>
+                            {tenants.map(tenant => (
+                                <SelectItem key={tenant.id} value={tenant.id}>{tenant.companyName}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Receita Bruta Total</CardTitle>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">R$ 45.231,89</div>
+                            <p className="text-xs text-muted-foreground">+20.1% em relação ao mês passado</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Vendas</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">+1230</div>
+                            <p className="text-xs text-muted-foreground">+180.1% em relação ao mês passado</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Reembolsos</CardTitle>
+                            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">-R$ 1.231,10</div>
+                            <p className="text-xs text-muted-foreground">+19% em relação ao mês passado</p>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Novos Inquilinos</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">+{tenants.length}</div>
+                            <p className="text-xs text-muted-foreground">Total de empresas na plataforma</p>
+                        </CardContent>
+                    </Card>
+                </div>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Visão Geral de Receita</CardTitle>
+                        <CardDescription>Receita mensal de todas as empresas.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                         <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                            <BarChart data={chartData}>
+                                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+                                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `R$ ${value / 1000}k`} />
+                                 <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Bar dataKey="total" fill="var(--color-total)" radius={8} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
                 </Card>
             </TabsContent>
              <TabsContent value="transfers">
@@ -292,7 +389,7 @@ export default function AdminCompaniesPage() {
                                 <CardDescription>
                                     Adicione notas, lembretes ou informações importantes sobre este cliente. Visível apenas para você.
                                 </CardDescription>
-                            </CardHeader>
+                            </Header>
                             <CardContent className="space-y-4">
                                 <Textarea 
                                     placeholder="Escreva suas anotações aqui..."
