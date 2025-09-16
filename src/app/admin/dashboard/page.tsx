@@ -6,7 +6,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpen, Newspaper, DollarSign, HandCoins, PiggyBank, TrendingDown, Loader2 } from "lucide-react";
+import { Users, BookOpen, Newspaper, DollarSign, HandCoins, PiggyBank, TrendingDown, Loader2, RefreshCw } from "lucide-react";
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTenantPurchases } from '@/lib/purchases';
 import { getFinancialSettings } from '../companies/financial-settings-actions';
@@ -53,6 +53,7 @@ export default function AdminDashboardPage() {
       totalDelvifyFees: 0,
       totalTaxesAndGateway: 0,
       netRevenue: 0,
+      totalRefunds: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -78,9 +79,15 @@ export default function AdminDashboardPage() {
                 let totalDelvifyFees = 0;
                 let totalTaxes = 0;
                 let totalGatewayFees = 0;
+                let totalRefunds = 0;
 
                 if (financialSettings) {
                     purchases.forEach(purchase => {
+                        if (purchase.status === 'refunded') {
+                            totalRefunds += purchase.amount;
+                            return; // Skip refunded purchases from revenue calculation
+                        }
+
                         const saleValue = purchase.amount;
                         totalRevenue += saleValue;
 
@@ -116,6 +123,7 @@ export default function AdminDashboardPage() {
                     totalDelvifyFees,
                     totalTaxesAndGateway: totalTaxes + totalGatewayFees,
                     netRevenue,
+                    totalRefunds,
                 });
 
             } catch (error) {
@@ -132,10 +140,11 @@ export default function AdminDashboardPage() {
   }, [user, loadingAuth]);
   
   const statCards = [
-    { title: "Faturamento Bruto", value: formatCurrency(stats.totalRevenue), description: "Total de vendas na sua plataforma.", icon: <DollarSign className="h-4 w-4 text-muted-foreground" />, key: 'revenue' },
+    { title: "Faturamento Bruto", value: formatCurrency(stats.totalRevenue), description: "Total de vendas concluídas.", icon: <DollarSign className="h-4 w-4 text-muted-foreground" />, key: 'revenue' },
+    { title: "Líquido a Receber", value: formatCurrency(stats.netRevenue), description: "Valor estimado a ser repassado.", icon: <HandCoins className="h-4 w-4 text-muted-foreground" />, key: 'net' },
     { title: "Taxas da Plataforma", value: formatCurrency(stats.totalDelvifyFees), description: "Taxa de serviço DelviFy.", icon: <TrendingDown className="h-4 w-4 text-muted-foreground" />, key: 'delvify' },
     { title: "Impostos e Taxas Gateway", value: formatCurrency(stats.totalTaxesAndGateway), description: "Taxas de pagamento e impostos retidos.", icon: <PiggyBank className="h-4 w-4 text-muted-foreground" />, key: 'taxes' },
-    { title: "Líquido a Receber", value: formatCurrency(stats.netRevenue), description: "Valor estimado a ser repassado.", icon: <HandCoins className="h-4 w-4 text-muted-foreground" />, key: 'net' },
+    { title: "Cancelamentos e Reembolsos", value: formatCurrency(stats.totalRefunds), description: "Valor total de vendas reembolsadas.", icon: <RefreshCw className="h-4 w-4 text-muted-foreground" />, key: 'refunds' },
   ];
   
   const otherCards = [
@@ -152,7 +161,7 @@ export default function AdminDashboardPage() {
         <p className="text-muted-foreground">Bem-vindo de volta! Aqui está um resumo da sua empresa.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {statCards.map((stat) => (
           <StatCard key={stat.key} title={stat.title} value={stat.value} description={stat.description} icon={stat.icon} isLoading={isLoading} />
         ))}

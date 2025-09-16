@@ -125,6 +125,7 @@ export type Purchase = {
     stripeCheckoutSessionId?: string;
     paymentMethod?: 'card' | 'boleto' | 'pix' | 'free';
     createdAt: string;
+    status: 'completed' | 'refunded' | 'pending';
 };
 
 export type UserProfile = {

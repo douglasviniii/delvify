@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
                     stripeCheckoutSessionId: session.id,
                     paymentMethod: paymentMethod, // Save the determined payment method
                     createdAt: FieldValue.serverTimestamp(),
+                    status: 'completed', // Set status to completed
                 });
 
                 console.log(`Purchase recorded for tenant ${tenantId} via ${paymentMethod}`);
