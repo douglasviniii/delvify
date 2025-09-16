@@ -3,12 +3,11 @@
 
 import { useState, useRef, useEffect, useActionState } from 'react';
 import type { Course, Module } from '@/lib/types';
-import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight, Star as StarIcon, Menu, X, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, Circle, FileText, PlayCircle, Notebook, Send, ArrowLeft, ArrowRight, Star as StarIcon, Menu, X, Image as ImageIcon, PanelLeftClose, PanelRightClose, PanelLeftOpen, PanelRightOpen, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +18,8 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 function ReviewSubmitButton() {
     const { pending } = useFormStatus();
@@ -108,8 +109,7 @@ const CourseReviewForm = ({ courseId, tenantId }: { courseId: string; tenantId: 
     )
 }
 
-const Sidebar = ({
-    isOpen,
+const LeftSidebar = ({
     course,
     modules,
     activeModule,
@@ -117,7 +117,6 @@ const Sidebar = ({
     completedModules,
     toggleCompletion
 }: {
-    isOpen: boolean;
     course: Course;
     modules: Module[];
     activeModule: Module | null;
@@ -128,14 +127,9 @@ const Sidebar = ({
     const progress = (completedModules.size / modules.length) * 100;
     
     return (
-        <aside className={cn(
-            "absolute inset-y-0 left-0 z-20 flex-col w-80 bg-card border-r transform transition-transform duration-300 md:relative md:translate-x-0",
-            isOpen ? "translate-x-0" : "-translate-x-full"
-        )}>
-             <div className="p-4 border-b">
-                <Link href={`/student/courses/${course.id}`}>
-                    <h2 className="text-lg font-bold truncate hover:text-primary">{course.title}</h2>
-                </Link>
+        <div className="flex flex-col h-full bg-card border-r">
+             <div className="p-4 border-b shrink-0">
+                <h2 className="text-lg font-bold truncate">{course.title}</h2>
                 <div className="flex items-center gap-2 mt-2">
                     <Progress value={progress} className="h-2" />
                     <span className="text-xs text-muted-foreground whitespace-nowrap">{Math.round(progress)}%</span>
@@ -152,7 +146,7 @@ const Sidebar = ({
                                 activeModule?.id === module.id ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted'
                             )}
                         >
-                             <div onClick={(e) => { e.stopPropagation(); toggleCompletion(module.id); }} className="pt-0.5">
+                             <div onClick={(e) => { e.stopPropagation(); toggleCompletion(module.id); }} className="pt-0.5 cursor-pointer">
                                 {completedModules.has(module.id) ? 
                                     <CheckCircle className="h-5 w-5 text-green-500" /> : 
                                     <Circle className="h-5 w-5 text-muted-foreground" />
@@ -169,14 +163,47 @@ const Sidebar = ({
                     ))}
                 </div>
             </ScrollArea>
-        </aside>
+        </div>
     );
 };
+
+const RightSidebar = ({ course }: { course: Course }) => {
+    return (
+        <div className="h-full bg-card border-l p-4 flex flex-col">
+             <Tabs defaultValue="description" className="w-full flex-1 flex flex-col">
+                <TabsList className="shrink-0 grid grid-cols-3">
+                    <TabsTrigger value="description">Sobre</TabsTrigger>
+                    <TabsTrigger value="notes">Anotações</TabsTrigger>
+                    <TabsTrigger value="review">Avaliar</TabsTrigger>
+                </TabsList>
+                <ScrollArea className="flex-1 mt-4">
+                    <TabsContent value="description" className="p-1 text-sm text-muted-foreground">
+                        <h3 className="font-bold text-foreground mb-2">Descrição do Episódio</h3>
+                        {/* A descrição será preenchida dinamicamente no componente principal */}
+                    </TabsContent>
+                    <TabsContent value="notes">
+                        <div className="space-y-4 p-1">
+                            <h3 className="font-semibold">Anotações Privadas</h3>
+                            <Textarea placeholder="Suas anotações... visíveis somente para você." className="min-h-[100px]" />
+                            <Button size="sm">Salvar Anotação</Button>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="review">
+                        <div className="p-1">
+                            <CourseReviewForm courseId={course.id} tenantId={course.tenantId} />
+                        </div>
+                    </TabsContent>
+                </ScrollArea>
+            </Tabs>
+        </div>
+    )
+}
 
 export default function CourseViewer({ course, modules }: { course: Course; modules: Module[] }) {
     const [activeModule, setActiveModule] = useState<Module | null>(modules.length > 0 ? modules[0] : null);
     const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
-    const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [isLeftSidebarOpen, setLeftSidebarOpen] = useState(true);
+    const [isRightSidebarOpen, setRightSidebarOpen] = useState(true);
 
     const activeModuleIndex = modules.findIndex(m => m.id === activeModule?.id);
 
@@ -210,15 +237,15 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
             );
         }
 
-        if (course.contentType === 'pdf') {
+        if (course.contentType === 'pdf') { // Now 'pdf' means image slides
             return (
-                <div className="w-full h-full flex items-center justify-center bg-muted/30">
+                <div className="w-full h-full flex items-center justify-center bg-black" onContextMenu={(e) => e.preventDefault()}>
                     <Image
                         key={activeModule.id}
                         src={activeModule.contentUrl}
                         alt={activeModule.title}
-                        width={1280}
-                        height={720}
+                        width={1920}
+                        height={1080}
                         className="object-contain max-w-full max-h-full"
                     />
                 </div>
@@ -234,6 +261,7 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
                     autoPlay
                     controlsList="nodownload"
                     className="w-full h-full object-contain bg-black"
+                    onContextMenu={(e) => e.preventDefault()}
                 >
                     Seu navegador não suporta a tag de vídeo.
                 </video>
@@ -244,69 +272,100 @@ export default function CourseViewer({ course, modules }: { course: Course; modu
     }
 
     return (
-        <div className="flex h-screen bg-background">
-            <Sidebar 
-                isOpen={isSidebarOpen}
-                course={course}
-                modules={modules}
-                activeModule={activeModule}
-                setActiveModule={setActiveModule}
-                completedModules={completedModules}
-                toggleCompletion={toggleCompletion}
-            />
+        <TooltipProvider>
+            <div className="flex h-screen bg-background text-foreground">
+                {/* Left Sidebar */}
+                <aside className={cn(
+                    "flex-shrink-0 bg-card transition-all duration-300",
+                    isLeftSidebarOpen ? "w-80" : "w-0",
+                    "hidden md:block"
+                )}>
+                   {isLeftSidebarOpen && <LeftSidebar 
+                        course={course}
+                        modules={modules}
+                        activeModule={activeModule}
+                        setActiveModule={setActiveModule}
+                        completedModules={completedModules}
+                        toggleCompletion={toggleCompletion}
+                    />}
+                </aside>
 
-            <div className="flex-1 flex flex-col min-w-0">
-                {/* Header */}
-                <header className="flex items-center justify-between p-2 border-b bg-card h-14">
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-                            {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                        </Button>
-                        <h1 className="font-semibold text-lg truncate hidden sm:block">{activeModule?.title}</h1>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleNavigate('prev')} disabled={activeModuleIndex <= 0}>
-                            <ArrowLeft className="mr-1 h-4 w-4" />
-                            Anterior
-                        </Button>
-                        <Button variant="default" size="sm" onClick={() => handleNavigate('next')} disabled={activeModuleIndex >= modules.length - 1}>
-                            Próximo
-                             <ArrowRight className="ml-1 h-4 w-4" />
-                        </Button>
-                    </div>
-                </header>
+                {/* Main Content */}
+                <div className="flex-1 flex flex-col min-w-0">
+                    <header className="flex items-center justify-between p-2 border-b bg-card h-14 shrink-0">
+                        <div className="flex items-center gap-1">
+                             <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="md:hidden">
+                                        <Menu />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Menu de Aulas (Em Breve)</p>
+                                </TooltipContent>
+                            </Tooltip>
+                             <Tooltip>
+                                <TooltipTrigger asChild>
+                                     <Button variant="ghost" size="icon" onClick={() => setLeftSidebarOpen(!isLeftSidebarOpen)} className="hidden md:flex">
+                                        {isLeftSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{isLeftSidebarOpen ? 'Recolher Menu' : 'Expandir Menu'}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button asChild variant="ghost" size="icon">
+                                        <Link href="/student/courses">
+                                            <Home />
+                                        </Link>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Voltar ao Início</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                        <h1 className="font-semibold text-lg truncate px-2 text-center">{activeModule?.title}</h1>
+                         <div className="flex items-center gap-1">
+                             <Button variant="outline" size="sm" onClick={() => handleNavigate('prev')} disabled={activeModuleIndex <= 0}>
+                                <ArrowLeft className="mr-1 h-4 w-4" />
+                                Anterior
+                            </Button>
+                            <Button variant="default" size="sm" onClick={() => handleNavigate('next')} disabled={activeModuleIndex >= modules.length - 1}>
+                                Próximo
+                                 <ArrowRight className="ml-1 h-4 w-4" />
+                            </Button>
+                             <Tooltip>
+                                <TooltipTrigger asChild>
+                                     <Button variant="ghost" size="icon" onClick={() => setRightSidebarOpen(!isRightSidebarOpen)} className="hidden md:flex">
+                                        {isRightSidebarOpen ? <PanelRightClose /> : <PanelRightOpen />}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{isRightSidebarOpen ? 'Recolher Painel' : 'Expandir Painel'}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </header>
 
-                {/* Main Content & Tabs */}
-                <main className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-grow aspect-video bg-muted">
+                    <main className="flex-1 bg-muted/30 overflow-hidden">
                         {renderContent()}
-                    </div>
-                    <div className="p-4 border-t flex-shrink-0">
-                         <Tabs defaultValue="description" className="w-full">
-                             <TabsList>
-                                <TabsTrigger value="description">Sobre a Aula</TabsTrigger>
-                                <TabsTrigger value="notes">Anotações</TabsTrigger>
-                                <TabsTrigger value="review">Avaliar</TabsTrigger>
-                            </TabsList>
-                             <TabsContent value="description" className="p-4 text-sm text-muted-foreground">
-                                {activeModule?.description || "Nenhuma descrição para esta aula."}
-                            </TabsContent>
-                            <TabsContent value="notes">
-                                <div className="space-y-4 p-4">
-                                    <h3 className="font-semibold">Anotações Privadas</h3>
-                                    <Textarea placeholder="Suas anotações... visíveis somente para você." className="min-h-[100px]" />
-                                    <Button size="sm">Salvar Anotação</Button>
-                                </div>
-                            </TabsContent>
-                             <TabsContent value="review">
-                                 <div className="p-4">
-                                    <CourseReviewForm courseId={course.id} tenantId={course.tenantId} />
-                                 </div>
-                            </TabsContent>
-                        </Tabs>
-                    </div>
-                </main>
+                    </main>
+                </div>
+
+                {/* Right Sidebar */}
+                <aside className={cn(
+                    "flex-shrink-0 bg-card transition-all duration-300",
+                    isRightSidebarOpen ? "w-80" : "w-0",
+                    "hidden md:block"
+                )}>
+                   {isRightSidebarOpen && <RightSidebar course={course} />}
+                </aside>
             </div>
-        </div>
+        </TooltipProvider>
     );
 }
+
+    
