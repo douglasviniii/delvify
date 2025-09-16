@@ -57,7 +57,7 @@ const chartConfig = {
   },
 }
 
-const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode}) => (
+const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode }) => (
     <div className="flex flex-col py-3 px-4 odd:bg-muted/50 sm:flex-row sm:gap-4">
         <dt className="w-1/4 font-medium text-foreground">{term}</dt>
         <dd className="mt-1 text-muted-foreground sm:mt-0 sm:w-3/4">{children}</dd>
@@ -389,7 +389,7 @@ export default function AdminCompaniesPage() {
                                 <CardDescription>
                                     Adicione notas, lembretes ou informações importantes sobre este cliente. Visível apenas para você.
                                 </CardDescription>
-                            </Header>
+                            </CardHeader>
                             <CardContent className="space-y-4">
                                 <Textarea 
                                     placeholder="Escreva suas anotações aqui..."
