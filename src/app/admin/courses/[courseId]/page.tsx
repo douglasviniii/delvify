@@ -175,7 +175,7 @@ export default function CourseModulesPage() {
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
-        accept={course?.contentType === 'pdf' ? 'image/png, image/jpeg, image/gif' : 'video/*'}
+        accept={course?.contentType === 'video' ? 'video/*' : 'image/*'}
       />
 
       <Form {...form}>

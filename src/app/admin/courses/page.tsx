@@ -528,7 +528,7 @@ export default function AdminCoursesPage() {
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione o formato" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     <SelectItem value="video"><Video className="inline-block mr-2 h-4 w-4"/> Conteúdo em Vídeo</SelectItem>
-                                    <SelectItem value="pdf"><FileText className="inline-block mr-2 h-4 w-4"/> Conteúdo em PDF</SelectItem>
+                                    <SelectItem value="pdf"><FileText className="inline-block mr-2 h-4 w-4"/> Slides (Imagens)</SelectItem>
                                 </SelectContent>
                                 </Select>
                             <FormMessage />
