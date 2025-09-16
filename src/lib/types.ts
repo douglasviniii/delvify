@@ -116,13 +116,14 @@ export interface GlobalSettings {
 
 export type Purchase = {
     id: string;
-    tenantId: string; // Added tenantId to each purchase
+    tenantId: string;
     userId: string;
     courseId: string;
     courseTitle?: string;
     amount: number;
     currency?: string;
     stripeCheckoutSessionId?: string;
+    paymentMethod?: 'card' | 'boleto' | 'pix' | 'free';
     createdAt: string;
 };
 
@@ -148,8 +149,10 @@ export type PurchasedCourseInfo = {
 }
 
 export const FinancialSettingsSchema = z.object({
-  stripePercentage: z.coerce.number().min(0, "Deve ser positivo."),
-  stripeFixed: z.coerce.number().min(0, "Deve ser positivo."),
+  stripeCardPercentage: z.coerce.number().min(0, "Deve ser positivo."),
+  stripeCardFixed: z.coerce.number().min(0, "Deve ser positivo."),
+  stripeBoletoFixed: z.coerce.number().min(0, "Deve ser positivo."),
+  stripePixPercentage: z.coerce.number().min(0, "Deve ser positivo."),
   delvifyPercentage: z.coerce.number().min(0, "Deve ser positivo."),
   delvifyFixed: z.coerce.number().min(0, "Deve ser positivo."),
   taxPercentage: z.coerce.number().min(0, "Deve ser positivo."),

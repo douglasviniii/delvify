@@ -10,13 +10,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Percent, DollarSign } from "lucide-react";
+import { Loader2, Percent, DollarSign, CreditCard, Banknote, CircleDollarSign } from "lucide-react";
 import { getFinancialSettings, saveFinancialSettings } from './financial-settings-actions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 
 const initialSettings: FinancialSettings = {
-    stripePercentage: 3.99,
-    stripeFixed: 0.39,
+    stripeCardPercentage: 3.99,
+    stripeCardFixed: 0.39,
+    stripeBoletoFixed: 3.45,
+    stripePixPercentage: 0.99,
     delvifyPercentage: 9,
     delvifyFixed: 0,
     taxPercentage: 6,
@@ -94,32 +97,67 @@ export function FinancialSettingsForm() {
                         Esses valores são usados para calcular os repasses aos seus clientes (inquilinos).
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-8">
                     <div className="space-y-4">
-                        <h3 className="font-medium">Taxas do Gateway (Stripe)</h3>
+                        <h3 className="font-medium flex items-center gap-2"><CreditCard /> Taxas do Gateway (Cartão)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <Controller
-                                name="stripePercentage"
+                                name="stripeCardPercentage"
                                 control={control}
                                 render={({ field }) => (
                                     <div className="space-y-2">
-                                        <Label htmlFor="stripePercentage">Taxa Percentual (%)</Label>
-                                        <InputWithIcon id="stripePercentage" type="number" step="0.01" {...field} icon={<Percent className="h-4 w-4 text-muted-foreground" />} />
+                                        <Label htmlFor="stripeCardPercentage">Taxa Percentual (%)</Label>
+                                        <InputWithIcon id="stripeCardPercentage" type="number" step="0.01" {...field} icon={<Percent className="h-4 w-4 text-muted-foreground" />} />
                                     </div>
                                 )}
                             />
                              <Controller
-                                name="stripeFixed"
+                                name="stripeCardFixed"
                                 control={control}
                                 render={({ field }) => (
                                      <div className="space-y-2">
-                                        <Label htmlFor="stripeFixed">Taxa Fixa (R$)</Label>
-                                        <InputWithIcon id="stripeFixed" type="number" step="0.01" {...field} icon={<DollarSign className="h-4 w-4 text-muted-foreground" />} />
+                                        <Label htmlFor="stripeCardFixed">Taxa Fixa (R$)</Label>
+                                        <InputWithIcon id="stripeCardFixed" type="number" step="0.01" {...field} icon={<DollarSign className="h-4 w-4 text-muted-foreground" />} />
                                     </div>
                                 )}
                             />
                         </div>
                     </div>
+
+                    <div className="space-y-4">
+                        <h3 className="font-medium flex items-center gap-2"><Banknote /> Taxas do Gateway (Boleto)</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <Controller
+                                name="stripeBoletoFixed"
+                                control={control}
+                                render={({ field }) => (
+                                     <div className="space-y-2">
+                                        <Label htmlFor="stripeBoletoFixed">Taxa Fixa por Boleto Pago (R$)</Label>
+                                        <InputWithIcon id="stripeBoletoFixed" type="number" step="0.01" {...field} icon={<DollarSign className="h-4 w-4 text-muted-foreground" />} />
+                                    </div>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="font-medium flex items-center gap-2"><CircleDollarSign /> Taxas do Gateway (PIX)</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <Controller
+                                name="stripePixPercentage"
+                                control={control}
+                                render={({ field }) => (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="stripePixPercentage">Taxa Percentual (%)</Label>
+                                        <InputWithIcon id="stripePixPercentage" type="number" step="0.01" {...field} icon={<Percent className="h-4 w-4 text-muted-foreground" />} />
+                                    </div>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <Separator />
+                    
                      <div className="space-y-4">
                         <h3 className="font-medium">Taxas de Serviço (DelviFy)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

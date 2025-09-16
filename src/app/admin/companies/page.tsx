@@ -145,7 +145,15 @@ export default function AdminCompaniesPage() {
           const taxValue = saleValue * (financialSettings.taxPercentage / 100);
           const valueAfterTaxes = saleValue - taxValue;
           
-          const stripeFee = valueAfterTaxes * (financialSettings.stripePercentage / 100) + financialSettings.stripeFixed;
+          let stripeFee = 0;
+          if(purchase.paymentMethod === 'card') {
+            stripeFee = valueAfterTaxes * (financialSettings.stripeCardPercentage / 100) + financialSettings.stripeCardFixed;
+          } else if (purchase.paymentMethod === 'boleto') {
+            stripeFee = financialSettings.stripeBoletoFixed;
+          } else if (purchase.paymentMethod === 'pix') {
+            stripeFee = valueAfterTaxes * (financialSettings.stripePixPercentage / 100);
+          }
+
           const valueAfterStripe = valueAfterTaxes - stripeFee;
           
           const delvifyFee = valueAfterStripe * (financialSettings.delvifyPercentage / 100) + financialSettings.delvifyFixed;
@@ -325,17 +333,17 @@ export default function AdminCompaniesPage() {
                         <CardDescription>Receita mensal de todas as empresas.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                         <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                         <ResponsiveContainer width="100%" height={350}>
                             <BarChart data={chartData}>
                                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
-                                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `R$ ${value / 1000}k`} />
+                                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `R$ ${Number(value) / 1000}k`} />
                                  <ChartTooltip
                                     cursor={false}
                                     content={<ChartTooltipContent indicator="dot" />}
                                 />
                                 <Bar dataKey="total" fill="var(--color-total)" radius={8} />
                             </BarChart>
-                        </ChartContainer>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
             </TabsContent>

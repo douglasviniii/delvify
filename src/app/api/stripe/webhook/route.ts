@@ -1,6 +1,6 @@
 
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/headers';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { getAdminDb } from '@/lib/firebase-admin';
@@ -44,8 +44,31 @@ export async function POST(req: NextRequest) {
                 console.error('❌ Missing metadata in checkout session:', session.id);
                 return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
             }
+
+            let paymentMethod: 'card' | 'boleto' | 'pix' | 'free' = 'card'; // default to card
             
             try {
+                // To get the payment method, we need to retrieve the payment intent if it exists
+                if (session.payment_intent) {
+                    const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
+                    const paymentMethodType = paymentIntent.payment_method_types[0];
+
+                     if (paymentMethodType === 'card') {
+                        paymentMethod = 'card';
+                    } else if (paymentMethodType === 'boleto') {
+                        paymentMethod = 'boleto';
+                    } else if (paymentMethodType === 'pix') {
+                        paymentMethod = 'pix';
+                    }
+                } else if (session.mode === 'payment' && session.payment_method_types.length > 0) {
+                    // Fallback for some checkout modes
+                     const pmType = session.payment_method_types[0];
+                     if (pmType === 'card' || pmType === 'boleto' || pmType === 'pix') {
+                         paymentMethod = pmType;
+                     }
+                }
+
+
                 // Grant course access to the user
                 const userDocRef = adminDb.collection('users').doc(userId);
                 await userDocRef.set({
@@ -68,10 +91,11 @@ export async function POST(req: NextRequest) {
                     amount: session.amount_total ? session.amount_total / 100 : 0,
                     currency: session.currency,
                     stripeCheckoutSessionId: session.id,
+                    paymentMethod: paymentMethod, // Save the determined payment method
                     createdAt: FieldValue.serverTimestamp(),
                 });
 
-                console.log(`Purchase recorded for tenant ${tenantId}`);
+                console.log(`Purchase recorded for tenant ${tenantId} via ${paymentMethod}`);
 
             } catch (dbError) {
                 console.error('❌ Database error after successful payment:', dbError);

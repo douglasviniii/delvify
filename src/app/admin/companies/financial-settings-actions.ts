@@ -46,7 +46,10 @@ export async function getFinancialSettings(): Promise<FinancialSettings | null> 
     try {
         const docSnap = await getDoc(settingsRefClient(SUPER_ADMIN_UID));
         if (docSnap.exists()) {
-            return docSnap.data() as FinancialSettings;
+            // Ensure all fields are numbers before returning
+            const data = docSnap.data();
+            const parsedData = FinancialSettingsSchema.parse(data);
+            return parsedData;
         }
         return null;
     } catch (error) {
