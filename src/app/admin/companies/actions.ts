@@ -4,7 +4,7 @@
 import { getAdminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { collection, getDocs, query, orderBy, where, Timestamp, writeBatch, collectionGroup } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where, Timestamp, writeBatch, collectionGroup, doc as clientDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Tenant } from './page';
 import { getFinancialSettings } from './financial-settings-actions';
@@ -148,7 +148,7 @@ export async function generateMonthlyInvoices(year: number, month: number) {
             const netAmountToTransfer = totalRevenue - totalStripeFees - totalTaxes - totalDelvifyFees;
 
             const invoiceId = `${year}-${String(month).padStart(2, '0')}`;
-            const invoiceRef = doc(db, `tenants/${tenant.id}/invoices`, invoiceId);
+            const invoiceRef = clientDoc(db, `tenants/${tenant.id}/invoices`, invoiceId);
 
             batch.set(invoiceRef, {
                 tenantId: tenant.id,
@@ -203,4 +203,23 @@ export async function getGeneratedInvoices(year: number, month: number): Promise
     console.error("Error fetching generated invoices:", error);
     return [];
   }
+}
+
+export async function setTenantStatus(tenantId: string, status: 'active' | 'inactive') {
+    if (!tenantId) {
+        return { success: false, message: "ID do inquilino não encontrado." };
+    }
+
+    try {
+        const tenantRef = clientDoc(db, 'tenants', tenantId);
+        await updateDoc(tenantRef, { status });
+
+        revalidatePath('/admin/companies');
+        return { success: true, message: `Empresa ${status === 'active' ? 'ativada' : 'desativada'} com sucesso.` };
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error("Erro ao alterar status da empresa:", error);
+        return { success: false, message: `Erro ao alterar status: ${errorMessage}` };
+    }
 }

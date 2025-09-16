@@ -140,6 +140,7 @@ export type UserProfile = {
   state: string;
   cep: string;
   photoURL: string | null;
+  status?: 'active' | 'inactive';
 }
 
 export type PurchasedCourseInfo = {

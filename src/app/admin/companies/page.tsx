@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins, FileText, Loader2 as Spinner, Download, Send, Trash2 } from "lucide-react";
+import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins, FileText, Loader2 as Spinner, Download, Send, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { saveTenantDomain, saveTenantNotes, getTenants, generateMonthlyInvoices, getGeneratedInvoices } from './actions';
+import { saveTenantDomain, saveTenantNotes, getTenants, generateMonthlyInvoices, getGeneratedInvoices, setTenantStatus } from './actions';
 import { getAllPurchases } from '@/lib/purchases';
 import { getFinancialSettings } from './financial-settings-actions';
 import type { FinancialSettings, Purchase, Invoice } from '@/lib/types';
@@ -27,6 +27,16 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { FinancialSettingsForm } from './financial-settings-form';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from '@/components/ui/alert-dialog';
+
 
 export type Tenant = {
   id: string;
@@ -175,6 +185,18 @@ export default function AdminCompaniesPage() {
     });
   };
 
+  const handleSetTenantStatus = async (tenantId: string, status: 'active' | 'inactive') => {
+    const result = await setTenantStatus(tenantId, status);
+    toast({
+        title: result.success ? "Sucesso!" : "Erro!",
+        description: result.message,
+        variant: result.success ? 'default' : 'destructive'
+    });
+    if (result.success) {
+        setTenants(prev => prev.map(t => t.id === tenantId ? { ...t, status } : t));
+    }
+  };
+
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Data não disponível';
@@ -307,13 +329,38 @@ export default function AdminCompaniesPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                                     <DropdownMenuItem onClick={() => handleManageClick(tenant)}>
-                                                        Gerenciar Empresa
+                                                        <Building className="mr-2 h-4 w-4" /> Gerenciar Empresa
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>Ver Painel</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                                        Desativar
-                                                    </DropdownMenuItem>
+                                                     {tenant.status === 'active' ? (
+                                                        <DropdownMenuItem onClick={() => handleSetTenantStatus(tenant.id, 'inactive')}>
+                                                            <XCircle className="mr-2 h-4 w-4" /> Desativar
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        <DropdownMenuItem onClick={() => handleSetTenantStatus(tenant.id, 'active')}>
+                                                           <CheckCircle className="mr-2 h-4 w-4" /> Ativar
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                           <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()}>
+                                                                <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                                                            </DropdownMenuItem>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Esta ação não pode ser desfeita. Isso excluirá permanentemente a empresa e todos os seus dados.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => { /* Lógica de exclusão aqui */ }}>Sim, excluir</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -644,4 +691,3 @@ export default function AdminCompaniesPage() {
     </div>
   );
 }
-
