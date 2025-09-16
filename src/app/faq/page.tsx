@@ -7,12 +7,12 @@ import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 import { FaqPageSection, DefaultSection } from '@/components/sections';
 
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
 const SectionComponents: Record<string, React.FC<any>> = {
   FaqPageSection,
   DefaultSection,
 };
+
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 async function getPageSections(tenantId: string, pageId: string) {
     try {

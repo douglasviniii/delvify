@@ -8,10 +8,6 @@ import { collection, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 
-// This is the main tenant ID for the public-facing website.
-// In a real multi-domain app, you would resolve this based on the request's hostname.
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
 const SectionComponents: Record<string, React.FC<any>> = {
   HeroSection,
   FeaturesSection,
@@ -21,6 +17,8 @@ const SectionComponents: Record<string, React.FC<any>> = {
   DefaultSection,
   CtaSection
 };
+
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 async function getPageSections(tenantId: string, pageId: string) {
     try {
@@ -47,7 +45,6 @@ async function getPageSections(tenantId: string, pageId: string) {
 export default async function Home() {
   const latestPosts = await getAllBlogPosts(MAIN_TENANT_ID);
   const sections = await getPageSections(MAIN_TENANT_ID, 'home');
-
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

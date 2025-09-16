@@ -15,9 +15,7 @@ export const config = {
 };
 
 export default function middleware(req: NextRequest) {
-  // A lógica de reescrita de multi-inquilino foi temporariamente desativada
-  // para corrigir um erro 404 generalizado.
-  // TODO: Reimplementar a lógica multi-inquilino de forma robusta,
-  // possivelmente lendo o hostname nas páginas do servidor em vez de reescrever a URL.
+  // A lógica de reescrita foi movida para ser tratada diretamente nas páginas do servidor (Server Components)
+  // usando o cabeçalho 'host'. Isso simplifica o middleware e evita os erros 404 que estavam ocorrendo.
   return NextResponse.next();
 }

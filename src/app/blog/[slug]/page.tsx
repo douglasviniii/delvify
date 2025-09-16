@@ -1,4 +1,5 @@
 
+
 import { getPostBySlug } from '@/lib/blog-posts';
 import { notFound } from 'next/navigation';
 import { MainHeader } from '@/components/main-header';
@@ -6,13 +7,11 @@ import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
 
-// Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
-// Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
-const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   // Busca os posts do inquilino correto
-  const post = await getPostBySlug(TENANT_ID_WITH_POSTS, params.slug);
+  const post = await getPostBySlug(MAIN_TENANT_ID, params.slug);
 
   if (!post) {
     notFound();

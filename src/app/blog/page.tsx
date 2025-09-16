@@ -11,14 +11,12 @@ import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 import { DefaultSection, BlogPageSection } from '@/components/sections';
 
-// Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
-// Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
-const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
 const SectionComponents: Record<string, React.FC<any>> = {
   BlogPageSection,
   DefaultSection,
 };
+
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 async function getPageSections(tenantId: string, pageId: string) {
     try {
@@ -42,8 +40,8 @@ async function getPageSections(tenantId: string, pageId: string) {
 
 
 export default async function BlogPage() {
-  const posts = await getAllBlogPosts(TENANT_ID_WITH_POSTS);
-  const sections = await getPageSections(TENANT_ID_WITH_POSTS, 'blog');
+  const posts = await getAllBlogPosts(MAIN_TENANT_ID);
+  const sections = await getPageSections(MAIN_TENANT_ID, 'blog');
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

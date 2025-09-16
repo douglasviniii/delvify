@@ -1,4 +1,5 @@
 
+
 import { notFound } from 'next/navigation';
 import { getCourseById, getCourseReviews } from '@/lib/courses';
 import type { Review } from '@/lib/types';
@@ -11,17 +12,14 @@ import { Star } from 'lucide-react';
 import CourseReviews from './course-reviews';
 import Link from 'next/link';
 
-
-// Este é o ID do inquilino para o qual os cursos estão sendo criados no admin.
-const TENANT_ID_WITH_COURSES = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function CourseLandingPage({ params }: { params: { courseId: string } }) {
     const courseId = params.courseId;
     
     const [course, reviews] = await Promise.all([
-        getCourseById(TENANT_ID_WITH_COURSES, courseId),
-        getCourseReviews(TENANT_ID_WITH_COURSES, courseId)
+        getCourseById(MAIN_TENANT_ID, courseId),
+        getCourseReviews(MAIN_TENANT_ID, courseId)
     ]);
     
     if (!course || course.status !== 'published') {
@@ -78,7 +76,7 @@ export default async function CourseLandingPage({ params }: { params: { courseId
                 <CourseReviews 
                     initialReviews={reviews} 
                     courseId={course.id}
-                    tenantId={TENANT_ID_WITH_COURSES}
+                    tenantId={MAIN_TENANT_ID}
                 />
             </main>
             <MainFooter />

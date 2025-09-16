@@ -1,12 +1,9 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { getGlobalSettingsForTenant } from '@/lib/settings';
-
-// Este é o ID principal do inquilino para o site público.
-// Em uma aplicação multi-domínio real, você resolveria isso com base no hostname da requisição.
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'DelviFy',
@@ -14,10 +11,10 @@ export const metadata: Metadata = {
 };
 
 function hexToHsl(hex: string): string {
-    // Remove o #
+    if (!hex || typeof hex !== 'string') {
+        hex = '#9466FF'; // Default color
+    }
     hex = hex.replace(/^#/, '');
-
-    // Converte de 3 para 6 dígitos
     if (hex.length === 3) {
         hex = hex.split('').map(char => char + char).join('');
     }
@@ -48,12 +45,15 @@ function hexToHsl(hex: string): string {
     return `${hValue} ${sValue}% ${lValue}%`;
 }
 
+// Este é o ID do inquilino principal. Usaremos isso por enquanto para estabilizar o app.
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
   const settings = await getGlobalSettingsForTenant(MAIN_TENANT_ID);
   const primaryColorHsl = hexToHsl(settings.primaryColor);
 

@@ -1,4 +1,5 @@
 
+
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import CoursesClientContent from "./courses-client-content";

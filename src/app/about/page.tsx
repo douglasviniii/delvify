@@ -7,13 +7,12 @@ import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 import { AboutPageSection, DefaultSection } from '@/components/sections';
 
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
-
 const SectionComponents: Record<string, React.FC<any>> = {
   AboutPageSection,
   DefaultSection,
 };
 
+const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 async function getPageSections(tenantId: string, pageId: string) {
     try {
@@ -38,7 +37,6 @@ async function getPageSections(tenantId: string, pageId: string) {
 
 export default async function AboutPage() {
   const sections = await getPageSections(MAIN_TENANT_ID, 'about');
-
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
