@@ -1,0 +1,15 @@
+
+{
+    "login": {
+        "title": "Iniciar Sesión",
+        "description": "Accede a tu cuenta de estudiante o administrador.",
+        "email_label": "Correo Electrónico",
+        "email_placeholder": "m@ejemplo.com",
+        "password_label": "Contraseña",
+        "login_button": "Entrar",
+        "logging_in_button": "Iniciando...",
+        "no_account": "¿Aún no tienes una cuenta?",
+        "student_signup": "Soy Alumno",
+        "seller_signup": "Quiero Vender"
+    }
+}

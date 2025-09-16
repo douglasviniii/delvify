@@ -1,0 +1,15 @@
+
+{
+    "login": {
+        "title": "Login",
+        "description": "Acesse sua conta de aluno ou de administrador.",
+        "email_label": "E-mail",
+        "email_placeholder": "m@exemplo.com",
+        "password_label": "Senha",
+        "login_button": "Entrar",
+        "logging_in_button": "Entrando...",
+        "no_account": "Ainda não tem uma conta?",
+        "student_signup": "Sou Aluno",
+        "seller_signup": "Quero Vender"
+    }
+}

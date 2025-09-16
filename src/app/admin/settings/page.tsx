@@ -34,12 +34,12 @@ export default function AdminSettingsPage() {
         <CardContent>
             <div className="max-w-sm space-y-2">
                 <Label htmlFor="language-select">Idioma</Label>
-                <Select defaultValue="pt-br">
+                <Select defaultValue="pt">
                     <SelectTrigger id="language-select">
                         <SelectValue placeholder="Selecione um idioma" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="pt-br">Português (Brasil)</SelectItem>
+                        <SelectItem value="pt">Português (Brasil)</SelectItem>
                         <SelectItem value="en">English</SelectItem>
                         <SelectItem value="es">Español</SelectItem>
                     </SelectContent>
