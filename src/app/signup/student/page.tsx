@@ -91,7 +91,7 @@ export default function StudentSignupPage() {
       console.error('Erro de cadastro:', error);
       let errorMessage = 'Ocorreu um erro ao criar a conta.';
       if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Este e-mail já está em uso. Por favor, tente fazer o login.';
+        errorMessage = 'Este e-mail já está em uso. Se você já é aluno em um site que usa a DelviFy, sua conta funciona aqui também. Tente fazer o login.';
       } else if (error.code === 'auth/weak-password') {
         errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
       }
@@ -204,3 +204,5 @@ export default function StudentSignupPage() {
     </div>
   );
 }
+
+    
