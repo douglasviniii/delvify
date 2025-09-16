@@ -13,6 +13,9 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Tenant = {
   id: string;
@@ -158,38 +161,85 @@ export default function AdminCompaniesPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent className="sm:max-w-4xl">
               <DialogHeader>
-                  <DialogTitle>Gerenciar Empresa</DialogTitle>
+                  <DialogTitle>Gerenciar {selectedTenant?.companyName}</DialogTitle>
                   <DialogDescription>
-                      Detalhes cadastrais da empresa selecionada.
+                      Use as abas abaixo para gerenciar os detalhes da empresa.
                   </DialogDescription>
               </DialogHeader>
               {selectedTenant && (
-                <div className="mt-4">
-                    <dl className="divide-y divide-border border rounded-lg overflow-hidden">
-                        <DescriptionListItem term="Nome da Empresa">
-                           {selectedTenant.companyName}
-                        </DescriptionListItem>
-                         <DescriptionListItem term="CNPJ">
-                           {selectedTenant.cnpj}
-                        </DescriptionListItem>
-                         <DescriptionListItem term="ID do Inquilino">
-                           <code className="text-xs bg-muted p-1 rounded-sm">{selectedTenant.id}</code>
-                        </DescriptionListItem>
-                         <DescriptionListItem term="Plano">
-                           <Badge variant="secondary">{selectedTenant.plan || 'Padrão'}</Badge>
-                        </DescriptionListItem>
-                         <DescriptionListItem term="Status">
-                            <Badge variant={selectedTenant.status === 'active' ? 'default' : 'destructive'}>
-                                {selectedTenant.status === 'active' ? 'Ativo' : 'Inativo'}
-                            </Badge>
-                        </DescriptionListItem>
-                         <DescriptionListItem term="Data de Criação">
-                           {formatDate(selectedTenant.createdAt)}
-                        </DescriptionListItem>
-                    </dl>
-                </div>
+                <Tabs defaultValue="details" className="mt-4">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="details">Detalhes Cadastrais</TabsTrigger>
+                        <TabsTrigger value="domain">Domínio &amp; Pagamentos</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="details" className="py-4">
+                        <dl className="divide-y divide-border border rounded-lg overflow-hidden">
+                            <DescriptionListItem term="Nome da Empresa">
+                               {selectedTenant.companyName}
+                            </DescriptionListItem>
+                             <DescriptionListItem term="CNPJ">
+                               {selectedTenant.cnpj}
+                            </DescriptionListItem>
+                             <DescriptionListItem term="ID do Inquilino">
+                               <code className="text-xs bg-muted p-1 rounded-sm">{selectedTenant.id}</code>
+                            </DescriptionListItem>
+                             <DescriptionListItem term="Plano">
+                               <Badge variant="secondary">{selectedTenant.plan || 'Padrão'}</Badge>
+                            </DescriptionListItem>
+                             <DescriptionListItem term="Status">
+                                <Badge variant={selectedTenant.status === 'active' ? 'default' : 'destructive'}>
+                                    {selectedTenant.status === 'active' ? 'Ativo' : 'Inativo'}
+                                </Badge>
+                            </DescriptionListItem>
+                             <DescriptionListItem term="Data de Criação">
+                               {formatDate(selectedTenant.createdAt)}
+                            </DescriptionListItem>
+                        </dl>
+                    </TabsContent>
+                    <TabsContent value="domain" className="py-4 space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Configuração de Domínio</CardTitle>
+                                <CardDescription>
+                                    Aponte um domínio personalizado para este inquilino para que ele tenha seu próprio site.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="customDomain">Domínio Personalizado</Label>
+                                    <Input id="customDomain" placeholder="www.dominiodocliente.com.br" />
+                                </div>
+                                <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-2">
+                                    <p className="font-bold text-foreground">Instruções de Apontamento DNS:</p>
+                                    <p>1. Acesse o painel de controle do seu provedor de domínio (ex: GoDaddy, Registro.br).</p>
+                                    <p>2. Vá para a seção de gerenciamento de DNS do seu domínio.</p>
+                                    <p>3. Crie um novo registro do tipo <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">CNAME</code> com o host/nome <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">www</code> apontando para <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">cname.delvify.com</code>.</p>
+                                    <p>4. Salve as alterações. Pode levar até 48 horas para o domínio propagar.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Integração de Pagamento (Stripe)</CardTitle>
+                                <CardDescription>
+                                    Conecte a conta Stripe do cliente para processar pagamentos diretamente.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                 <div className="space-y-2">
+                                    <Label htmlFor="stripeKey">Stripe Public Key</Label>
+                                    <Input id="stripeKey" placeholder="pk_live_..." />
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="stripeSecret">Stripe Secret Key</Label>
+                                    <Input id="stripeSecret" type="password" placeholder="sk_live_..." />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
               )}
           </DialogContent>
       </Dialog>
@@ -197,3 +247,5 @@ export default function AdminCompaniesPage() {
     </div>
   );
 }
+
+    
