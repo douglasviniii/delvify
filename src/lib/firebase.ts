@@ -4,14 +4,16 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+// Configuração do Firebase (copiada do console)
 const firebaseConfig = {
   apiKey: "AIzaSyB0GTV_m5oit8ddZeCmQ3hW7Jhh-LKiKG0",
   authDomain: "venda-fcil-pdv.firebaseapp.com",
   projectId: "venda-fcil-pdv",
-  storageBucket: "venda-fcil-pdv.appspot.com",
-  messagingSenderId: "100989312674",
-  appId: "1:100989312674:web:0b793335520551772183c7",
-  measurementId: "G-SH52S7W3DE"
+  storageBucket: "venda-fcil-pdv.firebasestorage.app",
+  messagingSenderId: "114570788878",
+  appId: "1:114570788878:web:1e3fa51754f3ae6862fc5f",
+  measurementId: "G-792KHTQP7R",
+  databaseURL: "https://venda-fcil-pdv.firebaseio.com"
 };
 
 
