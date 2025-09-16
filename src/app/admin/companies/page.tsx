@@ -17,7 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { saveTenantDomain } from './actions';
+import { saveTenantDomain, saveTenantNotes } from './actions';
+import { Textarea } from '@/components/ui/textarea';
 
 type Tenant = {
   id: string;
@@ -27,6 +28,7 @@ type Tenant = {
   status: 'active' | 'inactive';
   createdAt: any;
   customDomain?: string;
+  notes?: string;
 };
 
 const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode}) => (
@@ -43,6 +45,7 @@ export default function AdminCompaniesPage() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [domainInput, setDomainInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
   const [isSaving, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -52,7 +55,6 @@ export default function AdminCompaniesPage() {
     const unsubscribe = onSnapshot(tenantsQuery, (snapshot) => {
       const tenantsData = snapshot.docs.map(doc => {
           const data = doc.data();
-          // Convert Timestamp to a serializable format (ISO string)
           if (data.createdAt instanceof Timestamp) {
               data.createdAt = data.createdAt.toDate().toISOString();
           }
@@ -71,24 +73,30 @@ export default function AdminCompaniesPage() {
   const handleManageClick = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     setDomainInput(tenant.customDomain || '');
+    setNotesInput(tenant.notes || '');
     setIsDialogOpen(true);
   }
   
-  const handleSaveDomain = () => {
+  const handleSave = () => {
     if (!selectedTenant) return;
     startTransition(async () => {
-        const result = await saveTenantDomain(selectedTenant.id, domainInput);
-        if (result.success) {
-            toast({ title: "Sucesso!", description: "Domínio salvo com sucesso." });
-            // Optimistic update of the local state
-            setTenants(prev => prev.map(t => t.id === selectedTenant.id ? {...t, customDomain: domainInput} : t));
+        const [domainResult, notesResult] = await Promise.all([
+             saveTenantDomain(selectedTenant.id, domainInput),
+             saveTenantNotes(selectedTenant.id, notesInput)
+        ]);
+
+        if (domainResult.success && notesResult.success) {
+            toast({ title: "Sucesso!", description: "Dados da empresa salvos com sucesso." });
+            setTenants(prev => prev.map(t => t.id === selectedTenant.id ? {...t, customDomain: domainInput, notes: notesInput} : t));
         } else {
-            toast({ title: "Erro", description: result.message, variant: "destructive" });
+            const errorMessages = [!domainResult.success && domainResult.message, !notesResult.success && notesResult.message].filter(Boolean);
+            toast({ title: "Erro", description: errorMessages.join(' '), variant: "destructive" });
         }
     })
   }
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Data não disponível';
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -192,9 +200,10 @@ export default function AdminCompaniesPage() {
               </DialogHeader>
               {selectedTenant && (
                 <Tabs defaultValue="details" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="details">Detalhes Cadastrais</TabsTrigger>
                         <TabsTrigger value="domain">Domínio</TabsTrigger>
+                        <TabsTrigger value="notes">Ficha de Anotações</TabsTrigger>
                     </TabsList>
                     <TabsContent value="details" className="py-4">
                         <dl className="divide-y divide-border border rounded-lg overflow-hidden">
@@ -245,18 +254,41 @@ export default function AdminCompaniesPage() {
                                     <p>3. Crie um novo registro do tipo <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">CNAME</code> com o host/nome <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">www</code> apontando para o valor <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">cname.delvify.com</code>.</p>
                                     <p>4. Salve as alterações. Pode levar até 48 horas para o domínio propagar.</p>
                                 </div>
-                                <Button onClick={handleSaveDomain} disabled={isSaving}>
-                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                    Salvar Domínio
-                                </Button>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                     <TabsContent value="notes" className="py-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Anotações Internas</CardTitle>
+                                <CardDescription>
+                                    Adicione notas, lembretes ou informações importantes sobre este cliente. Visível apenas para você.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <Textarea 
+                                    placeholder="Escreva suas anotações aqui..."
+                                    className="min-h-[200px]"
+                                    value={notesInput}
+                                    onChange={(e) => setNotesInput(e.target.value)}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>
                 </Tabs>
               )}
+                <div className="flex justify-end pt-4 gap-2">
+                     <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                        Salvar Alterações
+                    </Button>
+                </div>
           </DialogContent>
       </Dialog>
 
     </div>
   );
 }
+
+    

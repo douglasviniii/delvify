@@ -23,10 +23,9 @@ export async function saveTenantDomain(tenantId: string, domain: string) {
     try {
         const tenantRef = getAdminDb().collection('tenants').doc(tenantId);
         await tenantRef.update({
-            customDomain: validation.data || null, // Salva null se o campo estiver vazio
+            customDomain: validation.data || null,
         });
 
-        // Revalidate the pages that might be affected by this change
         revalidatePath(`/`);
         revalidatePath(`/admin/companies`);
 
@@ -37,3 +36,26 @@ export async function saveTenantDomain(tenantId: string, domain: string) {
         return { success: false, message: `Erro ao salvar: ${errorMessage}` };
     }
 }
+
+export async function saveTenantNotes(tenantId: string, notes: string) {
+     if (!tenantId) {
+        return { success: false, message: "ID do inquilino não encontrado." };
+    }
+
+    try {
+        const tenantRef = getAdminDb().collection('tenants').doc(tenantId);
+        await tenantRef.update({
+            notes: notes || '',
+        });
+
+        revalidatePath(`/admin/companies`);
+
+        return { success: true, message: 'Anotações salvas com sucesso!' };
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error("Erro ao salvar anotações:", error);
+        return { success: false, message: `Erro ao salvar: ${errorMessage}` };
+    }
+}
+
+    
