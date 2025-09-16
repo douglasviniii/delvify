@@ -4,42 +4,42 @@ import { NextRequest, NextResponse } from 'next/server';
 export const config = {
   matcher: [
     /*
-     * Combine todos os caminhos exceto por:
-     * 1. Caminhos que começam com /api (rotas de API)
-     * 2. Caminhos que começam com /_next/static (arquivos estáticos)
-     * 3. Caminhos que começam com /_next/image (otimização de imagem)
-     * 4. Caminhos que terminam com /favicon.ico (ícone de favicon)
-     * 5. Caminhos dentro de /admin (para evitar reescritas no painel de admin)
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|admin).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
 
 export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
-  
-  // Extrai o hostname da requisição. Prioriza o 'x-forwarded-host' que é passado pelo proxy/infra.
-  let hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'delvify.delvind.com';
 
-  // Remove a porta em ambiente de desenvolvimento, se presente.
-  if (hostname.includes(':')) {
-    hostname = hostname.split(':')[0];
+  // Get hostname from request headers
+  // The 'x-forwarded-host' header is used by Vercel and other platforms
+  const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host');
+
+  // If the hostname is missing, do nothing
+  if (!hostname) {
+    return NextResponse.next();
   }
   
-  // Define o domínio principal da sua aplicação.
-  const mainAppDomain = 'delvify.delvind.com';
-  
-  // Se a requisição for para o domínio principal ou localhost, não faz nada e permite que a requisição continue.
-  if (hostname === mainAppDomain || hostname === 'localhost') {
+  // Define your main application domain.
+  const rootDomain = 'delvify.delvind.com';
+
+  // Normalize hostname (remove port for local development)
+  const currentHost = hostname.replace(`:${url.port}`, '');
+
+  // If the request is for the main domain or localhost, let it pass.
+  if (currentHost === rootDomain || currentHost === 'localhost') {
     return NextResponse.next();
   }
 
-  // Reescreve a URL: todos os outros domínios são tratados como inquilinos.
+  // For any other domain, rewrite the path to include the hostname.
+  // This allows you to handle multi-tenancy based on the path.
+  // e.g., a request to `tenant1.com/dashboard` will be rewritten to `/tenant1.com/dashboard`
   const rewriteUrl = new URL(`/${hostname}${url.pathname}`, req.url);
-  
-  const response = NextResponse.rewrite(rewriteUrl);
-  // Passa o hostname original para a aplicação poder identificá-lo.
-  response.headers.set('x-forwarded-host', hostname);
-
-  return response;
+  return NextResponse.rewrite(rewriteUrl);
 }
