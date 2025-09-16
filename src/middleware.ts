@@ -19,7 +19,7 @@ export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
   
   // Extrai o hostname da requisição. Prioriza o 'x-forwarded-host' que é passado pelo proxy/infra.
-  let hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'app.delvify.com';
+  let hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'delvify.delvind.com';
 
   // Remove a porta em ambiente de desenvolvimento, se presente.
   if (hostname.includes(':')) {
@@ -27,9 +27,9 @@ export default function middleware(req: NextRequest) {
   }
   
   // Define o domínio principal da sua aplicação.
-  const mainAppDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'delvify.com';
+  const mainAppDomain = 'delvify.delvind.com';
   
-  // Se a requisição for para o domínio principal, não faz nada e permite que a requisição continue.
+  // Se a requisição for para o domínio principal ou localhost, não faz nada e permite que a requisição continue.
   if (hostname === mainAppDomain || hostname === 'localhost') {
     return NextResponse.next();
   }
