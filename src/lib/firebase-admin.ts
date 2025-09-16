@@ -1,58 +1,34 @@
 
 import admin from 'firebase-admin';
 import { getApps, initializeApp, getApp } from 'firebase-admin/app';
-import { config } from 'dotenv';
 
-// Carrega as variáveis de ambiente do arquivo .env
-config({ path: '.env' });
-
-const {
-  FIREBASE_PROJECT_ID,
-  FIREBASE_CLIENT_EMAIL,
-  FIREBASE_PRIVATE_KEY,
-  FIREBASE_STORAGE_BUCKET,
-} = process.env;
-
-// Validação para garantir que as variáveis de ambiente estão carregadas.
-if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY || !FIREBASE_STORAGE_BUCKET) {
-    console.error("Firebase Admin credentials not found in environment variables.");
-    // Em um ambiente de produção, você pode querer lançar um erro para interromper a inicialização.
-    // throw new Error("Firebase Admin credentials not found in environment variables.");
-}
-
+// WARNING: Hardcoding credentials is a security risk.
+// This is a temporary measure to ensure functionality.
+// In a production environment, use environment variables.
 const firebaseAdminConfig = {
-  // O 'satisfies' garante que o objeto corresponda ao tipo esperado, mesmo com a verificação acima.
   credential: admin.credential.cert({
-    projectId: FIREBASE_PROJECT_ID,
-    clientEmail: FIREBASE_CLIENT_EMAIL,
-    privateKey: FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  } as admin.ServiceAccount),
-  storageBucket: FIREBASE_STORAGE_BUCKET,
+    projectId: "venda-fcil-pdv",
+    clientEmail: "firebase-adminsdk-fbsvc@venda-fcil-pdv.iam.gserviceaccount.com",
+    privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC3leDeVF7eOtbH\n9RAltEF0J90wgqhW1AG/w+E24ylGewS5oecUrR9VJ2FQTMHbn7Ig/QunrZ6ulXtx\nGcHZYMxmjvBfn+2qXqHq8VQmmFgyO0TV4UlB1KjWB1Y57s5t27sTcbY/21xtIe8L\n1dRX+Eo3U+HcFnAz500g1u+F7SZwRBmGvjq0Sopdv65F0/SAu/oxAr29nG5p3P4M\nloxT3wkdPnRw3dsBKWnHCOdMMIWW4YhLdSOMjbEKRd1A19i1xBOKyAKa4AMnceII\nE9q7ohtwr2allsWj0rWaKammFkm9OD2cdN5uZaTpvsgWG4fSz2aK2S4UcPv5O7DM\nIzAf/M+pAgMBAAECggEADjkWA7eO5YHyualga8FiOErt2agnvVldvNMCx+czv46A\nlFapIdqTRLxBL3DQ7JBb4y8jl+UtN+qkFoQ3tt0HXPM6R3hLGBHOktaJTder7pFV\nsQnMDIX6oiFNon2gP9XgEZ6zz1DyAVD5lYXGlp2pd02gABZ7cSP8f1yzkCFKQvR7\n+X4GrYh3tiXSdcUeqt/aGRLQhFY0qeaN5iy3sA2zScac83G61wGXhNiaPnjzk8xw\nMla1u2+rdIdsvG6UzQ4z6Pf+O8qnJxgYkq3hk0nnU1BJggGughNV4aKJ9KIM3uwC\nVaMHrXfpYPMgkMWWTZO+VBwdNMm6rIaY27NeynJVAQKBgQDtEOTmYLP8u5B31VIW\nkqjXEfxXB+vFSTF9sWGYHN5nE6RuPnnUdWOQplFmIuoH1PbbAjvpoRiQVNBiby80\nx7wVw61Q/LU56s46FL9ZdQt+3hwtyPUgpBp2Cl0mh5TrIGBn4+e7V5WVfGzj0xd/\nTmNrn9F97CZJC/PL/eQ0T7eUqQKBgQDGP4JPFg/23Cv3voJJOTfWfkQaqBDF9lzx\n5XVPIhpS0REy4n9wiQp/62KwCqES+YkDmnEeiNKRPfOECliX8r7KNWcBq4i6KVj1\nAnB+eAhCHwUaqIAdWboUA11u0qYGSPNgVht2ZS3v29CB6rXg/hUS6AhvTbm0zGf1\n1R+EDpVDAQKBgQCpuvDH6PC0wG28/mRZeQOdiGkMvsUVaUQf5AIl8HVjg3K049JC\nRRHWHN4mrFS26skbIMxYh1iY7cCM2WII/gAx7PmIBIaUQwMIHpapq91hJhEyzrCC\ngDvZy63JykTa20Fq4IenYBve/UjRDO/D3BHemnxZFdyLbB1PLiZXNcQQkQKBgG6e\nET+/t7iusXnTOy9QVe/BFI8rJ/DNvp7awdId3UJIlagm6aUJUmp+FNrVk3ra8bCp\nBGVdQuD4CGCsxTJDqGF72rX72JbHa3OKoOpwX2tFk7uEObgm0MVJ+2BS+YCYQ/SF\nF13ApxknNfjH1iRsoaWjAtHYNL7FL1zkRmmRGYgBAoGACAS0/2bINoTlgCXXF+Sf\nzvqHkiKe+M1y+MILtBPFvnCKZckATf1vvdB6i2Fp2ipNoBZFKaWENgBT5DYw1x9O\nHv61zjxGdsQM1pXlG9aTotbYkt596VFMExUddUXdppKSMXsi+Azs6lFFj8ZGXLZz\nQkDOPStxn2F/LBZkbjX74gs=\n-----END PRIVATE KEY-----\n",
+  }),
+  storageBucket: "venda-fcil-pdv.appspot.com",
 };
 
 function initializeFirebaseAdmin() {
   if (!getApps().length) {
     try {
-        // Só inicializa se as credenciais essenciais estiverem presentes.
-        if (FIREBASE_PROJECT_ID) {
-           initializeApp(firebaseAdminConfig);
-           console.log("Firebase Admin SDK initialized successfully.");
-        } else {
-            console.warn("Skipping Firebase Admin initialization, required credentials missing.");
-        }
-    } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
-        // Em um ambiente de build/serverless, pode já estar inicializado por outro processo.
-        // Se ainda não houver apps, o erro é genuíno.
-        if (getApps().length === 0) {
-            throw error;
-        }
+      initializeApp(firebaseAdminConfig);
+      console.log("Firebase Admin SDK initialized successfully.");
+    } catch (error: any) {
+      console.error("Firebase Admin initialization error:", error.message);
+      if (getApps().length === 0) {
+        throw error;
+      }
     }
   }
   return getApp();
 }
 
-// Funções de exportação para obter instâncias dos serviços do admin
 export function getAdminDb() {
   initializeFirebaseAdmin();
   return admin.firestore();
@@ -68,8 +44,6 @@ export function getAdminStorage() {
   return admin.storage();
 }
 
-// Para compatibilidade com o código existente, podemos manter essas exportações.
-// No entanto, o uso das funções acima é preferível.
 const adminDb = getAdminDb;
 const adminAuth = getAdminAuth;
 const adminStorage = getAdminStorage;
