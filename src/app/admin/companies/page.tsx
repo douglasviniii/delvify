@@ -170,9 +170,10 @@ export default function AdminCompaniesPage() {
               </DialogHeader>
               {selectedTenant && (
                 <Tabs defaultValue="details" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="details">Detalhes Cadastrais</TabsTrigger>
-                        <TabsTrigger value="domain">Domínio &amp; Pagamentos</TabsTrigger>
+                        <TabsTrigger value="domain">Domínio</TabsTrigger>
+                        <TabsTrigger value="payments">Pagamentos</TabsTrigger>
                     </TabsList>
                     <TabsContent value="details" className="py-4">
                         <dl className="divide-y divide-border border rounded-lg overflow-hidden">
@@ -198,7 +199,7 @@ export default function AdminCompaniesPage() {
                             </DescriptionListItem>
                         </dl>
                     </TabsContent>
-                    <TabsContent value="domain" className="py-4 space-y-6">
+                    <TabsContent value="domain" className="py-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Configuração de Domínio</CardTitle>
@@ -215,11 +216,13 @@ export default function AdminCompaniesPage() {
                                     <p className="font-bold text-foreground">Instruções de Apontamento DNS:</p>
                                     <p>1. Acesse o painel de controle do seu provedor de domínio (ex: GoDaddy, Registro.br).</p>
                                     <p>2. Vá para a seção de gerenciamento de DNS do seu domínio.</p>
-                                    <p>3. Crie um novo registro do tipo <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">CNAME</code> com o host/nome <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">www</code> apontando para <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">cname.delvify.com</code>.</p>
+                                    <p>3. Crie um novo registro do tipo <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">CNAME</code> com o host/nome <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">www</code> apontando para o valor <code className="bg-muted-foreground/20 px-1 py-0.5 rounded-sm">cname.delvify.com</code>.</p>
                                     <p>4. Salve as alterações. Pode levar até 48 horas para o domínio propagar.</p>
                                 </div>
                             </CardContent>
                         </Card>
+                    </TabsContent>
+                     <TabsContent value="payments" className="py-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Integração de Pagamento (Stripe)</CardTitle>
