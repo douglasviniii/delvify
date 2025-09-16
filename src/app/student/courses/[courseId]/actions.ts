@@ -2,12 +2,12 @@
 'use server';
 
 import { z } from 'zod';
-import { getAdminDb, getAdminAuth } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
 import type { Course } from '@/lib/types';
-import { revalidatePath } from 'next/cache';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -44,7 +44,6 @@ export async function submitReview(
     }
 
     const { courseId, tenantId, userId, userName, userAvatar, rating, comment } = validatedFields.data;
-    const adminDb = getAdminDb();
 
     try {
         const reviewRef = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/reviews`).doc(userId);
@@ -133,7 +132,6 @@ export async function enrollInFreeCourse(userId: string, course: Course): Promis
     if (!isFree) {
         return { success: false, message: "Este curso não é gratuito." };
     }
-    const adminDb = getAdminDb();
 
     try {
         const userDocRef = adminDb.collection('users').doc(userId);
