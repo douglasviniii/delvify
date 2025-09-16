@@ -160,6 +160,22 @@ export const FinancialSettingsSchema = z.object({
 
 export type FinancialSettings = z.infer<typeof FinancialSettingsSchema>;
 
+export interface Invoice {
+  id: string;
+  tenantId: string;
+  month: number;
+  year: number;
+  status: 'pending' | 'paid';
+  totalRevenue: number;
+  totalStripeFees: number;
+  totalTaxes: number;
+  totalDelvifyFees: number;
+  netAmountToTransfer: number;
+  generatedAt: string; // ISO string
+  paidAt?: string; // ISO string
+  purchaseIds: string[];
+}
+
 
 export const CustomizeTenantBrandingInputSchema = z.object({
   tenantId: z.string().describe('The ID of the tenant to customize.'),

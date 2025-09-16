@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins } from "lucide-react";
+import { MoreHorizontal, Building, PlusCircle, DollarSign, TrendingUp, TrendingDown, Users, PiggyBank, HandCoins, FileText, Loader2 as Spinner } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
@@ -17,10 +17,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { saveTenantDomain, saveTenantNotes, getTenants } from './actions';
+import { saveTenantDomain, saveTenantNotes, getTenants, generateMonthlyInvoices, getGeneratedInvoices } from './actions';
 import { getAllPurchases } from '@/lib/purchases';
 import { getFinancialSettings } from './financial-settings-actions';
-import type { FinancialSettings, Purchase } from '@/lib/types';
+import type { FinancialSettings, Purchase, Invoice } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
@@ -56,6 +56,7 @@ const DescriptionListItem = ({ term, children }: { term: string, children: React
 export default function AdminCompaniesPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [financialSettings, setFinancialSettings] = useState<FinancialSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
@@ -65,6 +66,11 @@ export default function AdminCompaniesPage() {
   const [isSaving, startTransition] = useTransition();
   const { toast } = useToast();
   const [selectedTenantFilter, setSelectedTenantFilter] = useState('all');
+  
+  const [invoiceMonth, setInvoiceMonth] = useState(new Date().getMonth()); // 0-indexed month
+  const [invoiceYear, setInvoiceYear] = useState(new Date().getFullYear());
+  const [isGenerating, setIsGenerating] = useState(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,6 +93,16 @@ export default function AdminCompaniesPage() {
     };
     fetchData();
   }, [toast]);
+  
+  useEffect(() => {
+    // Fetch generated invoices when month/year changes
+    const fetchInvoices = async () => {
+      const fetchedInvoices = await getGeneratedInvoices(invoiceYear, invoiceMonth + 1);
+      setInvoices(fetchedInvoices);
+    };
+    fetchInvoices();
+  }, [invoiceYear, invoiceMonth]);
+
 
   const handleManageClick = (tenant: Tenant) => {
     setSelectedTenant(tenant);
@@ -112,6 +128,24 @@ export default function AdminCompaniesPage() {
         }
     })
   }
+
+  const handleGenerateInvoices = async () => {
+    setIsGenerating(true);
+    const result = await generateMonthlyInvoices(invoiceYear, invoiceMonth + 1);
+    setIsGenerating(false);
+    
+    toast({
+        title: result.success ? "Sucesso!" : "Erro!",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+    });
+
+    if (result.success) {
+      // Re-fetch invoices
+      const fetchedInvoices = await getGeneratedInvoices(invoiceYear, invoiceMonth + 1);
+      setInvoices(fetchedInvoices);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Data não disponível';
@@ -347,10 +381,86 @@ export default function AdminCompaniesPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
-             <TabsContent value="transfers">
+            <TabsContent value="transfers">
                  <Card>
-                    <CardHeader><CardTitle>Faturas de Repasse</CardTitle></CardHeader>
-                    <CardContent className="h-48 flex items-center justify-center text-muted-foreground">Em breve: geração e gerenciamento de faturas de repasse.</CardContent>
+                    <CardHeader>
+                      <CardTitle>Faturas de Repasse</CardTitle>
+                      <CardDescription>Gere e gerencie as faturas de repasse mensais para seus clientes.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/50">
+                            <div className="flex-1 space-y-2">
+                                <Label>Selecione o Período para Geração</Label>
+                                <div className="flex items-center gap-2">
+                                     <Select value={String(invoiceMonth)} onValueChange={(val) => setInvoiceMonth(Number(val))}>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Mês" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: 12 }, (_, i) => (
+                                                <SelectItem key={i} value={String(i)}>
+                                                    {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={String(invoiceYear)} onValueChange={(val) => setInvoiceYear(Number(val))}>
+                                        <SelectTrigger className="w-[120px]">
+                                            <SelectValue placeholder="Ano" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                                                <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <Button onClick={handleGenerateInvoices} disabled={isGenerating}>
+                                {isGenerating ? <Spinner className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
+                                {isGenerating ? 'Gerando Faturas...' : 'Gerar Faturas do Mês'}
+                            </Button>
+                        </div>
+                        
+                        <div className="border rounded-lg">
+                           <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Empresa</TableHead>
+                                    <TableHead>Período</TableHead>
+                                    <TableHead className="text-right">Receita Bruta</TableHead>
+                                    <TableHead className="text-right">Valor Líquido</TableHead>
+                                    <TableHead className="text-center">Status</TableHead>
+                                    <TableHead className="text-right">Ações</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {invoices.length > 0 ? invoices.map(invoice => (
+                                    <TableRow key={invoice.id}>
+                                        <TableCell className="font-medium">{tenants.find(t => t.id === invoice.tenantId)?.companyName || 'Empresa não encontrada'}</TableCell>
+                                        <TableCell>{`${new Date(0, invoice.month - 1).toLocaleString('pt-BR', { month: 'long' })}/${invoice.year}`}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(invoice.totalRevenue)}</TableCell>
+                                        <TableCell className="font-semibold text-right">{formatCurrency(invoice.netAmountToTransfer)}</TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
+                                                {invoice.status === 'paid' ? 'Pago' : 'Pendente'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="outline" size="sm">Ver Detalhes</Button>
+                                        </TableCell>
+                                    </TableRow>
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center">
+                                            Nenhuma fatura gerada para este período.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                        </div>
+                    </CardContent>
                 </Card>
             </TabsContent>
              <TabsContent value="settings">

@@ -4,9 +4,11 @@
 import { getAdminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where, Timestamp, writeBatch, collectionGroup } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Tenant } from './page';
+import { getFinancialSettings } from './financial-settings-actions';
+import type { Purchase, Invoice } from '@/lib/types';
 
 
 export async function saveTenantDomain(tenantId: string, domain: string) {
@@ -77,4 +79,128 @@ export async function getTenants(): Promise<Tenant[]> {
         console.error("Error fetching tenants:", error);
         return [];
     }
+}
+
+
+export async function generateMonthlyInvoices(year: number, month: number) {
+    console.log(`Iniciando geração de faturas para ${month}/${year}`);
+    const adminDb = getAdminDb();
+    const batch = writeBatch(db);
+
+    try {
+        const financialSettings = await getFinancialSettings();
+        if (!financialSettings) {
+            return { success: false, message: "Configurações financeiras não encontradas. Configure as taxas primeiro." };
+        }
+
+        const tenants = await getTenants();
+        if (tenants.length === 0) {
+            return { success: true, message: "Nenhuma empresa (inquilino) encontrada para gerar faturas." };
+        }
+
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0, 23, 59, 59);
+
+        for (const tenant of tenants) {
+            const purchasesQuery = query(
+                collection(db, `tenants/${tenant.id}/purchases`),
+                where('createdAt', '>=', startDate),
+                where('createdAt', '<=', endDate)
+            );
+            
+            const purchasesSnapshot = await getDocs(purchasesQuery);
+            if (purchasesSnapshot.empty) {
+                console.log(`Nenhuma venda para ${tenant.companyName} no período.`);
+                continue;
+            }
+
+            let totalRevenue = 0;
+            let totalStripeFees = 0;
+            let totalTaxes = 0;
+            let totalDelvifyFees = 0;
+
+            purchasesSnapshot.docs.forEach(doc => {
+                const purchase = doc.data() as Purchase;
+                const saleValue = purchase.amount;
+                totalRevenue += saleValue;
+
+                const taxValue = saleValue * (financialSettings.taxPercentage / 100);
+                totalTaxes += taxValue;
+
+                const valueAfterTaxes = saleValue - taxValue;
+                
+                let stripeFee = 0;
+                if (purchase.paymentMethod === 'card') {
+                    stripeFee = valueAfterTaxes * (financialSettings.stripeCardPercentage / 100) + financialSettings.stripeCardFixed;
+                } else if (purchase.paymentMethod === 'boleto') {
+                    stripeFee = financialSettings.stripeBoletoFixed;
+                } else if (purchase.paymentMethod === 'pix') {
+                    stripeFee = valueAfterTaxes * (financialSettings.stripePixPercentage / 100);
+                }
+                totalStripeFees += stripeFee;
+
+                const valueAfterStripe = valueAfterTaxes - stripeFee;
+                
+                const delvifyFee = valueAfterStripe * (financialSettings.delvifyPercentage / 100) + financialSettings.delvifyFixed;
+                totalDelvifyFees += delvifyFee;
+            });
+
+            const netAmountToTransfer = totalRevenue - totalStripeFees - totalTaxes - totalDelvifyFees;
+
+            const invoiceId = `${year}-${String(month).padStart(2, '0')}`;
+            const invoiceRef = doc(db, `tenants/${tenant.id}/invoices`, invoiceId);
+
+            batch.set(invoiceRef, {
+                tenantId: tenant.id,
+                month,
+                year,
+                totalRevenue,
+                totalTaxes,
+                totalStripeFees,
+                totalDelvifyFees,
+                netAmountToTransfer,
+                status: 'pending',
+                generatedAt: Timestamp.now(),
+                purchaseIds: purchasesSnapshot.docs.map(d => d.id),
+            });
+             console.log(`Fatura ${invoiceId} preparada para ${tenant.companyName}. Valor a transferir: ${netAmountToTransfer}`);
+        }
+
+        await batch.commit();
+        revalidatePath('/admin/companies');
+        return { success: true, message: `Faturas para ${month}/${year} geradas com sucesso!` };
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
+        console.error("Erro ao gerar faturas mensais:", errorMessage);
+        return { success: false, message: `Erro ao gerar faturas: ${errorMessage}` };
+    }
+}
+
+export async function getGeneratedInvoices(year: number, month: number): Promise<Invoice[]> {
+  try {
+    const invoicesQuery = query(
+      collectionGroup(db, 'invoices'),
+      where('year', '==', year),
+      where('month', '==', month)
+    );
+    
+    const querySnapshot = await getDocs(invoicesQuery);
+    const invoices: Invoice[] = [];
+    
+    querySnapshot.forEach(doc => {
+        const data = doc.data();
+         const serializedData = {
+            ...data,
+            id: doc.id,
+            generatedAt: data.generatedAt?.toDate ? data.generatedAt.toDate().toISOString() : data.generatedAt,
+        };
+      invoices.push(serializedData as Invoice);
+    });
+
+    return invoices;
+  } catch (error) {
+    console.error("Error fetching generated invoices:", error);
+    return [];
+  }
 }
