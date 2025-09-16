@@ -16,30 +16,21 @@ export const config = {
 
 export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
+  const hostname = req.headers.get('host') || 'delvify.delvind.com';
 
-  // Get hostname from request headers
-  // The 'x-forwarded-host' header is used by Vercel and other platforms
-  const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host');
-
-  // If the hostname is missing, do nothing
-  if (!hostname) {
-    return NextResponse.next();
-  }
-  
-  // Define your main application domain.
   const rootDomain = 'delvify.delvind.com';
+  
+  // Normalize hostname for local development
+  const currentHost = hostname.split(':')[0];
 
-  // Normalize hostname (remove port for local development)
-  const currentHost = hostname.replace(`:${url.port}`, '');
-
-  // If the request is for the main domain or localhost, let it pass.
+  // If it's the root domain or localhost, do nothing
   if (currentHost === rootDomain || currentHost === 'localhost') {
     return NextResponse.next();
   }
 
-  // For any other domain, rewrite the path to include the hostname.
-  // This allows you to handle multi-tenancy based on the path.
-  // e.g., a request to `tenant1.com/dashboard` will be rewritten to `/tenant1.com/dashboard`
-  const rewriteUrl = new URL(`/${hostname}${url.pathname}`, req.url);
-  return NextResponse.rewrite(rewriteUrl);
+  // For any other domain (tenant domain), rewrite the path
+  // e.g., a request to `tenant1.com/dashboard` is rewritten to `/tenant1.com/dashboard`
+  return NextResponse.rewrite(
+    new URL(`/${currentHost}${url.pathname}${url.search}`, req.url)
+  );
 }
