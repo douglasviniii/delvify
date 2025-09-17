@@ -1,24 +1,51 @@
 
 import admin from 'firebase-admin';
 import { getApps, initializeApp, getApp, App } from 'firebase-admin/app';
+import { config } from 'dotenv';
 
-const serviceAccount = {
-  "type": "service_account",
-  "project_id": "venda-fcil-pdv",
-  "private_key_id": "b7131893a56d7d6162d5310855b65badfc75c935",
-  "private_key": `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC3leDeVF7eOtbH\n9RAltEF0J90wgqhW1AG/w+E24ylGewS5oecUrR9VJ2FQTMHbn7Ig/QunrZ6ulXtx\nGcHZYMxmjvBfn+2qXqHq8VQmmFgyO0TV4UlB1KjWB1Y57s5t27sTcbY/21xtIe8L\n1dRX+Eo3U+HcFnAz500g1u+F7SZwRBmGvjq0Sopdv65F0/SAu/oxAr29nG5p3P4M\nloxT3wkdPnRw3dsBKWnHCOdMMIWW4YhLdSOMjbEKRd1A19i1xBOKyAKa4AMnceII\nE9q7ohtwr2allsWj0rWaKammFkm9OD2cdN5uZaTpvsgWG4fSz2aK2S4UcPv5O7DM\nIzAf/M+pAgMBAAECggEADjkWA7eO5YHyualga8FiOErt2agnvVldvNMCx+czv46A\nlFapIdqTRLxBL3DQ7JBb4y8jl+UtN+qkFoQ3tt0HXPM6R3hLGBHOktaJTder7pFV\nsQnMDIX6oiFNon2gP9XgEZ6zz1DyAVD5lYXGlp2pd02gABZ7cSP8f1yzkCFKQvR7\n+X4GrYh3tiXSdcUeqt/aGRLQhFY0qeaN5iy3sA2zScac83G61wGXhNiaPnjzk8xw\nMla1u2+rdIdsvG6UzQ4z6Pf+O8qnJxgYkq3hk0nnU1BJggGughNV4aKJ9KIM3uwC\nVaMHrXfpYPMgkMWWTZO+VBwdNMm6rIaY27NeynJVAQKBgQDtEOTmYLP8u5B31VIW\nkqjXEfxXB+vFSTF9sWGYHN5nE6RuPnnUdWOQplFmIuoH1PbbAjvpoRiQVNBiby80\nx7wVw61Q/LU56s46FL9ZdQt+3hwtyPUgpBp2Cl0mh5TrIGBn4+e7V5WVfGzj0xd/\nTmNrn9F97CZJC/PL/eQ0T7eUqQKBgQDGP4JPFg/23Cv3voJJOTfWfkQaqBDF9lzx\n5XVPIhpS0REy4n9wiQp/62KwCqES+YkDmnEeiNKRPfOECliX8r7KNWcBq4i6KVj1\nAnB+eAhCHwUaqIAdWboUA11u0qYGSPNgVht2ZS3v29CB6rXg/hUS6AhvTbm0zGf1\n1R+EDpVDAQKBgQCpuvDH6PC0wG28/mRZeQOdiGkMvsUVaUQf5AIl8HVjg3K049JC\nRRHWHN4mrFS26skbIMxYh1iY7cCM2WII/gAx7PmIBIaUQwMIHpapq91hJhEyzrCC\ngDvZy63JykTa20Fq4IenYBve/UjRDO/D3BHemnxZFdyLbB1PLiZXNcQQkQKBgG6e\nET+/t7iusXnTOy9QVe/BFI8rJ/DNvp7awdId3UJIlagm6aUJUmp+FNrVk3ra8bCp\nBGVdQuD4CGCsxTJDqGF72rX72JbHa3OKoOpwX2tFk7uEObgm0MVJ+2BS+YCYQ/SF\nF13ApxknNfjH1iRsoaWjAtHYNL7FL1zkRmmRGYgBAoGACAS0/2bINoTlgCXXF+Sf\nzvqHkiKe+M1y+MILtBPFvnCKZckATf1vvdB6i2Fp2ipNoBZFKaWENgBT5DYw1x9O\nHv61zjxGdsQM1pXlG9aTotbYkt596VFMExUddUXdppKSMXsi+Azs6lFFj8ZGXLZz\nQkDOPStxn2F/LBZkbjX74gs=\n-----END PRIVATE KEY-----\n`,
-  "client_email": "firebase-adminsdk-fbsvc@venda-fcil-pdv.iam.gserviceaccount.com",
-  "client_id": "100681931275435978010",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40venda-fcil-pdv.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
+// Carrega as variáveis de ambiente do arquivo .env
+config({ path: '.env' });
+
+// Nome único para a instância do app de admin para evitar conflitos
+const ADMIN_APP_NAME = 'firebase-admin-app-delvify';
+
+// Interface para as credenciais de serviço para tipagem forte
+interface ServiceAccount {
+  type: string;
+  project_id: string;
+  private_key_id: string;
+  private_key: string;
+  client_email: string;
+  client_id: string;
+  auth_uri: string;
+  token_uri: string;
+  auth_provider_x509_cert_url: string;
+  client_x509_cert_url: string;
+  universe_domain: string;
+}
+
+// Constrói o objeto de credenciais a partir das variáveis de ambiente
+// Isso garante que se alguma variável estiver faltando, a inicialização falhará com um erro claro.
+const serviceAccount: ServiceAccount = {
+  type: process.env.FIREBASE_TYPE!,
+  project_id: process.env.FIREBASE_PROJECT_ID!,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID!,
+  // Substitui a sequência de escape \\n por \n para que a chave seja formatada corretamente
+  private_key: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL!,
+  client_id: process.env.FIREBASE_CLIENT_ID!,
+  auth_uri: process.env.FIREBASE_AUTH_URI!,
+  token_uri: process.env.FIREBASE_TOKEN_URI!,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL!,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL!,
+  universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN!,
 };
 
-const ADMIN_APP_NAME = 'firebase-frameworks-admin';
-
-// Função de inicialização robusta
+/**
+ * Inicializa a aplicação de admin do Firebase de forma segura (singleton).
+ * Procura por uma instância nomeada e, se não encontrar, cria uma nova.
+ * Isso evita erros de "app já existe" em ambientes de desenvolvimento com hot-reloading.
+ */
 function initializeFirebaseAdmin(): App {
   const apps = getApps();
   const adminApp = apps.find(app => app.name === ADMIN_APP_NAME);
@@ -33,18 +60,27 @@ function initializeFirebaseAdmin(): App {
   }, ADMIN_APP_NAME);
 }
 
-// Garante que o app admin está inicializado.
-const adminApp = initializeFirebaseAdmin();
+// Garante que a instância do app admin seja inicializada.
+initializeFirebaseAdmin();
 
-// Funções de acesso aos serviços corrigidas
+/**
+ * Retorna a instância do serviço Firestore do Firebase Admin.
+ * Usa a instância nomeada garantindo que a conexão está autenticada.
+ */
 export function getAdminDb() {
-  return admin.firestore();
+  return getApp(ADMIN_APP_NAME).firestore();
 }
 
+/**
+ * Retorna a instância do serviço Authentication do Firebase Admin.
+ */
 export function getAdminAuth() {
-  return admin.auth();
+  return getApp(ADMIN_APP_NAME).auth();
 }
 
+/**
+ * Retorna a instância do serviço Storage do Firebase Admin.
+ */
 export function getAdminStorage() {
-  return admin.storage();
+  return getApp(ADMIN_APP_NAME).storage();
 }
