@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useTransition } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, storage } from '@/lib/firebase';
-import { saveGlobalSettings } from './actions';
+import { auth } from '@/lib/firebase';
+import { saveGlobalSettings, uploadLogo } from './actions';
 import { getGlobalSettings } from '@/lib/settings';
 import type { GlobalSettings } from '@/lib/types';
 import Link from 'next/link';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const socialPlatforms = [
     { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" /> },
@@ -63,8 +62,8 @@ export default function GlobalSettingsPage() {
     const [user, authLoading] = useAuthState(auth);
     const [settings, setSettings] = useState<GlobalSettings>(initialSettings);
     const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+    const [isSaving, startSavingTransition] = useTransition();
+    const [isUploading, startUploadingTransition] = useTransition();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -72,27 +71,14 @@ export default function GlobalSettingsPage() {
             setIsLoading(true);
             getGlobalSettings(user.uid)
                 .then(savedSettings => {
-                    // Deep merge saved settings with initial settings to prevent missing keys
                     if (savedSettings) {
                         setSettings(prev => ({
                             ...prev,
                             ...savedSettings,
-                            footerInfo: {
-                                ...prev.footerInfo,
-                                ...(savedSettings.footerInfo || {})
-                            },
-                            socialLinks: {
-                                ...prev.socialLinks,
-                                ...(savedSettings.socialLinks || {})
-                            },
-                            socialsLocation: {
-                                ...prev.socialsLocation,
-                                ...(savedSettings.socialsLocation || {})
-                            },
-                            colors: {
-                                ...prev.colors,
-                                ...(savedSettings.colors || {})
-                            }
+                            footerInfo: { ...prev.footerInfo, ...(savedSettings.footerInfo || {}) },
+                            socialLinks: { ...prev.socialLinks, ...(savedSettings.socialLinks || {}) },
+                            socialsLocation: { ...prev.socialsLocation, ...(savedSettings.socialsLocation || {}) },
+                            colors: { ...prev.colors, ...(savedSettings.colors || {}) }
                         }));
                     }
                 })
@@ -112,38 +98,32 @@ export default function GlobalSettingsPage() {
             toast({ title: "Erro", description: "Você precisa estar logado para salvar.", variant: "destructive" });
             return;
         }
-        setIsSaving(true);
-        const result = await saveGlobalSettings(user.uid, settings);
-        setIsSaving(false);
-
-        toast({
-            title: result.success ? "Sucesso!" : "Erro!",
-            description: result.message,
-            variant: result.success ? "default" : "destructive",
+        startSavingTransition(async () => {
+            const result = await saveGlobalSettings(user.uid, settings);
+            toast({
+                title: result.success ? "Sucesso!" : "Erro!",
+                description: result.message,
+                variant: result.success ? "default" : "destructive",
+            });
         });
-
     };
     
     const handleLogoImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || !user) return;
         
-        setIsUploading(true);
-        try {
-            const filePath = `tenants/${user.uid}/global/logo_${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, filePath);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
+        const formData = new FormData();
+        formData.append('logo', file);
 
-            handleSettingChange('logoUrl', downloadURL);
-            toast({ title: 'Sucesso', description: 'Nova logo carregada.' });
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
-            console.error("Erro no upload da logo:", error);
-            toast({ title: "Erro de Upload", description: `Não foi possível carregar a logo: ${errorMessage}`, variant: "destructive" });
-        } finally {
-            setIsUploading(false);
-        }
+        startUploadingTransition(async () => {
+            const result = await uploadLogo(user.uid, formData);
+            if(result.success && result.url) {
+                setSettings(prev => ({...prev, logoUrl: result.url}));
+                 toast({ title: 'Sucesso', description: 'Nova logo carregada.' });
+            } else {
+                 toast({ title: "Erro de Upload", description: result.message, variant: "destructive" });
+            }
+        });
     };
 
     const handleSettingChange = (key: keyof GlobalSettings, value: any) => {

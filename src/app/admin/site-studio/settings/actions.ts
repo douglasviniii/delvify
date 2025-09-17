@@ -1,8 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
-import { db } from '@/lib/firebase';
+import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { GlobalSettings } from '@/lib/types';
@@ -92,5 +91,43 @@ export async function savePageVisibility(tenantId: string, pageId: string, isVis
         const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
         console.error(`Erro ao salvar a visibilidade da página ${pageId}:`, error);
         return { success: false, message: `Erro ao salvar: ${errorMessage}` };
+    }
+}
+
+
+export async function uploadLogo(tenantId: string, formData: FormData): Promise<{ success: boolean; message: string; url?: string }> {
+    if (!tenantId) {
+        return { success: false, message: 'ID do inquilino é obrigatório.' };
+    }
+    
+    const file = formData.get('logo') as File;
+    if (!file) {
+        return { success: false, message: 'Nenhum arquivo de logo encontrado.' };
+    }
+
+    try {
+        const bucket = adminStorage.bucket();
+        const filePath = `tenants/${tenantId}/global/logo_${Date.now()}_${file.name}`;
+        const fileUpload = bucket.file(filePath);
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        await fileUpload.save(buffer, {
+            metadata: { contentType: file.type },
+            public: true, // Torna o arquivo público
+        });
+        
+        const publicUrl = fileUpload.publicUrl();
+        
+        // Salva a URL diretamente no documento de configurações globais
+        await settingsRefAdmin(tenantId).set({ logoUrl: publicUrl }, { merge: true });
+
+        revalidatePath('/', 'layout');
+
+        return { success: true, message: 'Logo carregada com sucesso!', url: publicUrl };
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
+        console.error('Erro no upload da logo via Server Action:', error);
+        return { success: false, message: `Erro ao fazer upload: ${errorMessage}` };
     }
 }
