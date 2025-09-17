@@ -28,22 +28,24 @@ function initializeFirebaseAdmin(): App {
   return initializeApp(firebaseAdminConfig, ADMIN_APP_NAME);
 }
 
-const adminApp = initializeFirebaseAdmin();
+// Inicializa o app para garantir que os serviços possam encontrá-lo.
+initializeFirebaseAdmin();
 
 export function getAdminDb() {
-  return admin.firestore(adminApp);
+  return admin.firestore();
 }
 
 export function getAdminAuth() {
-  return admin.auth(adminApp);
+  return admin.auth();
 }
 
 export function getAdminStorage() {
-  return admin.storage(adminApp);
+  return admin.storage();
 }
 
-const adminDb = getAdminDb;
-const adminAuth = getAdminAuth;
-const adminStorage = getAdminStorage;
+// Para compatibilidade com código antigo que pode usar essas importações.
+const adminDb = getAdminDb();
+const adminAuth = getAdminAuth();
+const adminStorage = getAdminStorage();
 
 export { adminDb, adminAuth, adminStorage };
