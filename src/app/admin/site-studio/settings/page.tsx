@@ -130,7 +130,7 @@ export default function GlobalSettingsPage() {
         
         setIsUploading(true);
         try {
-            const filePath = `tenants/${user.uid}/global/logo.${file.name.split('.').pop()}`;
+            const filePath = `tenants/${user.uid}/global/logo_${Date.now()}_${file.name}`;
             const storageRef = ref(storage, filePath);
             const snapshot = await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(snapshot.ref);
@@ -139,7 +139,8 @@ export default function GlobalSettingsPage() {
             toast({ title: 'Sucesso', description: 'Nova logo carregada.' });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
-            toast({ title: "Erro de Upload", description: errorMessage, variant: "destructive" });
+            console.error("Erro no upload da logo:", error);
+            toast({ title: "Erro de Upload", description: `Não foi possível carregar a logo: ${errorMessage}`, variant: "destructive" });
         } finally {
             setIsUploading(false);
         }
