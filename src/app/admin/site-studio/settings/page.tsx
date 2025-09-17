@@ -12,11 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { saveGlobalSettings, uploadLogo } from './actions';
+import { auth, storage } from '@/lib/firebase';
+import { saveGlobalSettings } from './actions';
 import { getGlobalSettings } from '@/lib/settings';
 import type { GlobalSettings } from '@/lib/types';
 import Link from 'next/link';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const socialPlatforms = [
     { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" /> },
@@ -63,7 +64,7 @@ export default function GlobalSettingsPage() {
     const [settings, setSettings] = useState<GlobalSettings>(initialSettings);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, startSavingTransition] = useTransition();
-    const [isUploading, startUploadingTransition] = useTransition();
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -111,19 +112,24 @@ export default function GlobalSettingsPage() {
     const handleLogoImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || !user) return;
-        
-        const formData = new FormData();
-        formData.append('logo', file);
 
-        startUploadingTransition(async () => {
-            const result = await uploadLogo(user.uid, formData);
-            if(result.success && result.url) {
-                setSettings(prev => ({...prev, logoUrl: result.url}));
-                 toast({ title: 'Sucesso', description: 'Nova logo carregada.' });
-            } else {
-                 toast({ title: "Erro de Upload", description: result.message, variant: "destructive" });
-            }
-        });
+        setIsUploading(true);
+        try {
+            const filePath = `tenants/${user.uid}/global/logo_${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, filePath);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+
+            setSettings(prev => ({ ...prev, logoUrl: downloadURL }));
+            toast({ title: 'Sucesso', description: 'Nova logo carregada. Clique em Salvar para confirmar.' });
+
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
+            console.error("Upload error:", error);
+            toast({ title: 'Erro de Upload', description: errorMessage, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleSettingChange = (key: keyof GlobalSettings, value: any) => {

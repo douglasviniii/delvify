@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb, adminStorage, adminAuth } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 
 interface ResponsiblePerson {
   id: number;
