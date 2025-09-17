@@ -13,7 +13,7 @@ import { submitCommentAction } from './actions';
 
 
 // Este é o ID do inquilino para o qual os posts estão sendo criados no admin.
-const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const TENANT_ID_WITH_POSTS = process.env.NEXT_PUBLIC_MAIN_TENANT_ID || 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 
 export default async function StudentBlogPostPage({ params }: { params: { slug: string } }) {

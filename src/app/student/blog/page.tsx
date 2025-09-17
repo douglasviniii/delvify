@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -16,7 +17,7 @@ import { auth } from '@/lib/firebase';
 import { togglePostLike } from './actions';
 
 
-const TENANT_ID_WITH_POSTS = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const TENANT_ID_WITH_POSTS = process.env.NEXT_PUBLIC_MAIN_TENANT_ID || 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 const formatDate = (date: Date | string | undefined) => {
     if (!date) return 'Data inválida';

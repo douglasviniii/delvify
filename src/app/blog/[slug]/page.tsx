@@ -7,7 +7,7 @@ import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
 
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const MAIN_TENANT_ID = process.env.NEXT_PUBLIC_MAIN_TENANT_ID || 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   // Busca os posts do inquilino correto

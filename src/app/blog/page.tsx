@@ -16,7 +16,7 @@ const SectionComponents: Record<string, React.FC<any>> = {
   DefaultSection,
 };
 
-const MAIN_TENANT_ID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
+const MAIN_TENANT_ID = process.env.NEXT_PUBLIC_MAIN_TENANT_ID || 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 async function getPageSections(tenantId: string, pageId: string) {
     try {
