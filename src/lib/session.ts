@@ -7,13 +7,13 @@ import { cookies } from 'next/headers';
 import type { UserRecord } from 'firebase-admin/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
+  apiKey: "AIzaSyB0GTV_m5oit8ddZeCmQ3hW7Jhh-LKiKG0",
+  authDomain: "venda-fcil-pdv.firebaseapp.com",
+  projectId: "venda-fcil-pdv",
+  storageBucket: "venda-fcil-pdv.firebasestorage.app",
+  messagingSenderId: "114570788878",
+  appId: "1:114570788878:web:1e3fa51754f3ae6862fc5f",
+  measurementId: "G-792KHTQP7R",
 };
 
 

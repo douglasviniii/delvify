@@ -1,9 +1,9 @@
-
 import admin from 'firebase-admin';
 import { getApps, initializeApp, getApp } from 'firebase-admin/app';
 
 const ADMIN_APP_NAME = 'firebase-admin-app-delvify';
 
+// Hardcoded service account as requested.
 const serviceAccount = {
   "type": "service_account",
   "project_id": "venda-fcil-pdv",
@@ -35,6 +35,6 @@ function initializeAdminApp() {
 
 const adminApp = initializeAdminApp();
 
-export const adminDb = admin.firestore(adminApp);
-export const adminAuth = admin.auth(adminApp);
-export const adminStorage = admin.storage(adminApp);
+export const adminDb = admin.firestore();
+export const adminAuth = admin.auth();
+export const adminStorage = admin.storage();
