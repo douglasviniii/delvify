@@ -1,12 +1,9 @@
 
 import admin from 'firebase-admin';
-import { getApps, initializeApp, getApp, App } from 'firebase-admin/app';
+import { getApps, initializeApp, getApp } from 'firebase-admin/app';
 
-// Nome único para a instância do app de admin para evitar conflitos
 const ADMIN_APP_NAME = 'firebase-admin-app-delvify';
 
-// O JSON da chave da conta de serviço fornecido pelo usuário.
-// A chave privada é colocada em uma string de template (com crases) para preservar as quebras de linha.
 const serviceAccount = {
   "type": "service_account",
   "project_id": "venda-fcil-pdv",
@@ -22,44 +19,22 @@ const serviceAccount = {
 };
 
 /**
- * Inicializa a aplicação de admin do Firebase de forma segura (singleton).
- * Procura por uma instância nomeada e, se não encontrar, cria uma nova.
- * Isso evita erros de "app já existe" em ambientes de desenvolvimento com hot-reloading.
+ * Initializes the Firebase Admin app with a unique name if it doesn't exist.
+ * This prevents re-initialization errors in hot-reload environments.
  */
-function initializeFirebaseAdmin(): App {
-  const apps = getApps();
-  const adminApp = apps.find(app => app.name === ADMIN_APP_NAME);
-  
-  if (adminApp) {
-    return adminApp;
+function initializeAdminApp() {
+  if (getApps().some((app) => app.name === ADMIN_APP_NAME)) {
+    return getApp(ADMIN_APP_NAME);
   }
-  
+
   return initializeApp({
     credential: admin.credential.cert(serviceAccount),
     storageBucket: "venda-fcil-pdv.appspot.com",
   }, ADMIN_APP_NAME);
 }
 
-// Garante que a instância do app admin seja inicializada.
-initializeFirebaseAdmin();
+const adminApp = initializeAdminApp();
 
-/**
- * Retorna a instância do serviço Firestore do Firebase Admin.
- */
-export function getAdminDb() {
-  return getApp(ADMIN_APP_NAME).firestore();
-}
-
-/**
- * Retorna a instância do serviço Authentication do Firebase Admin.
- */
-export function getAdminAuth() {
-  return getApp(ADMIN_APP_NAME).auth();
-}
-
-/**
- * Retorna a instância do serviço Storage do Firebase Admin.
- */
-export function getAdminStorage() {
-  return getApp(ADMIN_APP_NAME).storage();
-}
+export const adminDb = admin.firestore(adminApp);
+export const adminAuth = admin.auth(adminApp);
+export const adminStorage = admin.storage(adminApp);

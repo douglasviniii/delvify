@@ -2,7 +2,7 @@
 
 'use server';
 
-import { getAdminDb } from './firebase-admin';
+import { adminDb } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
 import { db } from './firebase';
@@ -29,8 +29,6 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
         console.error("User ID is required to fetch purchase history.");
         return [];
     }
-
-    const adminDb = getAdminDb();
 
     try {
         const userDoc = await adminDb.collection('users').doc(userId).get();
@@ -89,7 +87,6 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
 
 
 export async function getAllPurchases(): Promise<Purchase[]> {
-    const adminDb = getAdminDb();
     try {
         const purchasesCol = collectionGroup(adminDb, 'purchases');
         const purchasesSnapshot = await getDocs(purchasesCol);
@@ -134,7 +131,6 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
         console.error("Tenant ID is required to fetch purchases.");
         return [];
     }
-    const adminDb = getAdminDb();
     try {
         const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(purchasesQuery);

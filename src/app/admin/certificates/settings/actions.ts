@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { CertificateSettings } from '@/lib/types';
@@ -23,7 +23,7 @@ const CertificateSettingsSchema = z.object({
 });
 
 const settingsRef = (tenantId: string) => 
-  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('certificate');
+  adminDb.collection('tenants').doc(tenantId).collection('settings').doc('certificate');
 
 
 // Ação para salvar as configurações

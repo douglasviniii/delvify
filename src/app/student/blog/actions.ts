@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
@@ -9,7 +9,6 @@ export async function togglePostLike(tenantId: string, postId: string, userId: s
     if (!tenantId || !postId || !userId) {
         throw new Error("Missing required IDs for liking a post.");
     }
-    const adminDb = getAdminDb();
     const postRef = adminDb.collection(`tenants/${tenantId}/blog`).doc(postId);
     const likeRef = postRef.collection('likes').doc(userId);
 

@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -34,8 +34,6 @@ export async function signupTenant(
     }
 
     const { email, password, adminName, companyName, cnpj } = validatedFields.data;
-    const adminAuth = getAdminAuth();
-    const adminDb = getAdminDb();
 
     try {
         // 1. Create Firebase Auth user

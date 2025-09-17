@@ -4,7 +4,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { doc, getDoc } from 'firebase/firestore';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/page-data';
 
@@ -56,7 +56,6 @@ export async function savePage(
 
 
   try {
-    const adminDb = getAdminDb();
     const pageRef = adminDb.collection('tenants').doc(validatedTenantId).collection('pages').doc(validatedPageId);
     
     await pageRef.set({

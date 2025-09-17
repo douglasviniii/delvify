@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { getAdminDb, getAdminStorage, getAdminAuth } from '@/lib/firebase-admin';
+import { adminDb, adminStorage, adminAuth } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 
 const profileSchema = z.object({
@@ -34,9 +34,6 @@ export async function updateStudentProfile(uid: string, data: any) {
     
     const { photoURL, ...firestoreData } = validatedFields.data;
     const { socialName } = validatedFields.data;
-    const adminDb = getAdminDb();
-    const adminStorage = getAdminStorage();
-    const adminAuth = getAdminAuth();
 
     try {
         let finalPhotoURL = photoURL;
