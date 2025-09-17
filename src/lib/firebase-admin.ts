@@ -17,11 +17,6 @@ const serviceAccount = {
   "universe_domain": "googleapis.com"
 };
 
-const firebaseAdminConfig = {
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: "venda-fcil-pdv.appspot.com",
-};
-
 const ADMIN_APP_NAME = 'firebase-frameworks';
 
 function initializeFirebaseAdmin(): App {
@@ -32,27 +27,23 @@ function initializeFirebaseAdmin(): App {
     return adminApp;
   }
   
-  return initializeApp(firebaseAdminConfig, ADMIN_APP_NAME);
+  return initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "venda-fcil-pdv.appspot.com",
+  }, ADMIN_APP_NAME);
 }
 
 // Garante que o app admin está inicializado.
-initializeFirebaseAdmin();
+const adminApp = initializeFirebaseAdmin();
 
 export function getAdminDb() {
-  return admin.firestore();
+  return admin.firestore(adminApp);
 }
 
 export function getAdminAuth() {
-  return admin.auth();
+  return admin.auth(adminApp);
 }
 
 export function getAdminStorage() {
-  return admin.storage();
+  return admin.storage(adminApp);
 }
-
-// Para compatibilidade com código antigo que pode usar essas importações.
-const adminDb = getAdminDb();
-const adminAuth = getAdminAuth();
-const adminStorage = getAdminStorage();
-
-export { adminDb, adminAuth, adminStorage };
