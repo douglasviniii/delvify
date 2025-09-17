@@ -2,7 +2,6 @@
 import admin from 'firebase-admin';
 import { getApps, initializeApp, getApp, App } from 'firebase-admin/app';
 
-// As credenciais estão diretamente no código para forçar a autenticação.
 const serviceAccount = {
   "type": "service_account",
   "project_id": "venda-fcil-pdv",
@@ -17,8 +16,9 @@ const serviceAccount = {
   "universe_domain": "googleapis.com"
 };
 
-const ADMIN_APP_NAME = 'firebase-frameworks';
+const ADMIN_APP_NAME = 'firebase-frameworks-admin';
 
+// Função de inicialização robusta
 function initializeFirebaseAdmin(): App {
   const apps = getApps();
   const adminApp = apps.find(app => app.name === ADMIN_APP_NAME);
@@ -36,14 +36,15 @@ function initializeFirebaseAdmin(): App {
 // Garante que o app admin está inicializado.
 const adminApp = initializeFirebaseAdmin();
 
+// Funções de acesso aos serviços corrigidas
 export function getAdminDb() {
-  return admin.firestore(adminApp);
+  return admin.firestore();
 }
 
 export function getAdminAuth() {
-  return admin.auth(adminApp);
+  return admin.auth();
 }
 
 export function getAdminStorage() {
-  return admin.storage(adminApp);
+  return admin.storage();
 }
