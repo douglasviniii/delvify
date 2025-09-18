@@ -34,7 +34,7 @@ const HoverLink = ({ href, children, color, hoverColor }: { href: string; childr
     )
 }
 
-export function ClientHeader({ settings, tenantId }: { settings: GlobalSettings, tenantId: string }) {
+export function ClientHeader({ settings }: { settings: GlobalSettings }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const navItems = [
     { id: 'courses', label: 'Cursos', href: '/courses' },
@@ -56,7 +56,7 @@ export function ClientHeader({ settings, tenantId }: { settings: GlobalSettings,
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <Logo logoUrl={settings.logoUrl} tenantId={tenantId}/>
+        <Logo logoUrl={settings.logoUrl} />
         <nav className="ml-10 hidden gap-6 md:flex">
           {visibleNavItems.map((item) => (
             <HoverLink
@@ -93,7 +93,7 @@ export function ClientHeader({ settings, tenantId }: { settings: GlobalSettings,
               <SheetContent side="left" className="flex flex-col p-0">
                  <SheetHeader className="p-4">
                     <SheetTitle className="sr-only">Menu</SheetTitle>
-                    <Logo logoUrl={settings.logoUrl} tenantId={tenantId} />
+                    <Logo logoUrl={settings.logoUrl} />
                  </SheetHeader>
                  <nav className="flex-1 px-4 mt-4 space-y-2">
                     {visibleNavItems.map((item) => (

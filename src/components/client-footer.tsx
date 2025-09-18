@@ -31,7 +31,7 @@ const HoverLink = ({ href, children, color, hoverColor }: { href: string; childr
     )
 }
 
-export function ClientFooter({ settings, tenantId }: { settings: GlobalSettings, tenantId: string }) {
+export function ClientFooter({ settings }: { settings: GlobalSettings }) {
   const [copyrightText, setCopyrightText] = React.useState(settings.footerInfo.copyrightText);
 
   React.useEffect(() => {
@@ -75,7 +75,7 @@ export function ClientFooter({ settings, tenantId }: { settings: GlobalSettings,
       <div className="container py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-6">
-            <Logo logoUrl={settings.logoUrl} tenantId={tenantId}/>
+            <Logo logoUrl={settings.logoUrl}/>
             <p className="text-base text-muted-foreground">
               Soluções Inovadoras para um Mundo Digital.
             </p>

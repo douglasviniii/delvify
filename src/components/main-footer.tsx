@@ -11,5 +11,5 @@ export async function MainFooterWrapper() {
   const tenantId = headersList.get('x-tenant-id') || process.env.NEXT_PUBLIC_MAIN_TENANT_ID || 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
   const settings = await getGlobalSettingsForTenant(tenantId);
-  return <ClientFooter settings={settings} tenantId={tenantId}/>;
+  return <ClientFooter settings={settings} />;
 }
