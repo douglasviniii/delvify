@@ -5,7 +5,6 @@ import { getApps, initializeApp, getApp } from 'firebase-admin/app';
 const ADMIN_APP_NAME = 'firebase-admin-app-delvify';
 
 // Hardcoded service account details as provided.
-// In a real production app, this should come from secure environment variables.
 const serviceAccount = {
   "type": "service_account",
   "project_id": "venda-fcil-pdv",
@@ -24,7 +23,7 @@ const serviceAccount = {
  * Initializes the Firebase Admin app with a unique name if it doesn't exist.
  * This prevents re-initialization errors in hot-reload environments.
  */
-function ensureAdminApp() {
+function initializeAdminApp() {
   if (getApps().some((app) => app.name === ADMIN_APP_NAME)) {
     return getApp(ADMIN_APP_NAME);
   }
@@ -35,23 +34,25 @@ function ensureAdminApp() {
   }
 
   return initializeApp({
-    // The credential object is created from the hardcoded service account JSON.
     credential: admin.credential.cert(serviceAccount as any),
     storageBucket: "venda-fcil-pdv.appspot.com",
   }, ADMIN_APP_NAME);
 }
 
-// Ensure the app is initialized on module load
-ensureAdminApp();
-
+// Function to get the Firestore instance.
 export function getAdminDb() {
+  initializeAdminApp();
   return admin.firestore();
 }
 
+// Function to get the Auth instance.
 export function getAdminAuth() {
+  initializeAdminApp();
   return admin.auth();
 }
 
+// Function to get the Storage instance.
 export function getAdminStorage() {
+  initializeAdminApp();
   return admin.storage();
 }
