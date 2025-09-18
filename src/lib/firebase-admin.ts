@@ -1,4 +1,6 @@
 
+'use server';
+
 import admin from 'firebase-admin';
 
 // Hardcoded service account details as provided.
