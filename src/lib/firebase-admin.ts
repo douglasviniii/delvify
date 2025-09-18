@@ -1,6 +1,4 @@
 
-'use server';
-
 import admin from 'firebase-admin';
 
 // Hardcoded service account details as provided.
@@ -25,7 +23,6 @@ function initializeAdminApp() {
       storageBucket: "venda-fcil-pdv.appspot.com",
     });
   }
-  return admin.app();
 }
 
 // Function to get the Firestore instance.
