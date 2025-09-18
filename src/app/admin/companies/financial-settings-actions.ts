@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import type { FinancialSettings } from '@/lib/types';
 import { FinancialSettingsSchema } from '@/lib/types';
@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase';
 const SUPER_ADMIN_UID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
 const settingsRef = (tenantId: string) => 
-  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('financial');
+  adminDb.collection('tenants').doc(tenantId).collection('settings').doc('financial');
 
 const settingsRefClient = (tenantId: string) =>
   doc(db, `tenants/${tenantId}/settings/financial`);
