@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/headers';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { config } from 'dotenv';
 
@@ -66,7 +66,6 @@ export async function POST(req: NextRequest) {
                      }
                 }
 
-                const adminDb = getAdminDb();
                 // Grant course access to the user
                 const userDocRef = adminDb.collection('users').doc(userId);
                 await userDocRef.set({

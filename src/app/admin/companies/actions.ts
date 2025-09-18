@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { collection, getDocs, query, orderBy, where, Timestamp, writeBatch, collectionGroup, doc as clientDoc, updateDoc } from 'firebase/firestore';
@@ -25,7 +25,7 @@ export async function saveTenantDomain(tenantId: string, domain: string) {
     }
 
     try {
-        const tenantRef = getAdminDb().collection('tenants').doc(tenantId);
+        const tenantRef = adminDb.collection('tenants').doc(tenantId);
         await tenantRef.update({
             customDomain: validation.data || null,
         });
@@ -47,7 +47,7 @@ export async function saveTenantNotes(tenantId: string, notes: string) {
     }
 
     try {
-        const tenantRef = getAdminDb().collection('tenants').doc(tenantId);
+        const tenantRef = adminDb.collection('tenants').doc(tenantId);
         await tenantRef.update({
             notes: notes || '',
         });

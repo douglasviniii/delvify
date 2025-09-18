@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 
@@ -47,7 +47,7 @@ export async function submitReview(
     const { courseId, tenantId, userId, userName, userAvatar, rating, comment } = validatedFields.data;
 
     try {
-        const reviewRef = getAdminDb().collection(`tenants/${tenantId}/courses/${courseId}/reviews`).doc(userId);
+        const reviewRef = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/reviews`).doc(userId);
         
         await reviewRef.set({
             authorId: userId,
