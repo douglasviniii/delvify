@@ -2,7 +2,6 @@
 import admin from 'firebase-admin';
 
 // Hardcoded service account details as provided.
-// The private_key is escaped for direct use in the code.
 const serviceAccount = {
   "type": "service_account",
   "project_id": "venda-fcil-pdv",
@@ -17,15 +16,30 @@ const serviceAccount = {
   "universe_domain": "googleapis.com"
 };
 
-// Initialize the app if it doesn't already exist.
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as any),
-    storageBucket: "venda-fcil-pdv.appspot.com",
-  });
+function initializeAdminApp() {
+  if (admin.apps.length === 0) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount as any),
+      storageBucket: "venda-fcil-pdv.appspot.com",
+    });
+  }
+  return admin.app();
 }
 
-// Export the initialized services directly.
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
-export const adminStorage = admin.storage();
+// Function to get the Firestore instance.
+export function getAdminDb() {
+  initializeAdminApp();
+  return admin.firestore();
+}
+
+// Function to get the Auth instance.
+export function getAdminAuth() {
+  initializeAdminApp();
+  return admin.auth();
+}
+
+// Function to get the Storage instance.
+export function getAdminStorage() {
+  initializeAdminApp();
+  return admin.storage();
+}

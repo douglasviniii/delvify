@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { GlobalSettings } from '@/lib/types';
@@ -45,7 +45,7 @@ const GlobalSettingsSchema = z.object({
 });
 
 const settingsRefAdmin = (tenantId: string) => 
-  adminDb.collection('tenants').doc(tenantId).collection('settings').doc('global');
+  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('global');
 
 
 

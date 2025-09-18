@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminAuth } from '@/lib/firebase-admin';
+import { getAdminAuth } from '@/lib/firebase-admin';
 import { getTokens } from 'next-firebase-auth-edge';
 import { cookies } from 'next/headers';
 import type { UserRecord } from 'firebase-admin/auth';
@@ -30,6 +30,7 @@ export async function getCurrentUser(): Promise<UserRecord | null> {
       return null;
     }
     
+    const adminAuth = getAdminAuth();
     const user = await adminAuth.verifyIdToken(tokens.token);
     
     return await adminAuth.getUser(user.uid);
