@@ -1,9 +1,6 @@
 
-import { redirect } from 'next/navigation';
-
-// This page will now be handled by the middleware and the [lang] directory.
-// This root page.tsx only needs to exist.
-// We can render null and the middleware will handle the redirect.
+// This page is intentionally left blank. 
+// The middleware will handle rewriting the URL to the correct tenant.
 export default function RootPage() {
-  redirect('/login');
+  return null;
 }

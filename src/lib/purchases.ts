@@ -28,9 +28,10 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
         console.error("User ID is required to fetch purchase history.");
         return [];
     }
+    
+    const adminDb = getAdminDb();
 
     try {
-        const adminDb = getAdminDb();
         const userDoc = await adminDb.collection('users').doc(userId).get();
         if (!userDoc.exists) {
             return [];
@@ -87,8 +88,8 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
 
 
 export async function getAllPurchases(): Promise<Purchase[]> {
+    const adminDb = getAdminDb();
     try {
-        const adminDb = getAdminDb();
         const purchasesCol = collectionGroup(adminDb, 'purchases');
         const purchasesSnapshot = await getDocs(purchasesCol);
         
@@ -132,8 +133,8 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
         console.error("Tenant ID is required to fetch purchases.");
         return [];
     }
+    const adminDb = getAdminDb();
     try {
-        const adminDb = getAdminDb();
         const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(purchasesQuery);
         

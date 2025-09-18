@@ -25,7 +25,8 @@ export async function saveTenantDomain(tenantId: string, domain: string) {
     }
 
     try {
-        const tenantRef = getAdminDb().collection('tenants').doc(tenantId);
+        const adminDb = getAdminDb();
+        const tenantRef = adminDb.collection('tenants').doc(tenantId);
         await tenantRef.update({
             customDomain: validation.data || null,
         });
@@ -47,7 +48,8 @@ export async function saveTenantNotes(tenantId: string, notes: string) {
     }
 
     try {
-        const tenantRef = getAdminDb().collection('tenants').doc(tenantId);
+        const adminDb = getAdminDb();
+        const tenantRef = adminDb.collection('tenants').doc(tenantId);
         await tenantRef.update({
             notes: notes || '',
         });
