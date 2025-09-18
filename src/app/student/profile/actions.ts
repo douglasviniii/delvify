@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb, adminStorage, adminAuth } from '@/lib/firebase-admin';
+import { getAdminDb, getAdminStorage, getAdminAuth } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 
 const profileSchema = z.object({
@@ -37,6 +37,7 @@ export async function updateStudentProfile(uid: string, data: any) {
 
     try {
         let finalPhotoURL = photoURL;
+        const adminStorage = getAdminStorage();
 
         if (photoURL && photoURL.startsWith('data:image')) {
             const mimeType = photoURL.split(';')[0].split(':')[1];
@@ -54,6 +55,9 @@ export async function updateStudentProfile(uid: string, data: any) {
             
             finalPhotoURL = file.publicUrl();
         }
+
+        const adminDb = getAdminDb();
+        const adminAuth = getAdminAuth();
 
         // Update Firestore document
         const userDocRef = adminDb.collection('users').doc(uid);

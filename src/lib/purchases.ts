@@ -1,8 +1,7 @@
 
-
 'use server';
 
-import { adminDb } from './firebase-admin';
+import { getAdminDb } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
 import { db } from './firebase';
@@ -31,6 +30,7 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
     }
 
     try {
+        const adminDb = getAdminDb();
         const userDoc = await adminDb.collection('users').doc(userId).get();
         if (!userDoc.exists) {
             return [];
@@ -88,6 +88,7 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
 
 export async function getAllPurchases(): Promise<Purchase[]> {
     try {
+        const adminDb = getAdminDb();
         const purchasesCol = collectionGroup(adminDb, 'purchases');
         const purchasesSnapshot = await getDocs(purchasesCol);
         
@@ -132,6 +133,7 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
         return [];
     }
     try {
+        const adminDb = getAdminDb();
         const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(purchasesQuery);
         

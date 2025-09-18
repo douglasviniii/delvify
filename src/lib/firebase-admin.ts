@@ -24,7 +24,7 @@ const serviceAccount = {
  * Initializes the Firebase Admin app with a unique name if it doesn't exist.
  * This prevents re-initialization errors in hot-reload environments.
  */
-function initializeAdminApp() {
+function ensureAdminApp() {
   if (getApps().some((app) => app.name === ADMIN_APP_NAME)) {
     return getApp(ADMIN_APP_NAME);
   }
@@ -41,10 +41,17 @@ function initializeAdminApp() {
   }, ADMIN_APP_NAME);
 }
 
-// Initialize the app.
-const adminApp = initializeAdminApp();
+// Ensure the app is initialized on module load
+ensureAdminApp();
 
-// Export the initialized services directly.
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
-export const adminStorage = admin.storage();
+export function getAdminDb() {
+  return admin.firestore();
+}
+
+export function getAdminAuth() {
+  return admin.auth();
+}
+
+export function getAdminStorage() {
+  return admin.storage();
+}

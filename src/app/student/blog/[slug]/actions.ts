@@ -1,7 +1,7 @@
 
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -40,6 +40,7 @@ export async function submitCommentAction(
     
 
     try {
+        const adminDb = getAdminDb();
         // Query for the post document using the slug to get the actual document ID
         const postQuery = await adminDb.collection(`tenants/${tenantId}/blog`).where('slug', '==', postSlug).limit(1).get();
 
