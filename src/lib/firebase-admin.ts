@@ -28,16 +28,12 @@ function initializeAdminApp() {
     return getApp(ADMIN_APP_NAME);
   }
 
-  // Ensure all fields are present before initializing
-  if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) {
-    throw new Error('As credenciais da conta de serviço do Firebase estão incompletas ou não foram encontradas.');
-  }
-
   return initializeApp({
     credential: admin.credential.cert(serviceAccount as any),
     storageBucket: "venda-fcil-pdv.appspot.com",
   }, ADMIN_APP_NAME);
 }
+
 
 // Function to get the Firestore instance.
 export function getAdminDb() {
