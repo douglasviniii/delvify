@@ -265,7 +265,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           <UserNav />
                       </div>
                   </header>
-                  <SidebarInset>
+                  <SidebarInset className="flex-1">
                       <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
                   </SidebarInset>
               </div>
