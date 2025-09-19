@@ -45,7 +45,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UserNav } from '@/components/ui/user-nav';
-import { hexToHsl } from '../[tenantId]/layout';
+import { hexToHsl } from '@/lib/utils';
 
 const SUPER_ADMIN_UID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 
