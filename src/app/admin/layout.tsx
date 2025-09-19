@@ -1,14 +1,14 @@
 
 'use client';
 import {
-  BookCopy,
+  BookOpenCheck,
   LayoutDashboard,
   Newspaper,
   Settings,
   LogOut,
   Building,
   GraduationCap,
-  PanelTop,
+  Store,
   File,
   Menu,
   User as UserIcon,
@@ -51,8 +51,8 @@ const SUPER_ADMIN_UID = 'LBb33EzFFvdOjYfT9Iw4eO4dxvp2';
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/blog', label: 'Studio de Blog', icon: Newspaper },
-  { href: '/admin/courses', label: 'Studio de Cursos', icon: BookCopy },
-  { href: '/admin/site-studio', label: 'Estudio de Site', icon: PanelTop },
+  { href: '/admin/courses', label: 'Studio de Cursos', icon: BookOpenCheck },
+  { href: '/admin/site-studio', label: 'Estudio de Site', icon: Store },
   { href: '/admin/certificates/settings', label: 'Certificados', icon: Award },
   { href: '/admin/users', label: 'Alunos', icon: GraduationCap },
   { href: '/admin/financial/repasses', label: 'Repasses Financeiros', icon: DollarSign },
