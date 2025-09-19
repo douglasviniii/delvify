@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, useTransition } from 'react';
@@ -13,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, storage } from '@/lib/firebase';
-import { saveGlobalSettings } from './actions';
+import { saveGlobalSettings, saveLogoUrl } from './actions';
 import { getGlobalSettings } from '@/lib/settings';
 import type { GlobalSettings } from '@/lib/types';
 import Link from 'next/link';
@@ -100,7 +99,8 @@ export default function GlobalSettingsPage() {
             return;
         }
         startSavingTransition(async () => {
-            const result = await saveGlobalSettings(user.uid, settings);
+            const { logoUrl, ...otherSettings } = settings;
+            const result = await saveGlobalSettings(user.uid, otherSettings as Omit<GlobalSettings, 'logoUrl'>);
             toast({
                 title: result.success ? "Sucesso!" : "Erro!",
                 description: result.message,
@@ -120,8 +120,16 @@ export default function GlobalSettingsPage() {
             const snapshot = await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(snapshot.ref);
 
-            setSettings(prev => ({ ...prev, logoUrl: downloadURL }));
-            toast({ title: 'Sucesso', description: 'Nova logo carregada. Clique em Salvar para confirmar.' });
+            const result = await saveLogoUrl(user.uid, downloadURL);
+             toast({
+                title: result.success ? "Sucesso!" : "Erro de Upload!",
+                description: result.message,
+                variant: result.success ? "default" : "destructive",
+            });
+
+            if(result.success) {
+                setSettings(prev => ({ ...prev, logoUrl: downloadURL }));
+            }
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
@@ -188,14 +196,13 @@ export default function GlobalSettingsPage() {
                         <div className="space-y-2">
                             <Label>Logo do Site</Label>
                             <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16 border">
-                                    <AvatarImage src={settings.logoUrl ?? undefined} alt="Logo" />
-                                    <AvatarFallback>LG</AvatarFallback>
+                                <Avatar className="h-16 w-32 border rounded-md bg-muted">
+                                    <AvatarImage src={settings.logoUrl ?? undefined} alt="Logo" className="object-contain" />
+                                    <AvatarFallback className="rounded-md">LG</AvatarFallback>
                                 </Avatar>
-                                <Input value={settings.logoUrl || ''} onChange={(e) => handleSettingChange('logoUrl', e.target.value)} placeholder="Cole a URL da sua logo"/>
                                 <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                                     {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                                    Carregar
+                                    Trocar Logo
                                 </Button>
                                 <input type="file" ref={fileInputRef} onChange={handleLogoImageChange} className="hidden" accept="image/*" />
                             </div>
@@ -333,7 +340,7 @@ export default function GlobalSettingsPage() {
             
             <div className="flex justify-end pt-4">
                 <Button size="lg" onClick={handleSaveChanges} disabled={isSaving || isLoading}>
-                    {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Configurações Globais"}
+                    {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Configurações Gerais"}
                 </Button>
             </div>
         </div>
