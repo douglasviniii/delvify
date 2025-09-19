@@ -18,7 +18,7 @@ const policyLinks = [
 
 export default function AdminSettingsPage() {
   return (
-    <div className="space-y-6">
+    <div className="h-full w-full space-y-6">
       <div>
         <h1 className="font-headline text-3xl font-bold tracking-tight">Configurações da Plataforma</h1>
         <p className="text-muted-foreground">Gerencie as configurações globais, políticas e informações de contato.</p>

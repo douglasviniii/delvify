@@ -204,7 +204,7 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full w-full space-y-6">
       <div className="flex items-center gap-6">
          <div className="relative group">
             <Avatar className="h-24 w-24 border">

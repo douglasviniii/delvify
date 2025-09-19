@@ -446,7 +446,7 @@ export default function AdminCoursesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full w-full space-y-6">
         <div className="flex items-center justify-between">
             <div>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Studio de Cursos</h1>
