@@ -4,7 +4,13 @@ import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/initial-page-data';
-import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, CtaSection, DefaultSection } from "@/components/sections";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { FeaturesSection } from "@/components/sections/FeaturesSection";
+import { AiCustomizationSection } from "@/components/sections/AiCustomizationSection";
+import { CoursesSection } from "@/components/sections/CoursesSection";
+import { LatestPostsSection } from "@/components/sections/LatestPostsSection";
+import { CtaSection } from "@/components/sections/CtaSection";
+import { DefaultSection } from "@/components/sections/DefaultSection";
 import { getAllBlogPosts } from "@/lib/blog-posts";
 
 const SectionComponents: Record<string, React.FC<any>> = {

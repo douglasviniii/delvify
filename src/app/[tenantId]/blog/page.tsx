@@ -8,7 +8,8 @@ import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/initial-page-data';
-import { DefaultSection, BlogPageSection } from '@/components/sections';
+import { DefaultSection } from '@/components/sections/DefaultSection';
+import { BlogPageSection } from '@/components/sections/BlogPageSection';
 
 const SectionComponents: Record<string, React.FC<any>> = {
   BlogPageSection,

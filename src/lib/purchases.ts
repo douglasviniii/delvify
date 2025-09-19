@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { getAdminDb } from './firebase-admin';
@@ -72,7 +73,8 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
 
 export async function getAllPurchases(): Promise<Purchase[]> {
     try {
-        const purchasesCol = collectionGroup(db, 'purchases');
+        const adminDb = getAdminDb();
+        const purchasesCol = collectionGroup(adminDb, 'purchases');
         const purchasesSnapshot = await getDocs(purchasesCol);
         
         const allPurchases: Purchase[] = [];
@@ -116,7 +118,8 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
         return [];
     }
     try {
-        const purchasesQuery = query(collection(db, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
+        const adminDb = getAdminDb();
+        const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(purchasesQuery);
         
         const purchases: Purchase[] = [];

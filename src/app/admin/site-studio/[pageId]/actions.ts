@@ -1,4 +1,3 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -25,9 +24,17 @@ export async function getPageDataForEditor(tenantId: string, pageId: string) {
             }
         }
         
-        // Retorna null se não houver dados no banco de dados.
-        // A lógica da página decidirá se usa dados iniciais ou não.
-        return null;
+        // Se não existir, retorna os dados iniciais.
+        const defaultPageData = initialPageData[pageId as keyof typeof initialPageData];
+        if (defaultPageData) {
+            return defaultPageData;
+        }
+
+        // Se não houver nem dados iniciais, retorna uma estrutura vazia para evitar erros.
+        return {
+            title: `Página ${pageId}`,
+            sections: [],
+        };
 
     } catch (error) {
         console.error("Error fetching page sections:", error);

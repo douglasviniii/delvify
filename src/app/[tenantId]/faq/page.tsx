@@ -1,10 +1,12 @@
 
+
 import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/initial-page-data';
-import { FaqPageSection, DefaultSection } from '@/components/sections';
+import { FaqPageSection } from '@/components/sections/FaqPageSection';
+import { DefaultSection } from '@/components/sections/DefaultSection';
 
 const SectionComponents: Record<string, React.FC<any>> = {
   FaqPageSection,

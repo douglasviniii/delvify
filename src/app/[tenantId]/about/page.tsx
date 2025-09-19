@@ -5,7 +5,8 @@ import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { initialPageData } from '@/lib/initial-page-data';
-import { AboutPageSection, DefaultSection } from '@/components/sections';
+import { AboutPageSection } from '@/components/sections/AboutPageSection';
+import { DefaultSection } from '@/components/sections/DefaultSection';
 
 const SectionComponents: Record<string, React.FC<any>> = {
   AboutPageSection,

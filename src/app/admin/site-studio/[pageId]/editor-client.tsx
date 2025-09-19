@@ -1,4 +1,3 @@
-
 'use client'
 
 import { ArrowLeft, Eye, Palette, Type, Settings, PlusCircle, AlignHorizontalJustifyStart, AlignHorizontalJustifyEnd, Trash2, Smartphone, Monitor, Loader2, GripVertical, Upload } from "lucide-react";
@@ -13,13 +12,20 @@ import { useState, useEffect, useTransition, useRef } from "react";
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { savePage, getPageDataForEditor } from "./actions";
+import { savePage } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/sections";
-import type { User } from 'firebase/auth';
-import { auth, storage } from "@/lib/firebase";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { FeaturesSection } from "@/components/sections/FeaturesSection";
+import { AiCustomizationSection } from "@/components/sections/AiCustomizationSection";
+import { DefaultSection } from "@/components/sections/DefaultSection";
+import { CoursesSection } from "@/components/sections/CoursesSection";
+import { LatestPostsSection } from "@/components/sections/LatestPostsSection";
+import { CtaSection } from "@/components/sections/CtaSection";
+import { BlogPageSection } from "@/components/sections/BlogPageSection";
+import { AboutPageSection } from "@/components/sections/AboutPageSection";
+import { FaqPageSection } from "@/components/sections/FaqPageSection";
+import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { initialPageData } from "@/lib/initial-page-data";
 import type { Post } from "@/lib/types";
 
 
@@ -43,6 +49,7 @@ interface PageData {
 
 interface SiteEditorClientProps {
     initialPosts: Post[];
+    initialPageData: PageData;
     pageId: string;
     tenantId: string;
 }
@@ -87,42 +94,15 @@ function SaveButton({ onClick, isSaving }: { onClick: () => void; isSaving: bool
     )
 }
 
-export function SiteEditorClient({ initialPosts, pageId, tenantId }: SiteEditorClientProps) {
+export function SiteEditorClient({ initialPosts, initialPageData, pageId, tenantId }: SiteEditorClientProps) {
   const { toast } = useToast();
-  const [pageData, setPageData] = useState<PageData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sections, setSections] = useState<any[]>([]);
+  const [pageData, setPageData] = useState<PageData>(initialPageData);
+  const [sections, setSections] = useState<any[]>(initialPageData.sections);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isUploading, setIsUploading] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentSectionIdForUpload, setCurrentSectionIdForUpload] = useState<string | null>(null);
   const [isSaving, startTransition] = useTransition();
-
-  useEffect(() => {
-    async function fetchData() {
-        setIsLoading(true);
-        try {
-            let data = await getPageDataForEditor(tenantId, pageId);
-            if (!data || !data.sections || data.sections.length === 0) {
-                 const defaultData = initialPageData[pageId as keyof typeof initialPageData];
-                 if (defaultData) {
-                     data = defaultData;
-                 } else {
-                     toast({title: "Página não configurada", description: `Dados iniciais para a página '${pageId}' não encontrados.`, variant: "destructive"});
-                     data = { title: `Página ${pageId}`, sections: [] };
-                 }
-            }
-            setPageData(data);
-            setSections(data.sections);
-        } catch (error) {
-            console.error("Failed to fetch page data in client:", error);
-            toast({title: "Erro ao carregar", description: "Não foi possível buscar os dados da página.", variant: "destructive"});
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    fetchData();
-  }, [tenantId, pageId, toast]);
 
   const handleSave = () => {
     startTransition(async () => {
@@ -226,14 +206,6 @@ export function SiteEditorClient({ initialPosts, pageId, tenantId }: SiteEditorC
     return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection' || section.component === 'AboutPageSection'
   }
   
-  if (isLoading) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-    )
-  }
-
   return (
     <div className="flex h-full flex-col">
        <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
@@ -406,5 +378,3 @@ export function SiteEditorClient({ initialPosts, pageId, tenantId }: SiteEditorC
     </div>
   );
 }
-
-    
