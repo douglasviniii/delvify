@@ -3,7 +3,7 @@ import type {Metadata} from 'next';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 // Function to convert hex color to HSL format for CSS variables
-function hexToHsl(hex: string): string {
+export function hexToHsl(hex: string): string {
     if (!hex || typeof hex !== 'string') {
         hex = '#9466FF'; // Default color if input is invalid
     }
