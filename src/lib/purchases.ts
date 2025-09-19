@@ -1,26 +1,11 @@
 
+
 'use server';
 
-import { getAdminDb } from './firebase-admin';
+import { adminDb, serializeDoc } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
 import { db } from './firebase';
-
-
-const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot): any => {
-    const data = doc.data();
-    if (!data) {
-        return { id: doc.id };
-    }
-    const docData: { [key: string]: any } = { id: doc.id, ...data };
-    
-    for (const key in docData) {
-      if (docData[key] && typeof docData[key].toDate === 'function') {
-        docData[key] = docData[key].toDate().toISOString();
-      }
-    }
-    return docData;
-}
 
 
 export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
@@ -28,8 +13,6 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
         console.error("User ID is required to fetch purchase history.");
         return [];
     }
-    
-    const adminDb = getAdminDb();
 
     try {
         const userDoc = await adminDb.collection('users').doc(userId).get();
@@ -88,9 +71,8 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
 
 
 export async function getAllPurchases(): Promise<Purchase[]> {
-    const adminDb = getAdminDb();
     try {
-        const purchasesCol = collectionGroup(adminDb, 'purchases');
+        const purchasesCol = collectionGroup(db, 'purchases');
         const purchasesSnapshot = await getDocs(purchasesCol);
         
         const allPurchases: Purchase[] = [];
@@ -133,9 +115,8 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
         console.error("Tenant ID is required to fetch purchases.");
         return [];
     }
-    const adminDb = getAdminDb();
     try {
-        const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
+        const purchasesQuery = query(collection(db, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(purchasesQuery);
         
         const purchases: Purchase[] = [];

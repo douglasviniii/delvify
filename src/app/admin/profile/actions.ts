@@ -1,7 +1,8 @@
 
+
 'use server';
 
-import { getAdminDb, getAdminAuth } from '@/lib/firebase-admin';
+import { getAdminDb, getAdminAuth, serializeDoc } from '@/lib/firebase-admin';
 
 interface ResponsiblePerson {
   id: number;
@@ -58,12 +59,7 @@ export async function getTenantProfile(tenantId: string): Promise<TenantProfile 
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
-      const data = docSnap.data() as any; 
-      // Serializa o campo de timestamp para uma string ISO para evitar erros de "plain object"
-      if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
-          data.updatedAt = data.updatedAt.toDate().toISOString();
-      }
-      return data as TenantProfile;
+      return serializeDoc(docSnap) as TenantProfile;
     } else {
       console.log('No such document for tenantId:', tenantId);
       return null;

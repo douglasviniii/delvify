@@ -5,35 +5,7 @@
 import { collection, getDocs, orderBy, query, where, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase'; // Client SDK
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
-
-// Função de serialização robusta para garantir que todos os Timestamps, incluindo os aninhados, sejam convertidos.
-const serializeData = (data: any): any => {
-    if (data === null || typeof data !== 'object') {
-        return data;
-    }
-    if (data.toDate && typeof data.toDate === 'function') {
-        return data.toDate().toISOString();
-    }
-    if (Array.isArray(data)) {
-        return data.map(serializeData);
-    }
-    const serializedObject: { [key: string]: any } = {};
-    for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-            serializedObject[key] = serializeData(data[key]);
-        }
-    }
-    return serializedObject;
-};
-
-const serializeDoc = (doc: any): any => {
-    const data = doc.data();
-    if (!data) {
-        return { id: doc.id };
-    }
-    const docData = { id: doc.id, ...data };
-    return serializeData(docData);
-}
+import { serializeDoc } from './firebase-admin';
 
 
 export async function getAllCourses(tenantId: string): Promise<Course[]> {
@@ -209,4 +181,3 @@ export async function getPurchasedCourseDetails(userId: string): Promise<Record<
         return {};
     }
 }
-

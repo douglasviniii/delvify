@@ -1,4 +1,5 @@
 
+
 import admin from 'firebase-admin';
 
 // Hardcoded service account details as provided.
@@ -41,4 +42,22 @@ export function getAdminAuth() {
 export function getAdminStorage() {
   initializeAdminApp();
   return admin.storage();
+}
+
+
+export const serializeDoc = (doc: any): any => {
+    const data = doc.data();
+    if (!data) {
+        return { id: doc.id };
+    }
+    const docData: { [key: string]: any } = { id: doc.id, ...data };
+    
+    // Ensure all timestamp fields are converted to ISO strings
+    for (const key in docData) {
+      if (docData[key] && typeof docData[key].toDate === 'function') {
+        docData[key] = docData[key].toDate().toISOString();
+      }
+    }
+
+    return docData;
 }

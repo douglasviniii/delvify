@@ -4,27 +4,12 @@
 
 import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import type { Post, Comment } from './types';
+import { serializeDoc } from './firebase-admin';
 
-const serializeDoc = (doc: any): any => {
-    const data = doc.data();
-    if (!data) {
-        return { id: doc.id };
-    }
-    // Explicitly include the slug which is part of the data object
-    const docData: { [key: string]: any } = { id: doc.id, ...data };
-    
-    // Ensure all timestamp fields are converted to ISO strings
-    for (const key in docData) {
-      if (docData[key] && typeof docData[key].toDate === 'function') {
-        docData[key] = docData[key].toDate().toISOString();
-      }
-    }
-
-    return docData;
-}
 
 // Function to get all posts from a specific tenant
 export async function getAllBlogPosts(tenantId: string, userId?: string): Promise<Post[]> {

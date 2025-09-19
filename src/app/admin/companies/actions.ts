@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb, serializeDoc as serializeAdminDoc } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { collection, getDocs, query, orderBy, where, Timestamp, writeBatch, collectionGroup, doc as clientDoc, updateDoc } from 'firebase/firestore';
@@ -9,6 +9,22 @@ import { db } from '@/lib/firebase';
 import type { Tenant } from './page';
 import { getFinancialSettings } from './financial-settings-actions';
 import type { Purchase, Invoice } from '@/lib/types';
+
+
+const serializeClientDoc = (doc: any): any => {
+    const data = doc.data();
+    if (!data) {
+        return { id: doc.id };
+    }
+    const docData: { [key: string]: any } = { id: doc.id, ...data };
+    
+    for (const key in docData) {
+      if (docData[key] && typeof docData[key].toDate === 'function') {
+        docData[key] = docData[key].toDate().toISOString();
+      }
+    }
+    return docData;
+}
 
 
 export async function saveTenantDomain(tenantId: string, domain: string) {
@@ -68,15 +84,7 @@ export async function getTenants(): Promise<Tenant[]> {
     try {
         const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(tenantsQuery);
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            // Serialize the Timestamp to a string to make it a "plain object"
-            const serializedData = {
-                ...data,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
-            };
-            return { id: doc.id, ...serializedData } as Tenant;
-        });
+        return querySnapshot.docs.map(doc => serializeClientDoc(doc) as Tenant);
     } catch (error) {
         console.error("Error fetching tenants:", error);
         return [];
@@ -190,13 +198,7 @@ export async function getGeneratedInvoices(year: number, month: number): Promise
     const invoices: Invoice[] = [];
     
     querySnapshot.forEach(doc => {
-        const data = doc.data();
-         const serializedData = {
-            ...data,
-            id: doc.id,
-            generatedAt: data.generatedAt?.toDate ? data.generatedAt.toDate().toISOString() : data.generatedAt,
-        };
-      invoices.push(serializedData as Invoice);
+      invoices.push(serializeClientDoc(doc) as Invoice);
     });
 
     return invoices;
