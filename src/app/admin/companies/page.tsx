@@ -2,8 +2,6 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -694,4 +692,3 @@ export default function AdminCompaniesPage() {
   );
 }
 
-    
