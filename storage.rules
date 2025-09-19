@@ -1,19 +1,12 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Permite leitura pública de todos os arquivos.
-    // Isso é comum para imagens de cursos, logos, etc.
-    // Se precisar de conteúdo privado, regras mais específicas seriam necessárias.
+    // Permite que qualquer pessoa leia os arquivos.
+    // Isso é necessário para que as imagens (logos, capas de curso) possam ser exibidas publicamente no site.
     match /{allPaths=**} {
-      allow read;
-    }
-
-    // Permite que usuários autenticados escrevam em sua própria pasta de inquilino.
-    // A pasta do inquilino é identificada pelo UID do usuário.
-    match /tenants/{userId}/{allPaths=**} {
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if true;
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
     }
   }
 }
