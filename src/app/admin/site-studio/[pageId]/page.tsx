@@ -10,8 +10,8 @@ export default async function EditSitePage({ params }: { params: { pageId: strin
   const user = await getCurrentUser();
   
   if (!user) {
-    // Redireciona para o login se não estiver autenticado
-    return notFound(); 
+    // O middleware deve cuidar do redirecionamento, mas é uma boa prática.
+    notFound(); 
   }
   
   // Para o estúdio, sempre usamos o ID do usuário logado como o ID do inquilino
@@ -27,7 +27,7 @@ export default async function EditSitePage({ params }: { params: { pageId: strin
       getAllBlogPosts(tenantId)
     ]);
 
-    if (!pageData || pageData.sections.length === 0) {
+    if (!pageData || !pageData.sections || pageData.sections.length === 0) {
         notFound();
     }
 
