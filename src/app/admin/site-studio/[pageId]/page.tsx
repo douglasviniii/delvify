@@ -10,11 +10,9 @@ export default async function EditSitePage({ params }: { params: { pageId: strin
   const user = await getCurrentUser();
   
   if (!user) {
-    // O middleware deve cuidar do redirecionamento, mas é uma boa prática.
     notFound(); 
   }
   
-  // Para o estúdio, sempre usamos o ID do usuário logado como o ID do inquilino
   const tenantId = user.uid; 
 
   if (!pageId) {
@@ -27,7 +25,9 @@ export default async function EditSitePage({ params }: { params: { pageId: strin
       getAllBlogPosts(tenantId)
     ]);
 
-    if (!pageData || !pageData.sections || pageData.sections.length === 0) {
+    // getPageDataForEditor agora retorna dados padrão se a página não existir,
+    // então a verificação de seções vazias não é mais necessária para causar um 404.
+    if (!pageData) {
         notFound();
     }
 
