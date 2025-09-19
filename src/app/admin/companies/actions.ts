@@ -73,7 +73,7 @@ export async function getTenants(): Promise<Tenant[]> {
             // Serialize the Timestamp to a string to make it a "plain object"
             const serializedData = {
                 ...data,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
             };
             return { id: doc.id, ...serializedData } as Tenant;
         });
