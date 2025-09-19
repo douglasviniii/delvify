@@ -247,7 +247,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <>
       <SidebarProvider>
         <TooltipProvider>
-          <div className="flex h-screen bg-muted/30">
+          <div className="flex flex-1 h-screen bg-muted/30">
               <AdminSidebar user={user} logoUrl={logoUrl} profileImage={profileImage} companyName={companyName} />
               <div className="flex flex-1 flex-col overflow-hidden">
                   <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
