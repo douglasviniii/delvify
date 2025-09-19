@@ -26,6 +26,32 @@ export type SavePageState = {
   success: boolean;
 };
 
+export async function getPageDataForEditor(tenantId: string, pageId: string) {
+    try {
+        const pageRef = doc(db, `tenants/${tenantId}/pages/${pageId}`);
+        const pageSnap = await getDoc(pageRef);
+
+        if (pageSnap.exists()) {
+            const pageData = pageSnap.data();
+            const initialData = initialPageData[pageId] || { title: "Página Personalizada", sections: [] };
+            
+            if (pageData && Array.isArray(pageData.sections)) {
+                return {
+                    title: initialData.title,
+                    sections: pageData.sections,
+                };
+            }
+        }
+        
+        console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
+        return initialPageData[pageId] || { title: "Página não encontrada", sections: [] };
+    } catch (error) {
+        console.error("Error fetching page sections, returning initial data:", error);
+        return initialPageData[pageId] || { title: "Erro ao carregar", sections: [] };
+    }
+}
+
+
 export async function savePage(
   tenantId: string,
   pageId: string,
