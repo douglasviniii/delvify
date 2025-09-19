@@ -4,7 +4,7 @@ import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { initialPageData } from '@/lib/page-data';
+import { initialPageData } from '@/lib/initial-page-data';
 import { AboutPageSection, DefaultSection } from '@/components/sections';
 
 const SectionComponents: Record<string, React.FC<any>> = {
@@ -25,10 +25,10 @@ async function getPageSections(tenantId: string, pageId: string) {
         }
         
         console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
-        return initialPageData[pageId]?.sections || [];
+        return initialPageData[pageId as keyof typeof initialPageData]?.sections || [];
     } catch (error) {
         console.error("Error fetching page sections, returning initial data:", error);
-        return initialPageData[pageId]?.sections || [];
+        return initialPageData[pageId as keyof typeof initialPageData]?.sections || [];
     }
 }
 

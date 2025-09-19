@@ -5,8 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getAdminDb } from '@/lib/firebase-admin';
-import { db } from '@/lib/firebase';
-import { initialPageData } from '@/lib/page-data';
+import { db, serializeDoc } from '@/lib/firebase';
+import { initialPageData } from '@/lib/initial-page-data';
 
 export async function getPageDataForEditor(tenantId: string, pageId: string) {
     try {
@@ -14,8 +14,8 @@ export async function getPageDataForEditor(tenantId: string, pageId: string) {
         const pageSnap = await getDoc(pageRef);
 
         if (pageSnap.exists()) {
-            const pageData = pageSnap.data();
-            const defaultData = initialPageData[pageId] || { title: `Página ${pageId}`, sections: [] };
+            const pageData = serializeDoc(pageSnap);
+            const defaultData = initialPageData[pageId as keyof typeof initialPageData] || { title: `Página ${pageId}`, sections: [] };
             
             if (pageData && Array.isArray(pageData.sections)) {
                 return {
@@ -25,12 +25,8 @@ export async function getPageDataForEditor(tenantId: string, pageId: string) {
             }
         }
         
-        console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
-        const defaultDataForPage = initialPageData[pageId];
-        if (defaultDataForPage) {
-            return defaultDataForPage;
-        }
-
+        // Retorna null se não houver dados no banco de dados.
+        // A lógica da página decidirá se usa dados iniciais ou não.
         return null;
 
     } catch (error) {

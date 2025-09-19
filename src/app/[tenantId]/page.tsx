@@ -3,7 +3,7 @@ import { MainHeader } from "@/components/main-header";
 import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { initialPageData } from '@/lib/page-data';
+import { initialPageData } from '@/lib/initial-page-data';
 import { HeroSection, FeaturesSection, AiCustomizationSection, CoursesSection, LatestPostsSection, CtaSection, DefaultSection } from "@/components/sections";
 import { getAllBlogPosts } from "@/lib/blog-posts";
 
