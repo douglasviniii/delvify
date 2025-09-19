@@ -1,11 +1,10 @@
 
-
 'use server';
 
-import { adminDb, serializeDoc } from './firebase-admin';
+import { getAdminDb } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, serializeDoc } from './firebase';
 
 
 export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
@@ -15,6 +14,7 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
     }
 
     try {
+        const adminDb = getAdminDb();
         const userDoc = await adminDb.collection('users').doc(userId).get();
         if (!userDoc.exists) {
             return [];

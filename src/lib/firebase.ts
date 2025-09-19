@@ -25,7 +25,22 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+export const serializeDoc = (doc: any): any => {
+    const data = doc.data();
+    if (!data) {
+        return { id: doc.id };
+    }
+    const docData: { [key: string]: any } = { id: doc.id, ...data };
+    
+    // Ensure all timestamp fields are converted to ISO strings
+    for (const key in docData) {
+      if (docData[key] && typeof docData[key].toDate === 'function') {
+        docData[key] = docData[key].toDate().toISOString();
+      }
+    }
+
+    return docData;
+}
+
 
 export { app, auth, db, storage };
-
-    

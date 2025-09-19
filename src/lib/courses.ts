@@ -3,9 +3,8 @@
 'use server';
 
 import { collection, getDocs, orderBy, query, where, doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase'; // Client SDK
+import { db, serializeDoc } from './firebase'; // Client SDK
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
-import { serializeDoc } from './firebase-admin';
 
 
 export async function getAllCourses(tenantId: string): Promise<Course[]> {

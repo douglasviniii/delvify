@@ -3,12 +3,11 @@
 'use server';
 
 import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase';
-import { adminDb } from '@/lib/firebase-admin';
+import { db, serializeDoc } from './firebase';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import type { Post, Comment } from './types';
-import { serializeDoc } from './firebase-admin';
 
 
 // Function to get all posts from a specific tenant
