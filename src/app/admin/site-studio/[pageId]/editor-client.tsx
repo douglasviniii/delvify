@@ -13,13 +13,15 @@ import { useState, useEffect, useTransition, useRef } from "react";
 import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { savePage } from "./actions";
+import { savePage, getPageDataForEditor } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { HeroSection, FeaturesSection, AiCustomizationSection, DefaultSection, CoursesSection, LatestPostsSection, CtaSection, BlogPageSection, AboutPageSection, FaqPageSection } from "@/components/sections";
 import type { User } from 'firebase/auth';
 import { auth, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Post } from "@/lib/blog-posts";
+import { initialPageData } from "@/lib/initial-page-data";
+import type { Post } from "@/lib/types";
+
 
 const SectionComponents: Record<string, React.FC<any>> = {
     HeroSection,
@@ -40,7 +42,6 @@ interface PageData {
 }
 
 interface SiteEditorClientProps {
-    initialPageData: PageData;
     initialPosts: Post[];
     pageId: string;
     tenantId: string;
@@ -86,14 +87,42 @@ function SaveButton({ onClick, isSaving }: { onClick: () => void; isSaving: bool
     )
 }
 
-export function SiteEditorClient({ initialPageData, initialPosts, pageId, tenantId }: SiteEditorClientProps) {
+export function SiteEditorClient({ initialPosts, pageId, tenantId }: SiteEditorClientProps) {
   const { toast } = useToast();
-  const [sections, setSections] = useState<any[]>(initialPageData.sections);
+  const [pageData, setPageData] = useState<PageData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sections, setSections] = useState<any[]>([]);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isUploading, setIsUploading] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentSectionIdForUpload, setCurrentSectionIdForUpload] = useState<string | null>(null);
   const [isSaving, startTransition] = useTransition();
+
+  useEffect(() => {
+    async function fetchData() {
+        setIsLoading(true);
+        try {
+            let data = await getPageDataForEditor(tenantId, pageId);
+            if (!data || !data.sections || data.sections.length === 0) {
+                 const defaultData = initialPageData[pageId as keyof typeof initialPageData];
+                 if (defaultData) {
+                     data = defaultData;
+                 } else {
+                     toast({title: "Página não configurada", description: `Dados iniciais para a página '${pageId}' não encontrados.`, variant: "destructive"});
+                     data = { title: `Página ${pageId}`, sections: [] };
+                 }
+            }
+            setPageData(data);
+            setSections(data.sections);
+        } catch (error) {
+            console.error("Failed to fetch page data in client:", error);
+            toast({title: "Erro ao carregar", description: "Não foi possível buscar os dados da página.", variant: "destructive"});
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchData();
+  }, [tenantId, pageId, toast]);
 
   const handleSave = () => {
     startTransition(async () => {
@@ -196,6 +225,14 @@ export function SiteEditorClient({ initialPageData, initialPosts, pageId, tenant
   const hasLayout = (section: any) => {
     return section.component === 'ImageTextSection' || section.component === 'AiCustomizationSection' || section.component === 'AboutPageSection'
   }
+  
+  if (isLoading) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    )
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -208,7 +245,7 @@ export function SiteEditorClient({ initialPageData, initialPosts, pageId, tenant
             </Link>
             </Button>
             <div className="flex-1">
-            <h1 className="font-headline text-xl font-bold tracking-tight md:text-2xl">Editando: {initialPageData.title}</h1>
+            <h1 className="font-headline text-xl font-bold tracking-tight md:text-2xl">Editando: {pageData?.title}</h1>
             </div>
         </div>
         <div className="flex items-center gap-2">
@@ -369,3 +406,5 @@ export function SiteEditorClient({ initialPageData, initialPosts, pageId, tenant
     </div>
   );
 }
+
+    
