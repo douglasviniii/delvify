@@ -1,4 +1,3 @@
-
 'use client';
 import {
   BookOpenCheck,
@@ -229,11 +228,6 @@ const AdminSidebar = () => {
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-       <div className="flex flex-1 items-center justify-center">
-          <div className="hidden md:block">
-              <Logo logoUrl={logoUrl} />
-          </div>
-      </div>
       </>
   );
 };
@@ -258,6 +252,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <SidebarTrigger className="md:hidden">
                             <Menu />
                         </SidebarTrigger>
+                         <div className="hidden md:block">
+                            <Logo />
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <UserNav />
