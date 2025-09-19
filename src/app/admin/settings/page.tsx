@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
             <ul className="space-y-2">
                 {policyLinks.map(link => (
                     <li key={link.href}>
-                         <Link href={`/admin/site-studio${link.href.startsWith('/') ? '' : '/'}${link.href.replace(/-/g, '_')}`} passHref>
+                         <Link href={`/admin/site-studio${link.href}`} passHref>
                            <Button variant="link" className="p-0 h-auto">{link.text}</Button>
                         </Link>
                     </li>
