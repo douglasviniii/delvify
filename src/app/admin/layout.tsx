@@ -105,50 +105,12 @@ const AdminSidebarMenu = ({ user }: { user: User | null }) => {
 };
 
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ logoUrl, profileImage, companyName }: { logoUrl: string | null, profileImage: string | null, companyName: string }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const [user, authLoading] = useAuthState(auth);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string>('Admin');
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [primaryColor, setPrimaryColor] = useState<string>('#9466FF');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    
-    const fetchData = async () => {
-        try {
-          const [profile, settings] = await Promise.all([
-            getTenantProfile(user.uid),
-            getGlobalSettingsForTenant(user.uid)
-          ]);
-
-          if (profile) {
-            setProfileImage(profile.profileImage);
-            setCompanyName(profile.companyName || 'Admin');
-          }
-          if(settings) {
-            setLogoUrl(settings.logoUrl);
-            setPrimaryColor(settings.primaryColor);
-          }
-        } catch (error) {
-          console.error("Failed to fetch tenant profile or settings for layout", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    fetchData();
-
-  }, [user, authLoading, router, pathname]);
-
+  
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -167,16 +129,8 @@ const AdminSidebar = () => {
     }
   };
 
-  const primaryColorHsl = hexToHsl(primaryColor);
 
   return (
-    <>
-      <style
-        id="custom-admin-theme-variables"
-        dangerouslySetInnerHTML={{
-          __html: `:root { --primary: ${primaryColorHsl}; }`,
-        }}
-      />
       <Sidebar>
         <SidebarHeader>
           <div className="p-2">
@@ -192,7 +146,7 @@ const AdminSidebar = () => {
             <SidebarMenuItem>
               <Link href="/admin/profile">
                   <SidebarMenuButton isActive={pathname === '/admin/profile'}>
-                    {isLoading ? (
+                    {authLoading ? (
                       <>
                         <Skeleton className="h-8 w-8 rounded-full" />
                         <div className="space-y-1">
@@ -228,44 +182,95 @@ const AdminSidebar = () => {
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      </>
   );
 };
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, authLoading] = useAuthState(auth);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>('Admin');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState<string>('#9466FF');
+  const [isLoading, setIsLoading] = useState(true);
+  
   const isSiteStudioEditorPage = pathname.startsWith('/admin/site-studio/') && pathname !== '/admin/site-studio/settings' && pathname.split('/').length > 3;
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    const fetchData = async () => {
+        try {
+          const [profile, settings] = await Promise.all([
+            getTenantProfile(user.uid),
+            getGlobalSettingsForTenant(user.uid)
+          ]);
+
+          if (profile) {
+            setProfileImage(profile.profileImage);
+            setCompanyName(profile.companyName || 'Admin');
+          }
+          if(settings) {
+            setLogoUrl(settings.logoUrl);
+            setPrimaryColor(settings.primaryColor);
+          }
+        } catch (error) {
+          console.error("Failed to fetch tenant profile or settings for layout", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    fetchData();
+
+  }, [user, authLoading, router, pathname]);
+
 
   if (isSiteStudioEditorPage) {
     return <main className="h-screen flex flex-col">{children}</main>;
   }
 
+  const primaryColorHsl = hexToHsl(primaryColor);
+
   return (
-    <SidebarProvider>
-      <TooltipProvider>
-        <div className="flex h-screen bg-muted/30">
-            <AdminSidebar />
-            <div className="flex flex-1 flex-col overflow-hidden">
-                <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-                    <div className="flex items-center gap-2">
-                        <SidebarTrigger className="md:hidden">
-                            <Menu />
-                        </SidebarTrigger>
-                         <div className="hidden md:block">
-                            <Logo />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <UserNav />
-                    </div>
-                </header>
-                <SidebarInset>
-                    <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
-                </SidebarInset>
-            </div>
-        </div>
-      </TooltipProvider>
-    </SidebarProvider>
+    <>
+      <style
+        id="custom-admin-theme-variables"
+        dangerouslySetInnerHTML={{
+          __html: `:root { --primary: ${primaryColorHsl}; }`,
+        }}
+      />
+      <SidebarProvider>
+        <TooltipProvider>
+          <div className="flex h-screen bg-muted/30">
+              <AdminSidebar logoUrl={logoUrl} profileImage={profileImage} companyName={companyName} />
+              <div className="flex flex-1 flex-col overflow-hidden">
+                  <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
+                      <div className="flex items-center gap-2">
+                          <SidebarTrigger className="md:hidden">
+                              <Menu />
+                          </SidebarTrigger>
+                           <div className="hidden md:block">
+                              <Logo logoUrl={logoUrl} />
+                          </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                          <UserNav />
+                      </div>
+                  </header>
+                  <SidebarInset>
+                      <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+                  </SidebarInset>
+              </div>
+          </div>
+        </TooltipProvider>
+      </SidebarProvider>
+    </>
   );
 }
