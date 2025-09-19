@@ -106,11 +106,10 @@ const AdminSidebarMenu = ({ user }: { user: User | null }) => {
 };
 
 
-const AdminSidebar = ({ logoUrl, profileImage, companyName }: { logoUrl: string | null, profileImage: string | null, companyName: string }) => {
+const AdminSidebar = ({ user, logoUrl, profileImage, companyName }: { user: User | null; logoUrl: string | null, profileImage: string | null, companyName: string }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
-  const [user, authLoading] = useAuthState(auth);
   
   const handleLogout = async () => {
     try {
@@ -147,7 +146,7 @@ const AdminSidebar = ({ logoUrl, profileImage, companyName }: { logoUrl: string 
             <SidebarMenuItem>
               <Link href="/admin/profile">
                   <SidebarMenuButton isActive={pathname === '/admin/profile'}>
-                    {authLoading ? (
+                    {!user ? (
                       <>
                         <Skeleton className="h-8 w-8 rounded-full" />
                         <div className="space-y-1">
@@ -232,25 +231,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   }, [user, authLoading, router, pathname]);
 
+  useEffect(() => {
+    if (primaryColor) {
+        const hslColor = hexToHsl(primaryColor);
+        document.documentElement.style.setProperty('--primary', hslColor);
+    }
+  }, [primaryColor]);
+
 
   if (isSiteStudioEditorPage) {
     return <main className="h-screen flex flex-col">{children}</main>;
   }
 
-  const primaryColorHsl = hexToHsl(primaryColor);
-
   return (
     <>
-      <style
-        id="custom-admin-theme-variables"
-        dangerouslySetInnerHTML={{
-          __html: `:root { --primary: ${primaryColorHsl}; }`,
-        }}
-      />
       <SidebarProvider>
         <TooltipProvider>
           <div className="flex h-screen bg-muted/30">
-              <AdminSidebar logoUrl={logoUrl} profileImage={profileImage} companyName={companyName} />
+              <AdminSidebar user={user} logoUrl={logoUrl} profileImage={profileImage} companyName={companyName} />
               <div className="flex flex-1 flex-col overflow-hidden">
                   <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
                       <div className="flex items-center gap-2">
@@ -265,9 +263,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           <UserNav />
                       </div>
                   </header>
-                  <SidebarInset className="flex-1">
-                      <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
-                  </SidebarInset>
+                  <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
               </div>
           </div>
         </TooltipProvider>
