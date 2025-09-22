@@ -1,30 +1,31 @@
-
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { config } from 'dotenv';
 
-// Configuração do Firebase (copiada do console)
+config({ path: '.env' });
+
+// Configuração do Firebase para o lado do cliente (navegador).
 const firebaseConfig = {
-  apiKey: "AIzaSyB0GTV_m5oit8ddZeCmQ3hW7Jhh-LKiKG0",
-  authDomain: "venda-fcil-pdv.firebaseapp.com",
-  projectId: "venda-fcil-pdv",
-  storageBucket: "venda-fcil-pdv.firebasestorage.app",
-  messagingSenderId: "114570788878",
-  appId: "1:114570788878:web:1e3fa51754f3ae6862fc5f",
-  measurementId: "G-792KHTQP7R",
-  databaseURL: "https://venda-fcil-pdv.firebaseio.com"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-
 // Se o app já estiver inicializado, use-o. Senão, inicialize.
-// Isso evita erros de "app já existe" em ambientes de desenvolvimento.
+// Isso evita erros de "app já existe" em ambientes de desenvolvimento (HMR).
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
 export const serializeDoc = (doc: any): any => {
     const data = doc.data();
     if (!data) {
@@ -32,7 +33,7 @@ export const serializeDoc = (doc: any): any => {
     }
     const docData: { [key: string]: any } = { id: doc.id, ...data };
     
-    // Ensure all timestamp fields are converted to ISO strings
+    // Converte todos os campos de timestamp para strings ISO
     for (const key in docData) {
       if (docData[key] && typeof docData[key].toDate === 'function') {
         docData[key] = docData[key].toDate().toISOString();
