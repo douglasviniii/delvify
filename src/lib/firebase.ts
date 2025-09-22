@@ -3,6 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { config } from 'dotenv';
+import type { DocumentData, DocumentSnapshot } from 'firebase/firestore';
 
 config({ path: '.env' });
 
@@ -26,7 +27,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
-export const serializeDoc = (doc: any): any => {
+export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
     const data = doc.data();
     if (!data) {
         return { id: doc.id };

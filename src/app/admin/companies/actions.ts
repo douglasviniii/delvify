@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getAdminDb, serializeDoc as serializeAdminDoc } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { collection, getDocs, query, orderBy, where, Timestamp, writeBatch, collectionGroup, doc as clientDoc, updateDoc } from 'firebase/firestore';
@@ -9,6 +9,7 @@ import { db } from '@/lib/firebase';
 import type { Tenant } from './page';
 import { getFinancialSettings } from './financial-settings-actions';
 import type { Purchase, Invoice } from '@/lib/types';
+import { serializeDoc } from '@/lib/firebase';
 
 
 const serializeClientDoc = (doc: any): any => {

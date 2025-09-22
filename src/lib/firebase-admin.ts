@@ -22,7 +22,7 @@ function initializeAdminApp() {
     // Inicializa o SDK do Firebase Admin usando o método de credencial de certificado.
     // Esta é a forma mais robusta de garantir que a chave privada seja analisada corretamente.
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
      console.log("Firebase Admin SDK inicializado com sucesso.");
   } catch (error: any) {

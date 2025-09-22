@@ -2,7 +2,7 @@
 
 'use server';
 
-import { getAdminDb } from './firebase-admin';
+import { getAdminDb, serializeDoc as serializeAdminDoc } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
 import { db, serializeDoc } from './firebase';
@@ -39,7 +39,7 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
             const querySnapshot = await purchasesQuery.get();
 
             for (const doc of querySnapshot.docs) {
-                const purchaseData = serializeDoc(doc) as Purchase;
+                const purchaseData = serializeAdminDoc(doc) as Purchase;
                 purchaseData.tenantId = tenantId;
                 
                 try {
@@ -81,7 +81,7 @@ export async function getAllPurchases(): Promise<Purchase[]> {
         const courseCache = new Map<string, Course>();
 
         for (const purchaseDoc of purchasesSnapshot.docs) {
-            const purchase = serializeDoc(purchaseDoc) as Omit<Purchase, 'tenantId' | 'courseTitle'>;
+            const purchase = serializeAdminDoc(purchaseDoc) as Omit<Purchase, 'tenantId' | 'courseTitle'>;
             const tenantId = purchaseDoc.ref.parent.parent?.id;
 
             if (tenantId) {
@@ -124,7 +124,7 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
         
         const purchases: Purchase[] = [];
         for(const doc of querySnapshot.docs) {
-            purchases.push(serializeDoc(doc) as Purchase);
+            purchases.push(serializeAdminDoc(doc) as Purchase);
         }
         return purchases;
     } catch(error) {

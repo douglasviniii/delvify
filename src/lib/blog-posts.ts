@@ -4,9 +4,6 @@
 
 import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { db, serializeDoc } from './firebase';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
-import { revalidatePath } from 'next/cache';
 import type { Post, Comment } from './types';
 
 

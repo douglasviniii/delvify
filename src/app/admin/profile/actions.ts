@@ -2,7 +2,8 @@
 
 'use server';
 
-import { getAdminDb, getAdminAuth, serializeDoc } from '@/lib/firebase-admin';
+import { getAdminDb, getAdminAuth } from '@/lib/firebase-admin';
+import { serializeDoc } from '@/lib/firebase';
 
 interface ResponsiblePerson {
   id: number;
