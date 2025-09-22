@@ -6,12 +6,7 @@ config({ path: '.env' });
 
 function initializeAdminApp() {
   if (admin.apps.length === 0) {
-    // Inicializa sem passar credenciais diretamente.
-    // O Firebase Admin SDK irá procurar automaticamente as credenciais
-    // no ambiente, como a variável GOOGLE_APPLICATION_CREDENTIALS ou FIREBASE_CONFIG.
-    admin.initializeApp({
-      storageBucket: "venda-fcil-pdv.appspot.com",
-    });
+    admin.initializeApp();
   }
 }
 
