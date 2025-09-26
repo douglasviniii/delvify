@@ -1,8 +1,7 @@
 
 'use server';
 
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase'; // Use client SDK for reads
+import { getAdminDb } from './firebase-admin';
 import type { GlobalSettings } from './types';
 
 
@@ -51,7 +50,7 @@ const defaultSettings: GlobalSettings = {
 
 
 const settingsRef = (tenantId: string) => 
-  doc(db, `tenants/${tenantId}/settings/global`);
+  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('global');
 
 // Função para buscar as configurações globais de um inquilino
 export async function getGlobalSettingsForTenant(tenantId: string): Promise<GlobalSettings> {
@@ -60,8 +59,8 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
     return defaultSettings;
   }
   try {
-    const docSnap = await getDoc(settingsRef(tenantId));
-    if (docSnap.exists()) {
+    const docSnap = await settingsRef(tenantId).get();
+    if (docSnap.exists) {
       // Mescla as configurações salvas com as padrão para garantir que todos os campos existam
       const savedData = docSnap.data();
       return {
@@ -103,13 +102,13 @@ export async function getGlobalSettings(tenantId: string): Promise<GlobalSetting
         return null;
     }
     try {
-        const docSnap = await getDoc(settingsRef(tenantId));
-        if (docSnap.exists()) {
+        const docSnap = await settingsRef(tenantId).get();
+        if (docSnap.exists) {
             return docSnap.data() as GlobalSettings;
         }
         return null;
     } catch (error) {
-        console.error("Erro ao buscar configurações globais (cliente):", error);
+        console.error("Erro ao buscar configurações globais (servidor):", error);
         return null;
     }
 }

@@ -46,26 +46,3 @@ export function getAdminStorage() {
   initializeAdminApp();
   return admin.storage();
 }
-
-// Helper para serializar Timestamps do Firestore para strings ISO
-export const serializeDoc = (doc: admin.firestore.DocumentSnapshot): any => {
-    const data = doc.data();
-    if (!data) {
-        return { id: doc.id };
-    }
-    const docData: { [key: string]: any } = { id: doc.id, ...data };
-    
-    for (const key in docData) {
-      if (docData[key] instanceof admin.firestore.Timestamp) {
-        docData[key] = docData[key].toDate().toISOString();
-      } else if (Array.isArray(docData[key])) {
-        docData[key] = docData[key].map((item: any) => {
-            if(item instanceof admin.firestore.Timestamp) {
-                return item.toDate().toISOString();
-            }
-            return item;
-        });
-      }
-    }
-    return docData;
-}

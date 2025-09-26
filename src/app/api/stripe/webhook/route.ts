@@ -5,9 +5,6 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { config } from 'dotenv';
-
-config({ path: '.env' });
 
 // Initialize Stripe with the secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -115,5 +112,3 @@ export async function POST(req: NextRequest) {
 export async function GET() {
     return NextResponse.json({ message: "Stripe webhook endpoint is active. Use POST for events." });
 }
-
-    
