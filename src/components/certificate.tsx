@@ -76,8 +76,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                 backgroundColor: '#ffffff',
                 width: 297,
                 height: 210,
-                windowWidth: 1122, // 297mm * 3.779
-                windowHeight: 793, // 210mm * 3.779
+                windowWidth: 1122, 
+                windowHeight: 793, 
             });
             return canvas.toDataURL('image/png', 1.0);
         };
@@ -105,8 +105,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
     const formattedCompletionDate = completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
     return (
-        <>
-            <div className="w-full max-w-5xl mx-auto p-4 md:p-8 flex justify-end gap-2">
+        <div className="w-full flex-1 flex flex-col items-center p-4 md:p-8">
+            <div className="w-full max-w-5xl flex justify-end gap-2 mb-4">
                 <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading} className="bg-white shadow-lg">
                     {isDownloading ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Baixando PDF...</>
@@ -114,41 +114,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         <><Printer className="mr-2 h-4 w-4" /> Imprimir ou Salvar</>
                     )}
                 </Button>
-            </div>
-            
-            <div className="w-full max-w-5xl mx-auto p-4 md:p-0">
-                {/* Mobile View Card */}
-                <div className="md:hidden">
-                    <Card className="w-full shadow-lg">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Award className="h-6 w-6 text-primary" />
-                                Certificado de Conclusão
-                            </CardTitle>
-                            <CardDescription>
-                                Você concluiu o curso com sucesso!
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4 text-sm">
-                             <div className="space-y-1">
-                                <p className="font-semibold">Curso:</p>
-                                <p className="text-muted-foreground">{courseName}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="font-semibold">Aluno(a):</p>
-                                <p className="text-muted-foreground">{studentName}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="font-semibold">Data de Conclusão:</p>
-                                <p className="text-muted-foreground">{formattedCompletionDate}</p>
-                            </div>
-                            <Button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full mt-4" size="lg">
-                                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                                Baixar Certificado (PDF)
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
             </div>
             
             {/* Certificate for PDF generation and Desktop view */}
@@ -252,6 +217,39 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     </div>
                 </div>
             </div>
+
+             {/* Mobile View Card */}
+            <div className="md:hidden w-full max-w-5xl mx-auto p-4">
+                <Card className="w-full shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Award className="h-6 w-6 text-primary" />
+                            Certificado de Conclusão
+                        </CardTitle>
+                        <CardDescription>
+                            Você concluiu o curso com sucesso!
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm">
+                            <div className="space-y-1">
+                            <p className="font-semibold">Curso:</p>
+                            <p className="text-muted-foreground">{courseName}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="font-semibold">Aluno(a):</p>
+                            <p className="text-muted-foreground">{studentName}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="font-semibold">Data de Conclusão:</p>
+                            <p className="text-muted-foreground">{formattedCompletionDate}</p>
+                        </div>
+                        <Button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full mt-4" size="lg">
+                            {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                            Baixar Certificado (PDF)
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
             
             <style jsx global>{`
                 @media print {
@@ -277,7 +275,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                 }
                 @page { size: A4 landscape; margin: 0; }
             `}</style>
-        </>
+        </div>
     );
 };
 

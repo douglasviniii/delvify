@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -84,7 +83,7 @@ export default function CertificatePage() {
     }
 
     return (
-        <div className="bg-muted/30 dark:bg-background min-h-screen flex items-center">
+        <div className="bg-muted/30 dark:bg-background min-h-screen flex flex-col items-center">
             <CertificateClient 
                 studentName={data.studentProfile.name}
                 studentCpf={data.studentProfile.cpf}
