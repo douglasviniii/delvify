@@ -19,30 +19,28 @@ let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
-// This function ensures that we initialize the app only once.
-function initializeFirebaseApp() {
-    if (!getApps().length) {
-        if (!firebaseConfig.apiKey) {
-            throw new Error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
-        }
-        app = initializeApp(firebaseConfig);
-    } else {
-        app = getApp();
-    }
+if (typeof window !== 'undefined' && !getApps().length) {
+  if (!firebaseConfig.apiKey) {
+      console.error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
+  }
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+} else if (getApps().length > 0) {
+    app = getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+} else {
+    // This case is for server-side rendering where window is not defined
+    // and no app is initialized. We will initialize it.
+    app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
 }
 
-// Call the function to initialize the app.
-// This block will run on the first import, ensuring services are ready.
-try {
-    initializeFirebaseApp();
-} catch (error: any) {
-    console.error("Falha na inicialização do Firebase Client:", error.message);
-    // Re-throw the error to make it visible during development/build
-    throw error;
-}
 
 // Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
 export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
@@ -63,4 +61,5 @@ export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
 }
 
 
+// @ts-ignore
 export { app, auth, db, storage };
