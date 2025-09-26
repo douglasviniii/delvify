@@ -4,49 +4,38 @@ import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore, type DocumentData, type DocumentSnapshot } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
+
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
-let firebaseInitialized = false;
-
-async function initializeFirebase() {
-  if (firebaseInitialized) return;
-
-  try {
-    const response = await fetch('/api/firebase-config');
-    if (!response.ok) {
-        throw new Error('Failed to fetch Firebase config');
-    }
-    const firebaseConfig = await response.json();
-
+try {
     if (!firebaseConfig.apiKey) {
-      throw new Error("API key is missing in the fetched Firebase config");
+        throw new Error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
     }
-
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
-    
-    firebaseInitialized = true;
-  } catch (error) {
-    console.error("Firebase initialization failed:", error);
-    // Em um app real, você poderia ter um estado de erro global aqui.
-  }
+} catch (error: any) {
+    console.error("Falha na inicialização do Firebase Client:", error.message);
+    if (error.code === 'auth/invalid-api-key') {
+         throw new Error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
+    }
+    // Para outros erros, simplesmente relance para que o Next.js possa capturá-lo.
+    throw error;
 }
 
-// Chame a inicialização. Como é async, o resto do código precisa esperar por ela.
-// No entanto, como os exports são síncronos, isso é um desafio.
-// A abordagem mais simples é garantir que a inicialização ocorra antes de qualquer uso.
-// Chamadas subsequentes à `getFirebase` garantirão que está inicializado.
-export const getFirebase = async () => {
-    if (!firebaseInitialized) {
-        await initializeFirebase();
-    }
-    return { app, auth, db, storage };
-}
 
 // Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
 export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
@@ -66,9 +55,5 @@ export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
     return docData;
 }
 
-// Para compatibilidade com o código existente que importa diretamente auth, db, etc.
-// Isso é um "hack" e em um mundo ideal, todo o código usaria `await getFirebase()`.
-// Inicializamos com uma promise para que possamos esperar por ela se necessário.
-const firebaseInitializationPromise = initializeFirebase();
 
-export { app, auth, db, storage, firebaseInitializationPromise };
+export { app, auth, db, storage };

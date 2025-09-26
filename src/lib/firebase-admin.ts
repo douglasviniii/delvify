@@ -1,6 +1,6 @@
 
 import admin from 'firebase-admin';
-import type { DocumentData, DocumentSnapshot, Timestamp } from 'firebase-admin/firestore';
+import type { DocumentData, DocumentSnapshot } from 'firebase-admin/firestore';
 
 // Função para inicializar o app Firebase Admin se ainda não estiver inicializado.
 function initializeAdminApp() {
@@ -8,18 +8,21 @@ function initializeAdminApp() {
     return;
   }
 
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-
-  if (!serviceAccountJson) {
+  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (!serviceAccountString) {
     console.error("ERRO CRÍTICO: A variável de ambiente FIREBASE_SERVICE_ACCOUNT_JSON não está definida.");
     return;
   }
 
   try {
-    const parsedServiceAccount = JSON.parse(serviceAccountJson);
-    
+    const serviceAccount = JSON.parse(serviceAccountString);
+
+    // Assegura que as quebras de linha na chave privada estão no formato correto.
+    // O Vercel/Render pode escapar as barras invertidas, então lidamos com ambos os casos.
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
     admin.initializeApp({
-      credential: admin.credential.cert(parsedServiceAccount),
+      credential: admin.credential.cert(serviceAccount),
     });
     console.log("Firebase Admin SDK inicializado com sucesso.");
   } catch (error: any) {
