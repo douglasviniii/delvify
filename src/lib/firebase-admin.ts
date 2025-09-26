@@ -1,5 +1,6 @@
 
 import admin from 'firebase-admin';
+import type { DocumentData, DocumentSnapshot, Timestamp } from 'firebase-admin/firestore';
 
 // Função para inicializar o app Firebase Admin se ainda não estiver inicializado.
 function initializeAdminApp() {
@@ -7,8 +8,6 @@ function initializeAdminApp() {
     return;
   }
 
-  // A abordagem recomendada e mais robusta é usar uma única variável de ambiente
-  // contendo o JSON completo da chave de serviço.
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
   if (!serviceAccountJson) {
@@ -17,10 +16,10 @@ function initializeAdminApp() {
   }
 
   try {
-    const serviceAccount = JSON.parse(serviceAccountJson);
-
+    const parsedServiceAccount = JSON.parse(serviceAccountJson);
+    
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: admin.credential.cert(parsedServiceAccount),
     });
     console.log("Firebase Admin SDK inicializado com sucesso.");
   } catch (error: any) {
@@ -45,4 +44,27 @@ export function getAdminAuth() {
 export function getAdminStorage() {
   initializeAdminApp();
   return admin.storage();
+}
+
+// Helper para serializar Timestamps do Firestore para strings ISO
+export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
+      const data = doc.data();
+      if (!data) {
+          return { id: doc.id };
+      }
+      const docData: { [key: string]: any } = { id: doc.id, ...data };
+      
+      for (const key in docData) {
+        if (docData[key] instanceof admin.firestore.Timestamp) {
+          docData[key] = docData[key].toDate().toISOString();
+        } else if (Array.isArray(docData[key])) {
+          docData[key] = docData[key].map((item: any) => {
+              if(item instanceof admin.firestore.Timestamp) {
+                  return item.toDate().toISOString();
+              }
+              return item;
+          });
+        }
+      }
+      return docData;
 }
