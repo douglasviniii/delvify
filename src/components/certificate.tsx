@@ -97,8 +97,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
     const verificationUrl = companyWebsite ? `${new URL(companyWebsite).origin}/verify?code=${verificationCode}` : `https://verify.com/verify?code=${verificationCode}`;
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 py-8 px-4">
-            <div className="w-full max-w-5xl mx-auto flex justify-end gap-2 mb-4">
+        <>
+            <div className="w-full max-w-5xl mx-auto flex justify-end gap-2 mb-4 print:hidden px-4">
                  <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading} className="bg-white">
                     {isDownloading ? (
                         <>
@@ -114,7 +114,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                  </Button>
             </div>
             
-            <div id="certificate-wrapper" className="w-full max-w-5xl mx-auto">
+            <div id="certificate-wrapper" className="w-full max-w-5xl mx-auto p-4 sm:p-0">
                 {/* Certificate Front */}
                 <div id="certificate-front" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-6 sm:p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
                      {watermarkLogoUrl && (
@@ -218,14 +218,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             </div>
             
             <style jsx global>{`
-                @media screen {
-                    .certificate-page {
-                        /* Para telas, não forçamos a proporção, mas definimos um max-width */
-                        max-width: 1122px; /* Largura A4 a 96dpi */
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                }
                 @media print {
                     body, html {
                         background-color: #fff !important;
@@ -233,10 +225,10 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     body * {
                         visibility: hidden;
                     }
-                    #certificate-wrapper, #certificate-wrapper * {
+                    .print-area, .print-area * {
                         visibility: visible;
                     }
-                    #certificate-wrapper {
+                    .print-area {
                         position: absolute;
                         left: 0;
                         top: 0;
