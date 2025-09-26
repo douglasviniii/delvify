@@ -12,7 +12,8 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, storage } from '@/lib/firebase';
-import { saveCertificateSettings, getCertificateSettings } from './actions';
+import { saveCertificateSettings } from './actions';
+import { getCertificateSettings } from '@/lib/certificates';
 import type { CertificateSettings } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -284,3 +285,5 @@ export default function CertificateSettingsPage() {
         </div>
     );
 }
+
+    

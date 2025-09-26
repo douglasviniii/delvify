@@ -1,6 +1,6 @@
 
 
-import { NextRequest, NextResponse } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { getAdminDb } from '@/lib/firebase-admin';
@@ -115,3 +115,5 @@ export async function POST(req: NextRequest) {
 export async function GET() {
     return NextResponse.json({ message: "Stripe webhook endpoint is active. Use POST for events." });
 }
+
+    
