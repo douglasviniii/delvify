@@ -84,7 +84,7 @@ export default function CertificatePage() {
     }
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
+        <div className="bg-muted/30 dark:bg-background min-h-screen flex items-center">
             <CertificateClient 
                 studentName={data.studentProfile.name}
                 studentCpf={data.studentProfile.cpf}
