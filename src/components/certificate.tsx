@@ -65,15 +65,17 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
         const pdf = new jsPDF({
             orientation: 'landscape',
             unit: 'mm',
-            format: 'a4',
+            format: 'a4', // 297mm x 210mm
         });
 
         const processPage = async (element: HTMLElement) => {
             const canvas = await html2canvas(element, {
-                scale: 2, 
+                scale: 3, // Aumenta a resolução para melhor qualidade
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff',
+                width: element.offsetWidth,
+                height: element.offsetHeight,
             });
             return canvas.toDataURL('image/png', 1.0);
         };
@@ -82,8 +84,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             const frontImage = await processPage(frontPage);
             pdf.addImage(frontImage, 'PNG', 0, 0, 297, 210);
 
-            const backImage = await processPage(backPage);
             pdf.addPage();
+            const backImage = await processPage(backPage);
             pdf.addImage(backImage, 'PNG', 0, 0, 297, 210);
 
             pdf.save(`Certificado-${courseName.replace(/ /g, '_')}.pdf`);
@@ -99,25 +101,19 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
     const formattedCompletionDate = completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 md:p-0">
-            <div className="flex justify-end gap-2 mb-4">
-                <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading} className="bg-white">
-                    {isDownloading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Baixando PDF...
-                        </>
-                    ) : (
-                        <>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Imprimir ou Salvar como PDF
-                        </>
-                    )}
-                </Button>
-            </div>
+        <>
+            <div className="w-full max-w-5xl mx-auto p-4 md:p-0">
+                <div className="flex justify-end gap-2 mb-4">
+                    <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading} className="bg-white">
+                        {isDownloading ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Baixando PDF...</>
+                        ) : (
+                            <><Printer className="mr-2 h-4 w-4" /> Imprimir ou Salvar</>
+                        )}
+                    </Button>
+                </div>
 
-            <div className="relative w-full">
-                {/* Mobile View Card - Always in DOM, but visibility controlled by CSS */}
+                {/* Mobile View Card */}
                 <div className="md:hidden">
                     <Card className="w-full shadow-lg">
                         <CardHeader>
@@ -130,7 +126,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
-                            <div className="space-y-1">
+                             <div className="space-y-1">
                                 <p className="font-semibold">Curso:</p>
                                 <p className="text-muted-foreground">{courseName}</p>
                             </div>
@@ -143,20 +139,18 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 <p className="text-muted-foreground">{formattedCompletionDate}</p>
                             </div>
                             <Button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full mt-4" size="lg">
-                                {isDownloading ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Download className="mr-2 h-4 w-4" />
-                                )}
+                                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                                 Baixar Certificado (PDF)
                             </Button>
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* Certificate for PDF Generation and Desktop View - Always in DOM */}
-                <div className="absolute top-0 left-0 w-full -z-10 opacity-0 md:relative md:z-auto md:opacity-100">
-                    <div id="certificate-wrapper" className="space-y-8">
+            </div>
+            
+            {/* Certificate for PDF generation and Desktop view */}
+            {/* Positioned off-screen to not interfere with mobile layout, but still be renderable by html2canvas */}
+            <div className="hidden md:block">
+                <div id="certificate-wrapper" className="w-full max-w-5xl mx-auto space-y-8">
                         {/* Frente do Certificado */}
                         <div id="certificate-front" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
                             {watermarkLogoUrl && (
@@ -197,13 +191,14 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
                                 <footer className="mt-auto pt-4 flex justify-between items-end gap-8">
                                     <div className="text-center">
-                                        <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
-                                        <p className="text-sm font-semibold mt-1">{studentName}</p>
-                                    </div>
-                                    <div className="text-center">
                                         {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
                                         <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
                                         <p className="text-sm font-semibold mt-1">{signatureText}</p>
+                                    </div>
+                                     <div className="text-center">
+                                         <p className="text-sm font-semibold mt-1 invisible">Placeholder</p>
+                                         <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
+                                        <p className="text-sm font-semibold mt-1">{studentName}</p>
                                     </div>
                                 </footer>
                             </div>
@@ -257,57 +252,34 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 </footer>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
             
             <style jsx global>{`
                 @media print {
-                    body, html {
-                        background-color: #fff !important;
-                    }
-                    body > div:first-child > div {
-                        padding: 0 !important;
-                    }
-                    body > div:first-child > div > div:first-child, /* Oculta botões de download e card mobile */
-                    .md\\:hidden {
-                        display: none !important;
-                    }
-                    .absolute.-z-10.opacity-0.md\\:relative {
-                       opacity: 1 !important;
-                       position: static !important;
-                       z-index: auto !important;
-                    }
-                    #certificate-wrapper {
-                        display: block !important;
-                        opacity: 1 !important;
-                        height: auto !important;
-                        position: static !important;
-                    }
+                    body, html { background-color: #fff !important; }
+                    body > div:first-child > div > div:first-child, /* Oculta botões e card mobile */
+                    body > div:first-child > div.md\\:hidden { display: none !important; }
+                    
+                    /* Mostra a área do certificado para impressão */
+                    .hidden.md\\:block { display: block !important; }
+                    #certificate-wrapper { margin: 0; padding: 0; }
                     .certificate-page {
                         width: 100% !important;
                         height: 100vh !important;
                         max-width: none !important;
-                        border-width: 8px !important;
+                        border-width: 10px !important;
                         box-sizing: border-box !important;
                         margin: 0 !important;
                         box-shadow: none !important;
                         page-break-after: always;
                     }
-                     .certificate-page:last-child {
-                        page-break-after: avoid;
-                    }
-                    body {
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
+                     .certificate-page:last-child { page-break-after: avoid; }
+                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                 }
-                @page {
-                    size: A4 landscape;
-                    margin: 0;
-                }
+                @page { size: A4 landscape; margin: 0; }
             `}</style>
-        </div>
+        </>
     );
 };
 
