@@ -19,23 +19,30 @@ let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
-try {
-    if (!firebaseConfig.apiKey) {
-        throw new Error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
+// This function ensures that we initialize the app only once.
+function initializeFirebaseApp() {
+    if (!getApps().length) {
+        if (!firebaseConfig.apiKey) {
+            throw new Error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
+        }
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApp();
     }
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
-} catch (error: any) {
-    console.error("Falha na inicialização do Firebase Client:", error.message);
-    if (error.code === 'auth/invalid-api-key') {
-         throw new Error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
-    }
-    // Para outros erros, simplesmente relance para que o Next.js possa capturá-lo.
-    throw error;
 }
 
+// Call the function to initialize the app.
+// This block will run on the first import, ensuring services are ready.
+try {
+    initializeFirebaseApp();
+} catch (error: any) {
+    console.error("Falha na inicialização do Firebase Client:", error.message);
+    // Re-throw the error to make it visible during development/build
+    throw error;
+}
 
 // Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
 export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {

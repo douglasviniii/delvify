@@ -18,7 +18,7 @@ function initializeAdminApp() {
     const serviceAccount = JSON.parse(serviceAccountString);
 
     // Assegura que as quebras de linha na chave privada estão no formato correto.
-    // O Vercel/Render pode escapar as barras invertidas, então lidamos com ambos os casos.
+    // O Vercel/Render/outros podem escapar as barras invertidas, então lidamos com ambos os casos.
     serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
     admin.initializeApp({
