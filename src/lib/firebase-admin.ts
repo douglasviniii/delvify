@@ -1,7 +1,4 @@
 import admin from 'firebase-admin';
-import { config } from 'dotenv';
-
-config({ path: '.env' });
 
 // Função para inicializar o app Firebase Admin se ainda não estiver inicializado.
 // Isso é para garantir que a inicialização ocorra apenas uma vez.
@@ -72,5 +69,3 @@ export const serializeDoc = (doc: admin.firestore.DocumentSnapshot): any => {
     }
     return docData;
 }
-
-    

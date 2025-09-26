@@ -5,7 +5,7 @@
 import { getAdminDb, serializeDoc as serializeAdminDoc } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
 import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
-import { db, serializeDoc } from './firebase';
+import { db } from './firebase';
 
 
 export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {

@@ -1,13 +1,10 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, type DocumentData, type DocumentSnapshot } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { config } from 'dotenv';
-import type { DocumentData, DocumentSnapshot } from 'firebase/firestore';
-
-config({ path: '.env' });
 
 // Configuração do Firebase para o lado do cliente (navegador).
+// As variáveis de ambiente NEXT_PUBLIC_* são automaticamente injetadas pelo Next.js no browser.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
