@@ -1,6 +1,4 @@
 
-'use server';
-
 import admin from 'firebase-admin';
 
 // Função para inicializar o app Firebase Admin se ainda não estiver inicializado.
