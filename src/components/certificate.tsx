@@ -62,7 +62,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             return;
         }
         
-        // A4 dimensions in mm: 297x210
         const pdf = new jsPDF({
             orientation: 'landscape',
             unit: 'mm',
@@ -71,11 +70,11 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
         const processPage = async (element: HTMLElement) => {
             const canvas = await html2canvas(element, {
-                scale: 2, // Aumenta a resolução da captura
-                useCORS: true, // Permite carregar imagens de outros domínios
+                scale: 2,
+                useCORS: true,
                 logging: false,
             });
-            return canvas.toDataURL('image/png', 1.0); // Retorna a imagem em alta qualidade
+            return canvas.toDataURL('image/png', 1.0);
         };
 
         try {
@@ -98,9 +97,9 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
     const verificationUrl = companyWebsite ? `${new URL(companyWebsite).origin}/verify?code=${verificationCode}` : `https://verify.com/verify?code=${verificationCode}`;
 
     return (
-        <>
+        <div className="bg-gray-100 dark:bg-gray-900 py-8 px-4">
             <div className="w-full max-w-5xl mx-auto flex justify-end gap-2 mb-4">
-                 <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading}>
+                 <Button onClick={handleDownloadPdf} variant="outline" disabled={isDownloading} className="bg-white">
                     {isDownloading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -117,7 +116,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             
             <div id="certificate-wrapper" className="w-full max-w-5xl mx-auto">
                 {/* Certificate Front */}
-                <div id="certificate-front" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
+                <div id="certificate-front" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-6 sm:p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
                      {watermarkLogoUrl && (
                         <Image
                             src={watermarkLogoUrl}
@@ -129,32 +128,32 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         />
                     )}
                     <div className="relative z-10 flex flex-col h-full">
-                        <header className="flex justify-between items-center pb-4 border-b-2" style={{ borderColor: accentColor }}>
+                        <header className="flex flex-col sm:flex-row justify-between items-center pb-4 border-b-2 gap-4" style={{ borderColor: accentColor }}>
                             <div className="flex items-center gap-4">
                                 {mainLogoUrl ? (
                                     <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
                                 ) : <span>{companyName}</span>}
-                                <Award className="h-12 w-12" style={{ color: accentColor }} />
+                                <Award className="h-12 w-12 hidden sm:block" style={{ color: accentColor }} />
                             </div>
-                            <div className="text-right text-xs text-gray-600">
+                            <div className="text-center sm:text-right text-xs text-gray-600">
                                 <p className="font-bold">{companyName}</p>
                                 <p>{companyAddress}</p>
                                 <p>CNPJ: {companyCnpj}</p>
                             </div>
                         </header>
 
-                        <main className="flex-1 flex flex-col items-center justify-center text-center">
-                            <h1 className="text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
-                            <p className="mt-8 text-xl">Certificamos que</p>
-                            <p className="mt-2 text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
-                            <p className="mt-2 text-lg">portador(a) do CPF nº {studentCpf}</p>
-                            <p className="mt-6 text-xl max-w-3xl">
+                        <main className="flex-1 flex flex-col items-center justify-center text-center my-6">
+                            <h1 className="text-3xl sm:text-5xl font-bold font-headline" style={{ color: accentColor }}>Certificado de Conclusão</h1>
+                            <p className="mt-4 sm:mt-8 text-lg sm:text-xl">Certificamos que</p>
+                            <p className="mt-2 text-2xl sm:text-4xl font-semibold font-serif tracking-wider">{studentName}</p>
+                            <p className="mt-2 text-base sm:text-lg">portador(a) do CPF nº {studentCpf}</p>
+                            <p className="mt-4 sm:mt-6 text-lg sm:text-xl max-w-3xl">
                                 concluiu com sucesso o curso de <strong style={{ color: accentColor }}>{courseName}</strong>,
                                 em {completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.
                             </p>
                         </main>
 
-                        <footer className="mt-auto pt-4 flex justify-between items-end">
+                        <footer className="mt-auto pt-4 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-8 sm:gap-0">
                             <div className="text-center">
                                 <div className="w-64 h-12 mb-1 border-b-2 border-gray-700"></div>
                                 <p className="text-sm font-semibold mt-1">{studentName}</p>
@@ -169,7 +168,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                 </div>
 
                 {/* Back of Certificate */}
-                <div id="certificate-back" className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
+                <div id="certificate-back" className="certificate-page relative w-full max-w-5xl aspect-[297/210] bg-white shadow-lg p-6 sm:p-10 border-4 mt-8 flex flex-col" style={{ borderColor: accentColor }}>
                     {watermarkLogoUrl && (
                         <Image
                             src={watermarkLogoUrl}
@@ -183,7 +182,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     
                     <div className="relative z-10 flex flex-col h-full">
                         <header className="text-center pb-4 mb-6">
-                            <h2 className="text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold font-headline" style={{ color: accentColor }}>Conteúdo Programático</h2>
                             <div className="text-center mt-4">
                                 <p className="text-lg font-semibold">{studentName}</p>
                                 <p className="text-md text-gray-700">{courseName}</p>
@@ -191,15 +190,15 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         </header>
 
                         <main className="flex-1">
-                            <ul className="space-y-2 columns-2">
+                            <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm sm:columns-2">
                                 {courseModules.map((module, index) => (
-                                    <li key={module.id} className="text-sm text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
+                                    <li key={module.id} className="text-gray-700 break-inside-avoid">{index + 1}. {module.title}</li>
                                 ))}
                             </ul>
                         </main>
                         
-                        <footer className="mt-auto pt-4 border-t flex justify-between items-end">
-                            <div className='text-left text-xs text-gray-600 space-y-1'>
+                        <footer className="mt-auto pt-4 border-t flex flex-col sm:flex-row justify-between items-center sm:items-end gap-4">
+                            <div className='text-center sm:text-left text-xs text-gray-600 space-y-1'>
                                 <p className="font-bold">Verificação de Autenticidade</p>
                                 <p>Aponte a câmera para o QR Code ou acesse o site de verificação.</p>
                                 <p>Código: <strong className='font-mono'>{verificationCode}</strong></p>
@@ -219,7 +218,18 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             </div>
             
             <style jsx global>{`
+                @media screen {
+                    .certificate-page {
+                        /* Para telas, não forçamos a proporção, mas definimos um max-width */
+                        max-width: 1122px; /* Largura A4 a 96dpi */
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                }
                 @media print {
+                    body, html {
+                        background-color: #fff !important;
+                    }
                     body * {
                         visibility: hidden;
                     }
@@ -235,6 +245,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     .certificate-page {
                         width: 100%;
                         height: 100vh;
+                        max-width: none;
                         border-width: 8px !important;
                         box-sizing: border-box;
                         margin: 0 !important;

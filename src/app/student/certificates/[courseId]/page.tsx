@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button';
 
 function LoadingState() {
     return (
-        <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 p-4">
+        <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
             <p className="mt-4 text-muted-foreground">Carregando dados do certificado...</p>
         </div>
@@ -21,7 +22,7 @@ function LoadingState() {
 
 function ErrorState({ message }: { message: string }) {
      return (
-        <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 p-4 text-center">
+        <div className="flex flex-col min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 text-center">
            <ShieldAlert className="h-16 w-16 text-destructive" />
            <h1 className="mt-4 text-2xl font-bold text-destructive">Não foi possível gerar o certificado</h1>
            <p className="mt-2 text-muted-foreground max-w-md">{message}</p>
@@ -83,14 +84,16 @@ export default function CertificatePage() {
     }
 
     return (
-        <CertificateClient 
-            studentName={data.studentProfile.name}
-            studentCpf={data.studentProfile.cpf}
-            courseName={data.course.title}
-            courseDurationHours={data.course.durationHours}
-            purchaseDate={data.purchaseInfo.purchasedAt}
-            courseModules={data.modules}
-            settings={data.settings}
-        />
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
+            <CertificateClient 
+                studentName={data.studentProfile.name}
+                studentCpf={data.studentProfile.cpf}
+                courseName={data.course.title}
+                courseDurationHours={data.course.durationHours}
+                purchaseDate={data.purchaseInfo.purchasedAt}
+                courseModules={data.modules}
+                settings={data.settings}
+            />
+        </div>
     );
 }
