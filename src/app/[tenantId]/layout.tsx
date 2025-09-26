@@ -28,11 +28,15 @@ export default async function TenantLayout({
   const primaryColorHsl = hexToHsl(settings.primaryColor);
 
   return (
-    <>
-      <ThemeInjector primaryColorHsl={primaryColorHsl} />
-      <MainHeader settings={settings} />
-      {children}
-      <MainFooter settings={settings} />
-    </>
+    <html lang="pt-BR" style={{'--primary-hsl': primaryColorHsl} as React.CSSProperties}>
+      <body>
+        <ThemeInjector primaryColorHsl={primaryColorHsl} />
+        <div className="flex min-h-screen flex-col bg-background">
+            <MainHeader settings={settings} />
+            <main className="flex-1">{children}</main>
+            <MainFooter settings={settings} />
+        </div>
+      </body>
+    </html>
   );
 }

@@ -2,9 +2,10 @@
 
 'use server';
 
-import { getAdminDb, serializeDoc as adminSerializeDoc } from '@/lib/firebase-admin';
+import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase'; // Using client SDK for components
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
-
+import { serializeDoc } from './firebase'; // Using client-side serializer
 
 export async function getAllCourses(tenantId: string): Promise<Course[]> {
   if (!tenantId) {
@@ -12,16 +13,12 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
     return [];
   }
   try {
-    const adminDb = getAdminDb();
     const courses: Course[] = [];
-    const coursesQuery = adminDb.collection(`tenants/${tenantId}/courses`)
-        .where('status', '==', 'published')
-        .orderBy('createdAt', 'desc');
-    
-    const querySnapshot = await coursesQuery.get();
+    const coursesQuery = query(collection(db, `tenants/${tenantId}/courses`), where('status', '==', 'published'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(coursesQuery);
     
     querySnapshot.forEach((doc) => {
-      const courseData = adminSerializeDoc(doc) as Omit<Course, 'tenantId'>;
+      const courseData = serializeDoc(doc) as Omit<Course, 'tenantId'>;
       courses.push({ ...courseData, tenantId });
     });
 
@@ -33,16 +30,14 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
   }
 }
 
-
 export async function getCourseById(tenantId: string, courseId: string): Promise<Course | null> {
     if (!tenantId || !courseId) {
         return null;
     }
     try {
-        const adminDb = getAdminDb();
-        const docRef = await adminDb.doc(`tenants/${tenantId}/courses/${courseId}`).get();
-        if (docRef.exists) {
-            const courseData = adminSerializeDoc(docRef) as Omit<Course, 'tenantId'>;
+        const docRef = await getDoc(doc(db, `tenants/${tenantId}/courses`, courseId));
+        if (docRef.exists()) {
+            const courseData = serializeDoc(docRef) as Omit<Course, 'tenantId'>;
             return { ...courseData, tenantId };
         }
         return null;
@@ -58,13 +53,12 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
         return [];
     }
     try {
-        const adminDb = getAdminDb();
         const modules: Module[] = [];
-        const modulesQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/modules`).orderBy('order');
-        const querySnapshot = await modulesQuery.get();
+        const modulesQuery = query(collection(db, `tenants/${tenantId}/courses/${courseId}/modules`), orderBy('order'));
+        const querySnapshot = await getDocs(modulesQuery);
 
         querySnapshot.forEach(doc => {
-            modules.push(adminSerializeDoc(doc) as Module);
+            modules.push(serializeDoc(doc) as Module);
         });
 
         return modules;
@@ -80,12 +74,11 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
         return [];
     }
     try {
-        const adminDb = getAdminDb();
         const categories: Category[] = [];
-        const catQuery = adminDb.collection(`tenants/${tenantId}/categories`).orderBy('name');
-        const querySnapshot = await catQuery.get();
+        const catQuery = query(collection(db, `tenants/${tenantId}/categories`), orderBy('name'));
+        const querySnapshot = await getDocs(catQuery);
         querySnapshot.forEach(doc => {
-            categories.push(adminSerializeDoc(doc) as Category);
+            categories.push(serializeDoc(doc) as Category);
         })
         return categories;
     } catch (error) {
@@ -100,13 +93,12 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
         return [];
     }
     try {
-        const adminDb = getAdminDb();
         const reviews: Review[] = [];
-        const reviewsQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/reviews`).orderBy('createdAt', 'desc');
-        const querySnapshot = await reviewsQuery.get();
+        const reviewsQuery = query(collection(db, `tenants/${tenantId}/courses/${courseId}/reviews`), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(reviewsQuery);
 
         querySnapshot.forEach(doc => {
-            reviews.push(adminSerializeDoc(doc) as Review);
+            reviews.push(serializeDoc(doc) as Review);
         });
 
         return reviews;
@@ -120,10 +112,9 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
 export async function hasPurchasedCourse(userId: string, courseId: string): Promise<boolean> {
     if (!userId || !courseId) return false;
     try {
-        const adminDb = getAdminDb();
-        const userDocRef = adminDb.collection('users').doc(userId);
-        const userDocSnap = await userDocRef.get();
-        if (userDocSnap.exists) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
             const data = userDocSnap.data();
             return !!(data && data.purchasedCourses && data.purchasedCourses[courseId]);
         }
@@ -135,15 +126,13 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
     }
 }
 
-
 export async function getPurchasedCourses(userId: string): Promise<{ courses: Course[], details: Record<string, PurchasedCourseInfo> }> {
     if (!userId) return { courses: [], details: {} };
     try {
-        const adminDb = getAdminDb();
-        const userDocRef = await adminDb.collection('users').doc(userId).get();
-        if (!userDocRef.exists) return { courses: [], details: {} };
+        const userDocRef = await getDoc(doc(db, 'users', userId));
+        if (!userDocRef.exists()) return { courses: [], details: {} };
 
-        const userData = adminSerializeDoc(userDocRef);
+        const userData = serializeDoc(userDocRef);
         if (!userData || !userData.purchasedCourses) {
             return { courses: [], details: {} };
         }
@@ -163,26 +152,5 @@ export async function getPurchasedCourses(userId: string): Promise<{ courses: Co
         const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
         console.error(`Error fetching purchased courses for user ${userId}:`, errorMessage);
         return { courses: [], details: {} };
-    }
-}
-
-export async function getPurchasedCourseDetails(userId: string): Promise<Record<string, PurchasedCourseInfo>> {
-    if (!userId) return {};
-    try {
-        const adminDb = getAdminDb();
-        const userDocRef = await adminDb.collection('users').doc(userId).get();
-        if (!userDocRef.exists()) return {};
-
-        const userData = adminSerializeDoc(userDocRef);
-
-        if (!userData || !userData.purchasedCourses) {
-            return {};
-        }
-
-        return userData.purchasedCourses as Record<string, PurchasedCourseInfo>;
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Um erro desconhecido ocorreu.";
-        console.error(`Error fetching purchased course details for user ${userId}:`, errorMessage);
-        return {};
     }
 }

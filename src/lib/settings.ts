@@ -3,6 +3,8 @@
 
 import { getAdminDb } from './firebase-admin';
 import type { GlobalSettings } from './types';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 
 const defaultSettings: GlobalSettings = {
@@ -50,7 +52,7 @@ const defaultSettings: GlobalSettings = {
 
 
 const settingsRef = (tenantId: string) => 
-  getAdminDb().collection('tenants').doc(tenantId).collection('settings').doc('global');
+  doc(db, `tenants/${tenantId}/settings/global`);
 
 // Função para buscar as configurações globais de um inquilino
 export async function getGlobalSettingsForTenant(tenantId: string): Promise<GlobalSettings> {
@@ -59,8 +61,8 @@ export async function getGlobalSettingsForTenant(tenantId: string): Promise<Glob
     return defaultSettings;
   }
   try {
-    const docSnap = await settingsRef(tenantId).get();
-    if (docSnap.exists) {
+    const docSnap = await getDoc(settingsRef(tenantId));
+    if (docSnap.exists()) {
       // Mescla as configurações salvas com as padrão para garantir que todos os campos existam
       const savedData = docSnap.data();
       return {
@@ -102,8 +104,8 @@ export async function getGlobalSettings(tenantId: string): Promise<GlobalSetting
         return null;
     }
     try {
-        const docSnap = await settingsRef(tenantId).get();
-        if (docSnap.exists) {
+        const docSnap = await getDoc(settingsRef(tenantId));
+        if (docSnap.exists()) {
             return docSnap.data() as GlobalSettings;
         }
         return null;

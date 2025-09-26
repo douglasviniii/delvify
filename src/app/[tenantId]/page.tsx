@@ -8,6 +8,7 @@ import { CtaSection } from "@/components/sections/CtaSection";
 import { DefaultSection } from "@/components/sections/DefaultSection";
 import { getAllBlogPosts } from "@/lib/blog-posts";
 import { getPageSections } from "./actions";
+import { getAllCourses } from "@/lib/courses";
 
 const SectionComponents: Record<string, React.FC<any>> = {
   HeroSection,
@@ -24,6 +25,7 @@ export default async function HomePage({ params }: { params: { tenantId: string 
   const { tenantId } = params;
   const sections = await getPageSections(tenantId, 'home');
   const posts = await getAllBlogPosts(tenantId);
+  const courses = await getAllCourses(tenantId);
 
   return (
     <main className="flex-1">
@@ -37,6 +39,9 @@ export default async function HomePage({ params }: { params: { tenantId: string 
         const props: {[key: string]: any} = { settings: section.settings };
         if (section.component === 'LatestPostsSection') {
             props.posts = posts;
+        }
+        if (section.component === 'CoursesSection') {
+            props.courses = courses;
         }
         
         return <Component key={section.id} {...props} />;

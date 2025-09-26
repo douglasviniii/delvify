@@ -1,18 +1,18 @@
 
 'use server';
 
-import { getAdminDb, serializeDoc } from '@/lib/firebase-admin';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, serializeDoc } from '@/lib/firebase';
 import { getInitialPageData } from '@/lib/initial-page-data';
 
 export async function getPageSections(tenantId: string, pageId: string) {
     try {
-        const adminDb = getAdminDb();
-        const pageRef = adminDb.collection(`tenants/${tenantId}/pages`).doc(pageId);
-        const pageSnap = await pageRef.get();
+        const pageRef = doc(db, `tenants/${tenantId}/pages`, pageId);
+        const pageSnap = await getDoc(pageRef);
         const initialData = getInitialPageData();
         const defaultPageData = initialData[pageId as keyof typeof initialData] || { sections: [] };
 
-        if (pageSnap.exists) {
+        if (pageSnap.exists()) {
             const pageData = serializeDoc(pageSnap);
              if (pageData && Array.isArray(pageData.sections)) {
                 return pageData.sections;

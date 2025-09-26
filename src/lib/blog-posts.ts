@@ -2,10 +2,30 @@
 
 'use server';
 
-import { getAdminDb, serializeDoc as adminSerializeDoc } from '@/lib/firebase-admin';
+import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import type { Post, Comment } from './types';
+
+const serializeDoc = (doc: any): any => {
+    const data = doc.data();
+    if (!data) {
+        return { id: doc.id };
+    }
+    // Explicitly include the slug which is part of the data object
+    const docData: { [key: string]: any } = { id: doc.id, ...data };
+    
+    // Ensure all timestamp fields are converted to ISO strings
+    for (const key in docData) {
+      if (docData[key] && typeof docData[key].toDate === 'function') {
+        docData[key] = docData[key].toDate().toISOString();
+      }
+    }
+
+    return docData;
+}
 
 // Function to get all posts from a specific tenant
 export async function getAllBlogPosts(tenantId: string, userId?: string): Promise<Post[]> {
@@ -15,23 +35,23 @@ export async function getAllBlogPosts(tenantId: string, userId?: string): Promis
   }
 
   try {
-    const adminDb = getAdminDb();
     const posts: Post[] = [];
-    const postsQuery = adminDb.collection(`tenants/${tenantId}/blog`).orderBy('createdAt', 'desc');
-    const querySnapshot = await postsQuery.get();
+    const postsQuery = query(collection(db, `tenants/${tenantId}/blog`), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(postsQuery);
     
     for (const docRef of querySnapshot.docs) {
-      const postData = adminSerializeDoc(docRef) as Post;
+      const postData = serializeDoc(docRef) as Post;
       
-      const commentsSnapshot = await docRef.ref.collection('comments').get();
-      const likesSnapshot = await docRef.ref.collection('likes').get();
+      const commentsSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${docRef.id}/comments`));
+      const likesSnapshot = await getDocs(collection(db, `tenants/${tenantId}/blog/${docRef.id}/likes`));
       
       postData.commentCount = commentsSnapshot.size;
       postData.likeCount = likesSnapshot.size;
 
       if (userId) {
-          const likeDoc = await docRef.ref.collection('likes').doc(userId).get();
-          postData.isLikedByUser = likeDoc.exists;
+          const likeDocRef = doc(db, `tenants/${tenantId}/blog/${docRef.id}/likes`, userId);
+          const likeDoc = await getDoc(likeDocRef);
+          postData.isLikedByUser = likeDoc.exists();
       } else {
           postData.isLikedByUser = false;
       }
@@ -54,10 +74,9 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
     }
     
     try {
-        const adminDb = getAdminDb();
-        const postsCollectionRef = adminDb.collection(`tenants/${tenantId}/blog`);
-        const q = postsCollectionRef.where('slug', '==', slug).limit(1);
-        const snapshot = await q.get();
+        const postsCollectionRef = collection(db, `tenants/${tenantId}/blog`);
+        const q = query(postsCollectionRef, where('slug', '==', slug), limit(1));
+        const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
             console.log(`No post found with slug: ${slug} for tenant: ${tenantId}`);
@@ -65,7 +84,7 @@ export async function getPostBySlug(tenantId: string, slug: string): Promise<Pos
         }
         
         const postDoc = snapshot.docs[0];
-        return adminSerializeDoc(postDoc) as Post;
+        return serializeDoc(postDoc) as Post;
 
     } catch (error: any) {
         console.error(`Error fetching post with slug ${slug} for tenant ${tenantId}:`, error.message);
@@ -78,13 +97,12 @@ export async function getPostComments(tenantId: string, postId: string): Promise
         return [];
     }
     try {
-        const adminDb = getAdminDb();
         const comments: Comment[] = [];
-        const commentsQuery = adminDb.collection(`tenants/${tenantId}/blog/${postId}/comments`).orderBy('createdAt', 'desc');
-        const querySnapshot = await commentsQuery.get();
+        const commentsQuery = query(collection(db, `tenants/${tenantId}/blog/${postId}/comments`), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(commentsQuery);
 
         querySnapshot.forEach(doc => {
-            comments.push(adminSerializeDoc(doc) as Comment);
+            comments.push(serializeDoc(doc) as Comment);
         });
         
         return comments;
