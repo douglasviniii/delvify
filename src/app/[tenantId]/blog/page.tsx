@@ -8,6 +8,7 @@ import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { DefaultSection } from '@/components/sections/DefaultSection';
 import { BlogPageSection } from '@/components/sections/BlogPageSection';
 import { getPageSections } from '../actions';
+import { getGlobalSettingsForTenant }from '@/lib/settings';
 
 const SectionComponents: Record<string, React.FC<any>> = {
   BlogPageSection,
@@ -16,12 +17,15 @@ const SectionComponents: Record<string, React.FC<any>> = {
 
 export default async function BlogPage({ params }: { params: { tenantId: string } }) {
   const { tenantId } = params;
-  const posts = await getAllBlogPosts(tenantId);
-  const sections = await getPageSections(tenantId, 'blog');
+  const [posts, sections, settings] = await Promise.all([
+    getAllBlogPosts(tenantId),
+    getPageSections(tenantId, 'blog'),
+    getGlobalSettingsForTenant(tenantId)
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader />
+      <MainHeader settings={settings} />
       <main className="flex-1">
          {sections.map(section => {
             const Component = SectionComponents[section.component];
@@ -41,7 +45,7 @@ export default async function BlogPage({ params }: { params: { tenantId: string 
             return <Component key={section.id} {...props} />;
         })}
       </main>
-      <MainFooter />
+      <MainFooter settings={settings} />
     </div>
   );
 }

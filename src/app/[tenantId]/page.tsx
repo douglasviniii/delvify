@@ -9,6 +9,9 @@ import { DefaultSection } from "@/components/sections/DefaultSection";
 import { getAllBlogPosts } from "@/lib/blog-posts";
 import { getPageSections } from "./actions";
 import { getAllCourses } from "@/lib/courses";
+import { MainHeader } from "@/components/main-header";
+import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
+import { getGlobalSettingsForTenant } from "@/lib/settings";
 
 const SectionComponents: Record<string, React.FC<any>> = {
   HeroSection,
@@ -23,29 +26,36 @@ const SectionComponents: Record<string, React.FC<any>> = {
 
 export default async function HomePage({ params }: { params: { tenantId: string } }) {
   const { tenantId } = params;
-  const sections = await getPageSections(tenantId, 'home');
-  const posts = await getAllBlogPosts(tenantId);
-  const courses = await getAllCourses(tenantId);
+  const [sections, posts, courses, settings] = await Promise.all([
+    getPageSections(tenantId, 'home'),
+    getAllBlogPosts(tenantId),
+    getAllCourses(tenantId),
+    getGlobalSettingsForTenant(tenantId)
+  ]);
 
   return (
-    <main className="flex-1">
-        {sections.map(section => {
-        const Component = SectionComponents[section.component];
-        if (!Component) {
-            console.warn(`Component for section type "${section.component}" not found.`);
-            return <DefaultSection key={section.id} settings={{title: "Componente não encontrado", description: `O componente para "${section.name}" não foi encontrado.`}} />;
-        }
+    <div className="flex min-h-screen flex-col bg-background">
+      <MainHeader settings={settings} />
+      <main className="flex-1">
+          {sections.map(section => {
+          const Component = SectionComponents[section.component];
+          if (!Component) {
+              console.warn(`Component for section type "${section.component}" not found.`);
+              return <DefaultSection key={section.id} settings={{title: "Componente não encontrado", description: `O componente para "${section.name}" não foi encontrado.`}} />;
+          }
 
-        const props: {[key: string]: any} = { settings: section.settings };
-        if (section.component === 'LatestPostsSection') {
-            props.posts = posts;
-        }
-        if (section.component === 'CoursesSection') {
-            props.courses = courses;
-        }
-        
-        return <Component key={section.id} {...props} />;
-    })}
-    </main>
+          const props: {[key: string]: any} = { settings: section.settings };
+          if (section.component === 'LatestPostsSection') {
+              props.posts = posts;
+          }
+          if (section.component === 'CoursesSection') {
+              props.courses = courses;
+          }
+          
+          return <Component key={section.id} {...props} />;
+      })}
+      </main>
+      <MainFooter settings={settings} />
+    </div>
   );
 }

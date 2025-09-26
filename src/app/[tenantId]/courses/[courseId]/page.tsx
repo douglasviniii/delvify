@@ -10,13 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
 import CourseReviews from '@/app/courses/[courseId]/course-reviews';
 import Link from 'next/link';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 export default async function CourseLandingPage({ params }: { params: { tenantId: string, courseId: string } }) {
     const { tenantId, courseId } = params;
     
-    const [course, reviews] = await Promise.all([
+    const [course, reviews, settings] = await Promise.all([
         getCourseById(tenantId, courseId),
-        getCourseReviews(tenantId, courseId)
+        getCourseReviews(tenantId, courseId),
+        getGlobalSettingsForTenant(tenantId)
     ]);
     
     if (!course || course.status !== 'published') {
@@ -42,7 +44,7 @@ export default async function CourseLandingPage({ params }: { params: { tenantId
     
     return (
         <div className="flex min-h-screen flex-col bg-background">
-            <MainHeader />
+            <MainHeader settings={settings} />
             <main className="flex-1">
                 <div className="bg-muted/30">
                     <div className="container py-12 md:py-20">
@@ -76,7 +78,7 @@ export default async function CourseLandingPage({ params }: { params: { tenantId
                     tenantId={tenantId}
                 />
             </main>
-            <MainFooter />
+            <MainFooter settings={settings} />
         </div>
     );
 }

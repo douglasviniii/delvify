@@ -5,10 +5,14 @@ import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import Image from 'next/image';
 import { Calendar, UserCircle } from 'lucide-react';
+import { getGlobalSettingsForTenant } from '@/lib/settings';
 
 export default async function BlogPostPage({ params }: { params: { slug: string, tenantId: string } }) {
   const { tenantId, slug } = params;
-  const post = await getPostBySlug(tenantId, slug);
+  const [post, settings] = await Promise.all([
+    getPostBySlug(tenantId, slug),
+    getGlobalSettingsForTenant(tenantId)
+  ]);
 
   if (!post) {
     notFound();
@@ -24,7 +28,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader />
+      <MainHeader settings={settings} />
       <main className="flex-1">
         <article className="container max-w-4xl py-12 md:py-20">
             <header className="mb-8 text-center">
@@ -55,7 +59,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string,
             />
         </article>
       </main>
-      <MainFooter />
+      <MainFooter settings={settings} />
     </div>
   );
 }

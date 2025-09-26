@@ -3,8 +3,6 @@ import type {Metadata} from 'next';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { hexToHsl } from '@/lib/utils';
 import { ThemeInjector } from './theme-injector';
-import { MainHeader } from '@/components/main-header';
-import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 
 
 export async function generateMetadata({ params }: { params: { tenantId: string } }): Promise<Metadata> {
@@ -54,11 +52,7 @@ export default async function TenantLayout({
   return (
     <>
         <ThemeInjector primaryColorHsl={primaryColorHsl} />
-        <div className="flex min-h-screen flex-col bg-background">
-            <MainHeader settings={settings} />
-            <main className="flex-1">{children}</main>
-            <MainFooter settings={settings} />
-        </div>
+        {children}
     </>
   );
 }
