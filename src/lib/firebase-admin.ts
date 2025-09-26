@@ -14,10 +14,11 @@ function initializeAdminApp() {
   }
 
   try {
-    // Em ambientes como Vercel/Render, as quebras de linha na private_key podem vir como '\\n' literal.
-    // Esta linha substitui essas sequências de escape pela quebra de linha real que o JSON parser espera.
-    const fixedServiceAccountString = serviceAccountString.replace(/\\n/g, '\n');
-    const serviceAccount = JSON.parse(fixedServiceAccountString);
+    // Parseia a string JSON.
+    const serviceAccount = JSON.parse(serviceAccountString);
+    
+    // Corrige a formatação da chave privada, substituindo '\\n' por '\n'
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -25,7 +26,6 @@ function initializeAdminApp() {
     console.log("Firebase Admin SDK inicializado com sucesso.");
   } catch (error: any) {
     console.error("ERRO CRÍTICO: Falha ao inicializar o Firebase Admin SDK:", error.message);
-    // Lança o erro para que o Next.js possa exibi-lo durante o desenvolvimento.
     throw new Error(`Falha ao inicializar o Firebase Admin SDK: ${error.message}`);
   }
 }

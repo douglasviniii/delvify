@@ -20,24 +20,15 @@ let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
-if (typeof window !== 'undefined' && !getApps().length) {
+if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-} else if (getApps().length > 0) {
-    app = getApp();
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
 } else {
-    // This case is for server-side rendering where window is not defined
-    // and no app is initialized. We will initialize it.
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
+  app = getApp();
 }
+
+auth = getAuth(app);
+db = getFirestore(app);
+storage = getStorage(app);
 
 
 // Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
