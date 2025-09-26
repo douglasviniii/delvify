@@ -1,6 +1,4 @@
 
-import { MainHeader } from "@/components/main-header";
-import { MainFooterWrapper as MainFooter } from "@/components/main-footer";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { FeaturesSection } from "@/components/sections/FeaturesSection";
 import { AiCustomizationSection } from "@/components/sections/AiCustomizationSection";
@@ -28,25 +26,21 @@ export default async function HomePage({ params }: { params: { tenantId: string 
   const posts = await getAllBlogPosts(tenantId);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <MainHeader />
-      <main className="flex-1">
-         {sections.map(section => {
-            const Component = SectionComponents[section.component];
-            if (!Component) {
-                console.warn(`Component for section type "${section.component}" not found.`);
-                return <DefaultSection key={section.id} settings={{title: "Componente não encontrado", description: `O componente para "${section.name}" não foi encontrado.`}} />;
-            }
+    <main className="flex-1">
+        {sections.map(section => {
+        const Component = SectionComponents[section.component];
+        if (!Component) {
+            console.warn(`Component for section type "${section.component}" not found.`);
+            return <DefaultSection key={section.id} settings={{title: "Componente não encontrado", description: `O componente para "${section.name}" não foi encontrado.`}} />;
+        }
 
-            const props: {[key: string]: any} = { settings: section.settings };
-            if (section.component === 'LatestPostsSection') {
-                props.posts = posts;
-            }
-            
-            return <Component key={section.id} {...props} />;
-        })}
-      </main>
-      <MainFooter />
-    </div>
+        const props: {[key: string]: any} = { settings: section.settings };
+        if (section.component === 'LatestPostsSection') {
+            props.posts = posts;
+        }
+        
+        return <Component key={section.id} {...props} />;
+    })}
+    </main>
   );
 }

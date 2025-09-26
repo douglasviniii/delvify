@@ -3,6 +3,9 @@ import type {Metadata} from 'next';
 import { getGlobalSettingsForTenant } from '@/lib/settings';
 import { hexToHsl } from '@/lib/utils';
 import { ThemeInjector } from './theme-injector';
+import { MainHeader } from '@/components/main-header';
+import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
+
 
 export async function generateMetadata({ params }: { params: { tenantId: string } }): Promise<Metadata> {
   const settings = await getGlobalSettingsForTenant(params.tenantId);
@@ -27,7 +30,9 @@ export default async function TenantLayout({
   return (
     <>
       <ThemeInjector primaryColorHsl={primaryColorHsl} />
+      <MainHeader settings={settings} />
       {children}
+      <MainFooter settings={settings} />
     </>
   );
 }
