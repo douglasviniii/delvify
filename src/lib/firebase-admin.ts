@@ -15,21 +15,10 @@ function initializeAdminApp() {
   }
 
   try {
-    // A abordagem robusta: Tenta parsear diretamente. Se falhar, assume que a private_key precisa de tratamento.
-    let serviceAccount;
-    try {
-        serviceAccount = JSON.parse(serviceAccountString);
-    } catch (e) {
-        console.warn("[Admin SDK] JSON.parse inicial falhou, tentando tratar a private_key...");
-        // Em ambientes como Vercel/Render, as quebras de linha podem vir como '\\n' literal.
-        const fixedServiceAccountString = serviceAccountString.replace(/\\n/g, '\n');
-        serviceAccount = JSON.parse(fixedServiceAccountString);
-    }
-
-    // Se a private_key ainda tiver o formato '\\n', substitui por '\n'.
-    if (serviceAccount.private_key && serviceAccount.private_key.includes('\\n')) {
-        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-    }
+    // Em ambientes como Vercel/Render, as quebras de linha na private_key podem vir como '\\n' literal.
+    // Esta linha substitui essas sequências de escape pela quebra de linha real que o JSON parser espera.
+    const fixedServiceAccountString = serviceAccountString.replace(/\\n/g, '\n');
+    const serviceAccount = JSON.parse(fixedServiceAccountString);
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
