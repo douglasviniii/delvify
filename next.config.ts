@@ -67,15 +67,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  webpack: (config, { isServer }) => {
-    // Exclui o favicon.ico de ser processado pelos loaders de módulo
-    config.module.rules.push({
-      test: /favicon\.ico$/,
-      loader: 'ignore-loader',
-    });
-
-    return config;
-  },
 };
 
 export default nextConfig;
