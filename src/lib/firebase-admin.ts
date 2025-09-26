@@ -10,8 +10,7 @@ function initializeAdminApp() {
 
   const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   if (!serviceAccountString) {
-    console.error("ERRO CRÍTICO: A variável de ambiente FIREBASE_SERVICE_ACCOUNT_JSON não está definida.");
-    return;
+    throw new Error("ERRO CRÍTICO: A variável de ambiente FIREBASE_SERVICE_ACCOUNT_JSON não está definida.");
   }
 
   try {
@@ -26,6 +25,8 @@ function initializeAdminApp() {
     console.log("Firebase Admin SDK inicializado com sucesso.");
   } catch (error: any) {
     console.error("ERRO CRÍTICO: Falha ao inicializar o Firebase Admin SDK:", error.message);
+    // Lança o erro para que o Next.js possa exibi-lo durante o desenvolvimento.
+    throw new Error(`Falha ao inicializar o Firebase Admin SDK: ${error.message}`);
   }
 }
 
@@ -59,9 +60,13 @@ export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
       for (const key in docData) {
         if (docData[key] instanceof admin.firestore.Timestamp) {
           docData[key] = docData[key].toDate().toISOString();
+        } else if (docData[key] && typeof docData[key].toDate === 'function') { // Fallback for client-side Timestamp
+          docData[key] = docData[key].toDate().toISOString();
         } else if (Array.isArray(docData[key])) {
           docData[key] = docData[key].map((item: any) => {
               if(item instanceof admin.firestore.Timestamp) {
+                  return item.toDate().toISOString();
+              } else if (item && typeof item.toDate === 'function') {
                   return item.toDate().toISOString();
               }
               return item;

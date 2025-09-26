@@ -4,8 +4,6 @@
 
 import { getAdminDb, serializeDoc as serializeAdminDoc } from './firebase-admin';
 import type { Purchase, PurchasedCourseInfo, Course } from './types';
-import { collection, getDocs, doc, getDoc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
-import { db } from './firebase';
 
 
 export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
@@ -74,8 +72,8 @@ export async function getPurchaseHistory(userId: string): Promise<Purchase[]> {
 export async function getAllPurchases(): Promise<Purchase[]> {
     try {
         const adminDb = getAdminDb();
-        const purchasesCol = collectionGroup(adminDb, 'purchases');
-        const purchasesSnapshot = await getDocs(purchasesCol);
+        const purchasesCol = adminDb.collectionGroup('purchases');
+        const purchasesSnapshot = await purchasesCol.get();
         
         const allPurchases: Purchase[] = [];
         const courseCache = new Map<string, Course>();
@@ -91,10 +89,9 @@ export async function getAllPurchases(): Promise<Purchase[]> {
                 if (courseCache.has(courseCacheKey)) {
                     courseTitle = courseCache.get(courseCacheKey)?.title || 'Curso não encontrado';
                 } else {
-                    const courseRef = doc(db, `tenants/${tenantId}/courses/${purchase.courseId}`);
-                    const courseSnap = await getDoc(courseRef);
-                    if (courseSnap.exists()) {
-                        const courseData = courseSnap.data() as Course;
+                    const courseRef = await adminDb.doc(`tenants/${tenantId}/courses/${purchase.courseId}`).get();
+                    if (courseRef.exists()) {
+                        const courseData = courseRef.data() as Course;
                         courseCache.set(courseCacheKey, courseData);
                         courseTitle = courseData.title;
                     }
@@ -119,8 +116,8 @@ export async function getTenantPurchases(tenantId: string): Promise<Purchase[]> 
     }
     try {
         const adminDb = getAdminDb();
-        const purchasesQuery = query(collection(adminDb, `tenants/${tenantId}/purchases`), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(purchasesQuery);
+        const purchasesQuery = adminDb.collection(`tenants/${tenantId}/purchases`).orderBy('createdAt', 'desc');
+        const querySnapshot = await purchasesQuery.get();
         
         const purchases: Purchase[] = [];
         for(const doc of querySnapshot.docs) {

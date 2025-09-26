@@ -2,26 +2,8 @@
 
 'use server';
 
-import { collection, getDocs, orderBy, query, where, doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase'; // Client SDK for some operations
-import { getAdminDb, serializeDoc as adminSerializeDoc } from '@/lib/firebase-admin'; // Admin SDK
+import { getAdminDb, serializeDoc as adminSerializeDoc } from '@/lib/firebase-admin';
 import type { Course, Module, Category, Review, PurchasedCourseInfo } from './types';
-
-
-// Helper to serialize Timestamps from the client-side SDK
-const serializeClientDoc = (doc: any): any => {
-    const data = doc.data();
-    if (!data) {
-        return { id: doc.id };
-    }
-    const docData: { [key: string]: any } = { id: doc.id, ...data };
-    for (const key in docData) {
-      if (docData[key] && typeof docData[key].toDate === 'function') {
-        docData[key] = docData[key].toDate().toISOString();
-      }
-    }
-    return docData;
-}
 
 
 export async function getAllCourses(tenantId: string): Promise<Course[]> {
@@ -30,7 +12,7 @@ export async function getAllCourses(tenantId: string): Promise<Course[]> {
     return [];
   }
   try {
-    const adminDb = getAdminDb(); // Use Admin SDK
+    const adminDb = getAdminDb();
     const courses: Course[] = [];
     const coursesQuery = adminDb.collection(`tenants/${tenantId}/courses`)
         .where('status', '==', 'published')
@@ -57,7 +39,7 @@ export async function getCourseById(tenantId: string, courseId: string): Promise
         return null;
     }
     try {
-        const adminDb = getAdminDb(); // Use Admin SDK
+        const adminDb = getAdminDb();
         const docRef = await adminDb.doc(`tenants/${tenantId}/courses/${courseId}`).get();
         if (docRef.exists) {
             const courseData = adminSerializeDoc(docRef) as Omit<Course, 'tenantId'>;
@@ -76,7 +58,7 @@ export async function getCourseModules(tenantId: string, courseId: string): Prom
         return [];
     }
     try {
-        const adminDb = getAdminDb(); // Use Admin SDK
+        const adminDb = getAdminDb();
         const modules: Module[] = [];
         const modulesQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/modules`).orderBy('order');
         const querySnapshot = await modulesQuery.get();
@@ -98,7 +80,7 @@ export async function getAllCategories(tenantId: string): Promise<Category[]> {
         return [];
     }
     try {
-        const adminDb = getAdminDb(); // Use Admin SDK
+        const adminDb = getAdminDb();
         const categories: Category[] = [];
         const catQuery = adminDb.collection(`tenants/${tenantId}/categories`).orderBy('name');
         const querySnapshot = await catQuery.get();
@@ -118,7 +100,7 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
         return [];
     }
     try {
-        const adminDb = getAdminDb(); // Use Admin SDK
+        const adminDb = getAdminDb();
         const reviews: Review[] = [];
         const reviewsQuery = adminDb.collection(`tenants/${tenantId}/courses/${courseId}/reviews`).orderBy('createdAt', 'desc');
         const querySnapshot = await reviewsQuery.get();
@@ -138,12 +120,12 @@ export async function getCourseReviews(tenantId: string, courseId: string): Prom
 export async function hasPurchasedCourse(userId: string, courseId: string): Promise<boolean> {
     if (!userId || !courseId) return false;
     try {
-        // This check can be done on the client-side SDK as it's user-specific data
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
+        const adminDb = getAdminDb();
+        const userDocRef = adminDb.collection('users').doc(userId);
+        const userDocSnap = await userDocRef.get();
+        if (userDocSnap.exists) {
             const data = userDocSnap.data();
-            return !!(data.purchasedCourses && data.purchasedCourses[courseId]);
+            return !!(data && data.purchasedCourses && data.purchasedCourses[courseId]);
         }
         return false;
     } catch (error) {
@@ -157,11 +139,11 @@ export async function hasPurchasedCourse(userId: string, courseId: string): Prom
 export async function getPurchasedCourses(userId: string): Promise<{ courses: Course[], details: Record<string, PurchasedCourseInfo> }> {
     if (!userId) return { courses: [], details: {} };
     try {
-        // Use client SDK to read user-specific data
-        const userDocRef = await getDoc(doc(db, 'users', userId));
-        if (!userDocRef.exists()) return { courses: [], details: {} };
+        const adminDb = getAdminDb();
+        const userDocRef = await adminDb.collection('users').doc(userId).get();
+        if (!userDocRef.exists) return { courses: [], details: {} };
 
-        const userData = serializeClientDoc(userDocRef);
+        const userData = adminSerializeDoc(userDocRef);
         if (!userData || !userData.purchasedCourses) {
             return { courses: [], details: {} };
         }
@@ -169,7 +151,7 @@ export async function getPurchasedCourses(userId: string): Promise<{ courses: Co
         const purchasedCoursesMap = userData.purchasedCourses as Record<string, PurchasedCourseInfo>;
         const coursePromises: Promise<Course | null>[] = Object.keys(purchasedCoursesMap).map(courseId => {
             const tenantId = purchasedCoursesMap[courseId].tenantId;
-            return getCourseById(tenantId, courseId); // getCourseById now uses Admin SDK
+            return getCourseById(tenantId, courseId); 
         });
 
         const courses = await Promise.all(coursePromises);
@@ -187,10 +169,11 @@ export async function getPurchasedCourses(userId: string): Promise<{ courses: Co
 export async function getPurchasedCourseDetails(userId: string): Promise<Record<string, PurchasedCourseInfo>> {
     if (!userId) return {};
     try {
-        const userDocRef = await getDoc(doc(db, 'users', userId));
+        const adminDb = getAdminDb();
+        const userDocRef = await adminDb.collection('users').doc(userId).get();
         if (!userDocRef.exists()) return {};
 
-        const userData = serializeClientDoc(userDocRef);
+        const userData = adminSerializeDoc(userDocRef);
 
         if (!userData || !userData.purchasedCourses) {
             return {};
