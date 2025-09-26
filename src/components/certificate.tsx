@@ -197,7 +197,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
                                 <footer className="mt-auto pt-4 flex justify-between items-end gap-8">
                                     <div className="text-center">
-                                        <div className="w-64 h-12 mb-1 border-b-2 border-gray-700"></div>
+                                        <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
                                         <p className="text-sm font-semibold mt-1">{studentName}</p>
                                     </div>
                                     <div className="text-center">
