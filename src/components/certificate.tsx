@@ -70,23 +70,25 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
 
         const processPage = async (element: HTMLElement) => {
             const canvas = await html2canvas(element, {
-                scale: 3, // Aumenta a resolução para melhor qualidade
+                scale: 3, 
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff',
-                width: element.offsetWidth,
+                 width: element.offsetWidth,
                 height: element.offsetHeight,
             });
             return canvas.toDataURL('image/png', 1.0);
         };
 
         try {
+            // Capture and add front page
             const frontImage = await processPage(frontPage);
-            pdf.addImage(frontImage, 'PNG', 0, 0, 297, 210);
+            pdf.addImage(frontImage, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
 
+            // Capture and add back page
             pdf.addPage();
             const backImage = await processPage(backPage);
-            pdf.addImage(backImage, 'PNG', 0, 0, 297, 210);
+            pdf.addImage(backImage, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
 
             pdf.save(`Certificado-${courseName.replace(/ /g, '_')}.pdf`);
         } catch (error) {
@@ -148,11 +150,10 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             </div>
             
             {/* Certificate for PDF generation and Desktop view */}
-            {/* Positioned off-screen to not interfere with mobile layout, but still be renderable by html2canvas */}
             <div className="hidden md:block">
-                <div id="certificate-wrapper" className="w-full max-w-5xl mx-auto space-y-8">
+                <div id="certificate-wrapper" className="w-[297mm] mx-auto">
                         {/* Frente do Certificado */}
-                        <div id="certificate-front" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col" style={{ borderColor: accentColor }}>
+                        <div id="certificate-front" className="certificate-page relative bg-white shadow-lg flex flex-col border-4" style={{ borderColor: accentColor, width: '297mm', height: '210mm', padding: '40px' }}>
                             {watermarkLogoUrl && (
                                 <Image
                                     src={watermarkLogoUrl}
@@ -190,13 +191,12 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 </main>
 
                                 <footer className="mt-auto pt-4 flex justify-between items-end gap-8">
-                                    <div className="text-center">
+                                     <div className="text-center">
                                         {signatureUrl && <Image src={signatureUrl} alt="Assinatura" width={180} height={60} objectFit="contain" data-ai-hint="signature" className="mx-auto" />}
                                         <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
                                         <p className="text-sm font-semibold mt-1">{signatureText}</p>
                                     </div>
                                      <div className="text-center">
-                                         <p className="text-sm font-semibold mt-1 invisible">Placeholder</p>
                                          <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
                                         <p className="text-sm font-semibold mt-1">{studentName}</p>
                                     </div>
@@ -205,7 +205,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         </div>
 
                         {/* Verso do Certificado */}
-                        <div id="certificate-back" className="certificate-page relative w-full aspect-[297/210] bg-white shadow-lg p-10 border-4 flex flex-col mt-8" style={{ borderColor: accentColor }}>
+                        <div id="certificate-back" className="certificate-page relative bg-white shadow-lg flex flex-col mt-8 border-4" style={{ borderColor: accentColor, width: '297mm', height: '210mm', padding: '40px' }}>
                             {watermarkLogoUrl && (
                                 <Image
                                     src={watermarkLogoUrl}
@@ -258,17 +258,16 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             <style jsx global>{`
                 @media print {
                     body, html { background-color: #fff !important; }
-                    body > div:first-child > div > div:first-child, /* Oculta botões e card mobile */
+                    body > div:first-child > div > div:first-child,
                     body > div:first-child > div.md\\:hidden { display: none !important; }
                     
-                    /* Mostra a área do certificado para impressão */
                     .hidden.md\\:block { display: block !important; }
                     #certificate-wrapper { margin: 0; padding: 0; }
                     .certificate-page {
                         width: 100% !important;
                         height: 100vh !important;
                         max-width: none !important;
-                        border-width: 10px !important;
+                        border: none !important;
                         box-sizing: border-box !important;
                         margin: 0 !important;
                         box-shadow: none !important;
