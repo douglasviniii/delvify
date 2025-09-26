@@ -6,12 +6,13 @@ import { z } from 'zod';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { db, serializeDoc } from '@/lib/firebase';
-import { initialPageData } from '@/lib/initial-page-data';
+import { getInitialPageData } from '@/lib/initial-page-data';
 
 export async function getPageDataForEditor(tenantId: string, pageId: string) {
     try {
         const pageRef = doc(db, `tenants/${tenantId}/pages/${pageId}`);
         const pageSnap = await getDoc(pageRef);
+        const initialPageData = getInitialPageData();
 
         if (pageSnap.exists()) {
             const pageData = serializeDoc(pageSnap);

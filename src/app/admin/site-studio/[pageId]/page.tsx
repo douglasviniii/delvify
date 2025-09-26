@@ -1,14 +1,16 @@
+
 import { getAllBlogPosts } from "@/lib/blog-posts";
 import { SiteEditorClient } from "./editor-client";
 import { notFound }from 'next/navigation';
 import { headers } from 'next/headers';
 import { getPageDataForEditor } from "./actions";
-import { initialPageData } from "@/lib/initial-page-data";
+import { getInitialPageData } from "@/lib/initial-page-data";
 
 export default async function EditSitePage({ params }: { params: { pageId: string } }) {
   const pageId = params.pageId;
   const headersList = headers();
   const tenantId = headersList.get('x-tenant-id');
+  const initialPageData = getInitialPageData();
 
   if (!pageId || !tenantId) {
       notFound();

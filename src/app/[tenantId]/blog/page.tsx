@@ -7,9 +7,21 @@ import { MainHeader } from '@/components/main-header';
 import { MainFooterWrapper as MainFooter } from '@/components/main-footer';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { initialPageData } from '@/lib/initial-page-data';
 import { DefaultSection } from '@/components/sections/DefaultSection';
 import { BlogPageSection } from '@/components/sections/BlogPageSection';
+
+const initialBlogPageData = {
+    title: "Página do Blog",
+    sections: [{
+        id: 'blog-page-main',
+        name: "Conteúdo da Página do Blog",
+        component: 'BlogPageSection',
+        settings: {
+            title: "Nosso Blog",
+            description: "Fique por dentro das últimas notícias, dicas e insights da nossa equipe."
+        }
+    }]
+};
 
 const SectionComponents: Record<string, React.FC<any>> = {
   BlogPageSection,
@@ -29,10 +41,10 @@ async function getPageSections(tenantId: string, pageId: string) {
         }
         
         console.warn(`No page data found for ${tenantId}/${pageId}, returning initial data.`);
-        return initialPageData[pageId as keyof typeof initialPageData]?.sections || [];
+        return initialBlogPageData.sections || [];
     } catch (error) {
         console.error("Error fetching page sections, returning initial data:", error);
-        return initialPageData[pageId as keyof typeof initialPageData]?.sections || [];
+        return initialBlogPageData.sections || [];
     }
 }
 
