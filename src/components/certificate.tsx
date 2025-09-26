@@ -3,11 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Printer, Award, Loader2, Download } from 'lucide-react';
+import { Printer, Loader2, Download } from 'lucide-react';
 import type { CertificateSettings, Module } from '@/lib/types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 interface CertificateProps {
     studentName: string;
@@ -68,16 +67,17 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
             format: 'a4',
         });
 
+        const a4Width = 297;
+        const a4Height = 210;
+
         const processPage = async (element: HTMLElement) => {
             const canvas = await html2canvas(element, {
                 scale: 3, 
                 useCORS: true,
                 logging: false,
-                backgroundColor: '#ffffff',
-                width: 297,
-                height: 210,
-                windowWidth: 1122, 
-                windowHeight: 793, 
+                backgroundColor: null, // Use null for transparent background
+                width: element.offsetWidth,
+                height: element.offsetHeight,
             });
             return canvas.toDataURL('image/png', 1.0);
         };
@@ -85,12 +85,12 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
         try {
             // Process front page
             const frontImage = await processPage(frontPage);
-            pdf.addImage(frontImage, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+            pdf.addImage(frontImage, 'PNG', 0, 0, a4Width, a4Height);
             
             // Process back page
             pdf.addPage();
             const backImage = await processPage(backPage);
-            pdf.addImage(backImage, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+            pdf.addImage(backImage, 'PNG', 0, 0, a4Width, a4Height);
 
             pdf.save(`Certificado-${courseName.replace(/ /g, '_')}.pdf`);
         } catch (error) {
@@ -111,15 +111,15 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                     {isDownloading ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Baixando PDF...</>
                     ) : (
-                        <><Printer className="mr-2 h-4 w-4" /> Imprimir ou Salvar</>
+                        <><Download className="mr-2 h-4 w-4" /> Imprimir ou Salvar</>
                     )}
                 </Button>
             </div>
             
-            {/* Certificate for PDF generation and Desktop view */}
-            <div id="certificate-container" className="hidden md:block">
-                 {/* Page 1 */}
-                <div id="certificate-front" className="certificate-page relative bg-white shadow-lg flex flex-col border-4" style={{ borderColor: accentColor, width: '297mm', height: '210mm', padding: '40px' }}>
+            {/* Wrapper for both pages to control visual layout */}
+            <div className="w-full max-w-5xl mx-auto space-y-8">
+                 {/* Page 1 - Front */}
+                <div id="certificate-front" className="relative bg-white shadow-lg flex flex-col border-4" style={{ borderColor: accentColor, width: '297mm', height: '210mm', padding: '40px', maxWidth: '100%' }}>
                      {watermarkLogoUrl && (
                         <Image
                             src={watermarkLogoUrl}
@@ -136,7 +136,6 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                                 {mainLogoUrl ? (
                                     <Image src={mainLogoUrl} alt="Logo da Empresa" width={150} height={60} objectFit="contain" data-ai-hint="company logo"/>
                                 ) : <span>{companyName}</span>}
-                                <Award className="h-12 w-12 hidden sm:block" style={{ color: accentColor }} />
                             </div>
                             <div className="text-right text-xs text-gray-600">
                                 <p className="font-bold">{companyName}</p>
@@ -157,7 +156,7 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         </main>
 
                         <footer className="mt-auto pt-4 flex justify-between items-end gap-8">
-                            <div className="text-center">
+                             <div className="text-center">
                                 <hr className="border-gray-700 mt-1 w-64 mx-auto"/>
                                 <p className="text-sm font-semibold mt-1">{studentName}</p>
                             </div>
@@ -169,8 +168,8 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                         </footer>
                     </div>
                 </div>
-                 {/* Page 2 */}
-                <div id="certificate-back" className="certificate-page relative bg-white shadow-lg flex flex-col mt-8 border-4" style={{ borderColor: accentColor, width: '297mm', height: '210mm', padding: '40px' }}>
+                 {/* Page 2 - Back */}
+                <div id="certificate-back" className="relative bg-white shadow-lg flex flex-col border-4" style={{ borderColor: accentColor, width: '297mm', height: '210mm', padding: '40px', maxWidth: '100%' }}>
                     {watermarkLogoUrl && (
                         <Image
                             src={watermarkLogoUrl}
@@ -218,62 +217,30 @@ const Certificate: React.FC<CertificateProps> = ({ studentName, studentCpf, cour
                 </div>
             </div>
 
-             {/* Mobile View Card */}
-            <div className="md:hidden w-full max-w-5xl mx-auto p-4">
-                <Card className="w-full shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Award className="h-6 w-6 text-primary" />
-                            Certificado de Conclusão
-                        </CardTitle>
-                        <CardDescription>
-                            Você concluiu o curso com sucesso!
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 text-sm">
-                            <div className="space-y-1">
-                            <p className="font-semibold">Curso:</p>
-                            <p className="text-muted-foreground">{courseName}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="font-semibold">Aluno(a):</p>
-                            <p className="text-muted-foreground">{studentName}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="font-semibold">Data de Conclusão:</p>
-                            <p className="text-muted-foreground">{formattedCompletionDate}</p>
-                        </div>
-                        <Button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full mt-4" size="lg">
-                            {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                            Baixar Certificado (PDF)
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-            
             <style jsx global>{`
-                @media print {
-                    body, html { background-color: #fff !important; }
-                    body > div:first-child > div > div:first-child,
-                    body > div:first-child > div:nth-child(2),
-                    body > div:first-child > div.md\\:hidden { display: none !important; }
-                    
-                    .hidden.md\\:block { display: block !important; }
-                    #certificate-container { margin: 0 !important; padding: 0 !important; }
-                    .certificate-page {
-                        width: 100% !important;
-                        height: 100vh !important;
-                        max-width: none !important;
-                        border: none !important;
-                        box-sizing: border-box !important;
-                        margin: 0 !important;
-                        box-shadow: none !important;
-                        page-break-after: always;
-                    }
-                     .certificate-page:last-child { page-break-after: avoid; }
-                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                #certificate-front, #certificate-back {
+                    // For small screens, scale down the certificate to fit the viewport width
+                    // This is for viewing purposes only. html2canvas will capture the full size.
+                    transform-origin: top left;
                 }
-                @page { size: A4 landscape; margin: 0; }
+                @media (max-width: 767px) {
+                    #certificate-front, #certificate-back {
+                       transform: scale(0.3); // Adjust scale as needed for a good mobile preview
+                       margin-bottom: -140mm; // Adjust negative margin to pull the next element up
+                    }
+                    .space-y-8 {
+                        space-y: 0 !important;
+                    }
+                }
+                 @media (min-width: 768px) and (max-width: 1200px) {
+                    #certificate-front, #certificate-back {
+                       transform: scale(0.65);
+                        margin-bottom: -70mm;
+                    }
+                     .space-y-8 {
+                        space-y: 0 !important;
+                    }
+                }
             `}</style>
         </div>
     );
