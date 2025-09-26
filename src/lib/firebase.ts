@@ -5,14 +5,15 @@ import { getFirestore, type Firestore, type DocumentData, type DocumentSnapshot 
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyB0GTV_m5oit8ddZeCmQ3hW7Jhh-LKiKG0",
+  authDomain: "venda-fcil-pdv.firebaseapp.com",
+  projectId: "venda-fcil-pdv",
+  storageBucket: "venda-fcil-pdv.appspot.com",
+  messagingSenderId: "114570788878",
+  appId: "1:114570788878:web:5dd9f658d2b62fe762fc5f",
+  measurementId: "G-H5JL1WQTGK"
 };
+
 
 let app: FirebaseApp;
 let auth: Auth;
@@ -20,9 +21,6 @@ let db: Firestore;
 let storage: FirebaseStorage;
 
 if (typeof window !== 'undefined' && !getApps().length) {
-  if (!firebaseConfig.apiKey) {
-      console.error("A chave de API do Firebase é inválida. Verifique suas variáveis de ambiente NEXT_PUBLIC_.");
-  }
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
