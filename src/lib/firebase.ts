@@ -1,27 +1,52 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, type DocumentData, type DocumentSnapshot } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
 
-// Configuração do Firebase para o lado do cliente (navegador).
-// As variáveis de ambiente NEXT_PUBLIC_* são automaticamente injetadas pelo Next.js no browser.
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore, type DocumentData, type DocumentSnapshot } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
-// Se o app já estiver inicializado, use-o. Senão, inicialize.
-// Isso evita erros de "app já existe" em ambientes de desenvolvimento (HMR).
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
 
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+let firebaseInitialized = false;
+
+async function initializeFirebase() {
+  if (firebaseInitialized) return;
+
+  try {
+    const response = await fetch('/api/firebase-config');
+    if (!response.ok) {
+        throw new Error('Failed to fetch Firebase config');
+    }
+    const firebaseConfig = await response.json();
+
+    if (!firebaseConfig.apiKey) {
+      throw new Error("API key is missing in the fetched Firebase config");
+    }
+
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+    
+    firebaseInitialized = true;
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+    // Em um app real, você poderia ter um estado de erro global aqui.
+  }
+}
+
+// Chame a inicialização. Como é async, o resto do código precisa esperar por ela.
+// No entanto, como os exports são síncronos, isso é um desafio.
+// A abordagem mais simples é garantir que a inicialização ocorra antes de qualquer uso.
+// Chamadas subsequentes à `getFirebase` garantirão que está inicializado.
+export const getFirebase = async () => {
+    if (!firebaseInitialized) {
+        await initializeFirebase();
+    }
+    return { app, auth, db, storage };
+}
 
 // Helper para serializar documentos do Firestore (com timestamps) do lado do cliente
 export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
@@ -41,5 +66,9 @@ export const serializeDoc = (doc: DocumentSnapshot<DocumentData>): any => {
     return docData;
 }
 
+// Para compatibilidade com o código existente que importa diretamente auth, db, etc.
+// Isso é um "hack" e em um mundo ideal, todo o código usaria `await getFirebase()`.
+// Inicializamos com uma promise para que possamos esperar por ela se necessário.
+const firebaseInitializationPromise = initializeFirebase();
 
-export { app, auth, db, storage };
+export { app, auth, db, storage, firebaseInitializationPromise };
