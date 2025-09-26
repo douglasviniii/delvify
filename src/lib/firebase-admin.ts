@@ -1,29 +1,29 @@
+
 import admin from 'firebase-admin';
 
 // Função para inicializar o app Firebase Admin se ainda não estiver inicializado.
-// Isso é para garantir que a inicialização ocorra apenas uma vez.
 function initializeAdminApp() {
   if (admin.apps.length > 0) {
     return;
   }
 
-  // Monta o objeto de credenciais a partir das variáveis de ambiente.
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    // A chave privada precisa ter suas quebras de linha (escapadas como \\n) convertidas para \n.
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  };
+  // A abordagem recomendada e mais robusta é usar uma única variável de ambiente
+  // contendo o JSON completo da chave de serviço.
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+  if (!serviceAccountJson) {
+    console.error("ERRO CRÍTICO: A variável de ambiente FIREBASE_SERVICE_ACCOUNT_JSON não está definida.");
+    return;
+  }
 
   try {
-    // Inicializa o SDK do Firebase Admin usando o método de credencial de certificado.
-    // Esta é a forma mais robusta de garantir que a chave privada seja analisada corretamente.
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+      credential: admin.credential.cert(serviceAccount),
     });
-     console.log("Firebase Admin SDK inicializado com sucesso.");
+    console.log("Firebase Admin SDK inicializado com sucesso.");
   } catch (error: any) {
-    // Loga um erro crítico se a inicialização falhar.
     console.error("ERRO CRÍTICO: Falha ao inicializar o Firebase Admin SDK:", error.message);
   }
 }
